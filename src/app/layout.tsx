@@ -1,6 +1,8 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
-import "@/styles/globals.css";
+import "../styles/globals.css";
+import type { Metadata } from "next";
+import { ConfigProvider } from 'antd';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,17 +14,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata: Metadata = {
+  title: "BongoCat Next",
+  description: "Desktop pet application built with Next.js and Tauri",
+};
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className="antialiased">
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: '#1677ff',
+            },
+          }}
+        >
+          {children}
+        </ConfigProvider>
       </body>
     </html>
   );

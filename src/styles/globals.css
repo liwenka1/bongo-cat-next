@@ -1,24 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: 'Courier New', monospace;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  background: transparent;
+  color: #333;
+}
+
+/* Tauri specific styles */
+.tauri-drag-region {
+  -webkit-app-region: drag;
+}
+
+.tauri-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Make sure Antd components work in transparent windows */
+.ant-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #e5e5e5;
+  }
+  
+  .ant-card {
+    background: rgba(20, 20, 20, 0.95);
+    color: #e5e5e5;
+  }
 }
