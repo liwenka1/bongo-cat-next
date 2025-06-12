@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "bongo-cat-next",
+  "productName": "BongoCat Next",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.bongocatnext.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:3000",
@@ -12,20 +12,48 @@
   "app": {
     "windows": [
       {
-        "title": "bongo-cat-next",
+        "label": "main",
+        "title": "BongoCat Next",
+        "url": "/",
+        "width": 300,
+        "height": 300,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "decorations": false,
+        "acceptFirstMouse": true,
+        "skipTaskbar": true,
+        "resizable": true
+      },
+      {
+        "label": "settings",
+        "title": "BongoCat Settings",
+        "url": "/settings",
+        "visible": false,
         "width": 800,
         "height": 600,
-        "resizable": true,
-        "fullscreen": false
+        "minWidth": 800,
+        "minHeight": 600,
+        "center": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousDisableAssetCspModification": true,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["**/*"],
+          "requireLiteralLeadingDot": false
+        }
+      }
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
+    "category": "Game",
+    "shortDescription": "BongoCat Next - Desktop Pet",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
