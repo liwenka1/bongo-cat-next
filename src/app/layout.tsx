@@ -1,8 +1,8 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
-import "../styles/globals.css";
-import type { Metadata } from "next";
-import { ConfigProvider } from 'antd';
+import { ConfigProvider } from "antd";
+import Script from "next/script";
+import "@/styles/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,23 +14,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "BongoCat Next",
-  description: "Desktop pet application built with Next.js and Tauri",
-};
-
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <head>
+        {/* Live2D Core Scripts */}
+        <Script
+          src="/js/live2dcubismcore.min.js"
+          strategy="beforeInteractive"
+        />
+        <Script src="/js/live2d.min.js" strategy="beforeInteractive" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <ConfigProvider
           theme={{
             token: {
-              colorPrimary: '#1677ff',
+              colorPrimary: "#1890ff",
             },
           }}
         >

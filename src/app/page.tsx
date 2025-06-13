@@ -1,64 +1,104 @@
 "use client";
-import { useEffect } from 'react'
-import dynamic from 'next/dynamic'
-import { Menu } from 'antd'
-import { SettingOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
+
+import { useEffect, useRef, useCallback } from 'react'
+import { Menu } from '@tauri-apps/api/menu'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useCatStore } from '@/stores/catStore'
 import { useDeviceEvents } from '@/hooks/useDeviceEvents'
-
-// 动态导入Live2D组件，避免SSR问题
-const Live2DViewer = dynamic(() => import('@/components/Live2DViewer'), { 
-  ssr: false,
-  loading: () => <div className="w-[300px] h-[300px] bg-gray-100 rounded-lg flex items-center justify-center">Loading...</div>
-})
+import { useModel } from '@/hooks/useModel'
+import { openGitCommitPage, openSettingsPage } from '@/utils/scripts'
 
 export default function MainPage() {
   const { 
     visible, 
     opacity, 
-    mirrorMode, 
+    mirrorMode,
+    scale,
     pressedKeys, 
     mousePressed,
-    setVisible 
+    setCurrentModelPath
   } = useCatStore()
   
+  const { 
+    backgroundImage, 
+    handleDestroy, 
+    handleResize, 
+    handleMouseDown, 
+    handleMouseMove, 
+    handleKeyDown 
+  } = useModel()
+
   // 启用设备事件监听
   useDeviceEvents()
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault()
-    // 右键菜单功能
-    console.log('Right click menu')
-  }
+  // 初始化时设置默认模型
+  useEffect(() => {
+    setCurrentModelPath('keyboard')
+  }, [setCurrentModelPath])
 
-  const openSettings = async () => {
-    try {
-      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow')
-      const settingsWindow = new WebviewWindow('settings', {
-        url: '/settings',
-        width: 800,
-        height: 600,
-        center: true,
-        title: 'BongoCat Settings',
-        resizable: true,
-        decorations: true
-      })
-      
-      await settingsWindow.show()
-    } catch (error) {
-      console.error('Failed to open settings window:', error)
-    }
-  }
+  // 组件卸载时清理
+  useEffect(() => {
+    return handleDestroy
+  }, [handleDestroy])
 
-  const handleWindowDrag = async () => {
+  const handleWindowDrag = useCallback(async () => {
     try {
-      const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow')
-      const mainWindow = getCurrentWebviewWindow()
-      await mainWindow.startDragging()
+      const appWindow = getCurrentWebviewWindow()
+      await appWindow.startDragging()
     } catch (error) {
       console.error('Failed to start dragging:', error)
     }
-  }
+  }, [])
+
+  const handleContextMenu = useCallback(async (event: React.MouseEvent) => {
+    event.preventDefault()
+    
+    try {
+      // 创建右键菜单
+      const menu = await Menu.new({
+        items: [
+          {
+            id: 'settings',
+            text: '偏好设置',
+            action: () => {
+              openSettingsPage().catch((err: unknown) => { 
+                console.error('Failed to open settings page:', err) 
+              })
+            }
+          },
+          {
+            id: 'git-commit',
+            text: 'Git 提交工具',
+            action: () => {
+              openGitCommitPage().catch((err: unknown) => { 
+                console.error('Failed to open git commit page:', err)
+              })
+            }
+          },
+          {
+            id: 'separator',
+            text: '---'
+          },
+          {
+            id: 'hide',
+            text: '隐藏',
+            action: () => {
+              useCatStore.getState().setVisible(false)
+            }
+          }
+        ]
+      })
+
+      await menu.popup()
+    } catch (error) {
+      console.error('Failed to show context menu:', error)
+    }
+  }, [])
+
+  // 解析键盘图片路径
+  const resolveKeyImagePath = useCallback((key: string, side: 'left' | 'right' = 'left') => {
+    return `/models/keyboard/resources/${side}-keys/${key}.png`
+  }, [])
 
   if (!visible) {
     return null
@@ -66,53 +106,79 @@ export default function MainPage() {
 
   return (
     <div 
-      className="fixed inset-0 overflow-hidden select-none cursor-move"
+      className="relative w-screen h-screen overflow-hidden select-none"
       style={{ 
         opacity: opacity / 100,
-        transform: mirrorMode ? 'scaleX(-1)' : 'scaleX(1)'
+        transform: `scale(${scale}) ${mirrorMode ? 'scaleX(-1)' : 'scaleX(1)'}`
       }}
-      onContextMenu={handleContextMenu}
-      onMouseDown={handleWindowDrag}
+      onContextMenu={(e) => void handleContextMenu(e)}
+      onMouseDown={() => void handleWindowDrag()}
     >
-      {/* Live2D 模型显示区域 */}
-      <div className="relative w-full h-full">
-        <Live2DViewer 
-          width={300}
-          height={300}
+      {/* 背景图片 */}
+      {backgroundImage && (
+        <img 
+          src={backgroundImage} 
+          alt="background"
+          className="absolute inset-0 w-full h-full object-contain"
         />
-        
-        {/* 键盘按键可视化 */}
-        {pressedKeys.length > 0 && (
-          <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs tauri-no-drag">
-            Keys: {pressedKeys.slice(0, 5).join(', ')}
-          </div>
-        )}
-        
-        {/* 鼠标状态可视化 */}
-        {mousePressed && (
-          <div className="absolute top-4 right-4 bg-red-500 bg-opacity-50 text-white px-2 py-1 rounded text-xs tauri-no-drag">
-            Mouse Pressed
-          </div>
-        )}
-        
-        {/* 浮动控制按钮 */}
-        <div className="absolute bottom-4 right-4 flex gap-2 tauri-no-drag">
-          <button
-            onClick={() => setVisible(!visible)}
-            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-lg transition-colors"
-            title={visible ? "Hide" : "Show"}
-          >
-            {visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-          </button>
-          
-          <button
-            onClick={openSettings}
-            className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full shadow-lg transition-colors"
-            title="Settings"
-          >
-            <SettingOutlined />
-          </button>
+      )}
+
+      {/* Live2D Canvas */}
+      <canvas 
+        id="live2dCanvas" 
+        className="absolute inset-0 w-full h-full"
+      />
+
+      {/* 左手按键可视化 */}
+      {pressedKeys.map((key) => (
+        <img
+          key={`left-${key}`}
+          src={resolveKeyImagePath(key, 'left')}
+          alt={`Left ${key}`}
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+          onError={(e) => {
+            // 如果左手图片不存在，尝试右手
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+      ))}
+
+      {/* 右手按键可视化 */}
+      {pressedKeys.map((key) => (
+        <img
+          key={`right-${key}`}
+          src={resolveKeyImagePath(key, 'right')}
+          alt={`Right ${key}`}
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+          style={{ display: 'none' }}
+          onLoad={(e) => {
+            // 只有当右手图片存在时才显示
+            e.currentTarget.style.display = 'block'
+          }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+      ))}
+
+      {/* 调试信息 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white text-xs p-2 rounded pointer-events-none">
+          <div>Pressed Keys: {pressedKeys.join(', ') || 'None'}</div>
+          <div>Mouse: {mousePressed ? 'Pressed' : 'Released'}</div>
+          <div>Opacity: {opacity}%</div>
+          <div>Scale: {scale}</div>
+          <div>Mirror: {mirrorMode ? 'On' : 'Off'}</div>
         </div>
+      )}
+
+      {/* 重新调整大小时的提示 */}
+      <div 
+        id="resize-indicator"
+        className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center text-white text-5xl"
+        style={{ display: 'none' }}
+      >
+        重绘中...
       </div>
     </div>
   )

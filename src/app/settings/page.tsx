@@ -1,27 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { 
-  Card, 
-  Slider, 
-  Switch, 
-  Button, 
-  Upload, 
-  message, 
-  Divider,
-  Space,
-  Typography 
-} from 'antd'
-import { 
-  UploadOutlined, 
-  DownloadOutlined, 
-  InfoCircleOutlined 
-} from '@ant-design/icons'
+import { useState } from 'react'
+import { Card, Slider, Switch, Button, Space, Typography, Divider, message } from 'antd'
+import { UploadOutlined, DownloadOutlined, GithubOutlined } from '@ant-design/icons'
 import { useCatStore } from '@/stores/catStore'
+import { useRouter } from 'next/navigation'
+import { openGitCommitPage } from '@/utils/scripts'
 
 const { Title, Text } = Typography
 
 export default function SettingsPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  
   const {
     visible,
     opacity,
@@ -39,32 +30,25 @@ export default function SettingsPage() {
     setCurrentModelPath
   } = useCatStore()
 
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Tauri窗口管理
   const handleAlwaysOnTopChange = async (checked: boolean) => {
-    setAlwaysOnTop(checked)
-    
-    // 应用到Tauri窗口
     try {
-      const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow')
-      const mainWindow = getCurrentWebviewWindow()
-      await mainWindow.setAlwaysOnTop(checked)
+      setAlwaysOnTop(checked)
+      // TODO: 通知Tauri后端更新窗口属性
+      console.log('Always on top:', checked)
     } catch (error) {
-      console.error('Failed to set always on top:', error)
+      console.error('Failed to update always on top:', error)
+      message.error('Failed to update always on top setting')
     }
   }
 
   const handlePenetrableChange = async (checked: boolean) => {
-    setPenetrable(checked)
-    
-    // 应用到Tauri窗口
     try {
-      const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow')
-      const mainWindow = getCurrentWebviewWindow()
-      await mainWindow.setIgnoreCursorEvents(checked)
+      setPenetrable(checked)
+      // TODO: 通知Tauri后端更新窗口属性
+      console.log('Penetrable:', checked)
     } catch (error) {
-      console.error('Failed to set penetrable:', error)
+      console.error('Failed to update penetrable:', error)
+      message.error('Failed to update penetrable setting')
     }
   }
 
@@ -72,22 +56,15 @@ export default function SettingsPage() {
     try {
       setIsLoading(true)
       
-      // 打开文件选择对话框
-      const { open } = await import('@tauri-apps/plugin-dialog')
-      const selected = await open({
-        title: 'Select Live2D Model',
-        filters: [
-          {
-            name: 'Live2D Model',
-            extensions: ['json']
-          }
-        ]
-      })
+      // 暂时使用预设模型路径
+      const availableModels = ['keyboard', 'standard']
+      const currentIndex = availableModels.indexOf(currentModelPath)
+      const nextIndex = (currentIndex + 1) % availableModels.length
+      const nextModel = availableModels[nextIndex]
       
-      if (selected) {
-        setCurrentModelPath(selected as string)
-        message.success('Model imported successfully!')
-      }
+      setCurrentModelPath(nextModel)
+      message.success(`Switched to ${nextModel} model!`)
+      
     } catch (error) {
       console.error('Failed to import model:', error)
       message.error('Failed to import model')
@@ -136,7 +113,7 @@ export default function SettingsPage() {
                   min={10}
                   max={100}
                   value={opacity}
-                  onChange={setOpacity}
+                                      onChange={(value) => setOpacity(value)}
                   className="mt-2"
                 />
               </div>
@@ -203,9 +180,9 @@ export default function SettingsPage() {
           <Card title="Model Settings" className="h-fit">
             <Space direction="vertical" className="w-full" size="large">
               <div>
-                <Text strong>Current Model Path</Text>
-                <div className="mt-2 p-2 bg-gray-100 rounded text-xs font-mono break-all">
-                  {currentModelPath || 'No model selected'}
+                <Text strong>Current Model</Text>
+                <div className="mt-2 p-2 bg-gray-100 rounded text-sm">
+                  {currentModelPath || 'keyboard'}
                 </div>
               </div>
 
@@ -216,7 +193,7 @@ export default function SettingsPage() {
                 loading={isLoading}
                 block
               >
-                Import Live2D Model
+                Switch Model (keyboard ↔ standard)
               </Button>
 
               <Button 
@@ -259,6 +236,34 @@ export default function SettingsPage() {
                   <li>Click-through mode</li>
                 </ul>
               </div>
+            </Space>
+          </Card>
+
+          {/* Git Settings */}
+          <Card title="Git 工具" className="h-fit">
+            <Space direction="vertical" className="w-full" size="large">
+              <div>
+                <Text strong>Git 提交工具</Text>
+                <div className="mt-2">
+                  <Text type="secondary" className="text-sm">
+                    使用约定格式（feat:xxx, fix:xxx）进行代码提交
+                  </Text>
+                </div>
+              </div>
+
+              <Button 
+                type="primary" 
+                icon={<GithubOutlined />}
+                onClick={() => { 
+                  openGitCommitPage().catch((err: unknown) => { 
+                    message.error('打开Git提交工具失败') 
+                    console.error('Failed to open Git commit page:', err)
+                  })
+                }}
+                block
+              >
+                前往 Git 提交工具
+              </Button>
             </Space>
           </Card>
         </div>
