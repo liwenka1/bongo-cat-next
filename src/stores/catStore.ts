@@ -7,6 +7,7 @@ interface CatState {
   alwaysOnTop: boolean
   penetrable: boolean
   mirrorMode: boolean
+  singleMode: boolean
   
   // 位置和大小
   x: number
@@ -15,7 +16,7 @@ interface CatState {
   
   // 交互状态
   pressedKeys: string[]
-  mousePressed: boolean
+  mousePressed: string[]
   mousePosition: { x: number; y: number }
   
   // 模型相关
@@ -27,10 +28,11 @@ interface CatState {
   setAlwaysOnTop: (alwaysOnTop: boolean) => void
   setPenetrable: (penetrable: boolean) => void
   setMirrorMode: (mirrorMode: boolean) => void
+  setSingleMode: (singleMode: boolean) => void
   setPosition: (x: number, y: number) => void
   setScale: (scale: number) => void
   setPressedKeys: (keys: string[]) => void
-  setMousePressed: (pressed: boolean) => void
+  setMousePressed: (pressed: string[]) => void
   setMousePosition: (x: number, y: number) => void
   setCurrentModelPath: (path: string) => void
 }
@@ -42,27 +44,29 @@ export const useCatStore = create<CatState>((set) => ({
   alwaysOnTop: true,
   penetrable: false,
   mirrorMode: false,
+  singleMode: false,
   
   x: 0,
   y: 0,
   scale: 1,
   
   pressedKeys: [],
-  mousePressed: false,
+  mousePressed: [],
   mousePosition: { x: 0, y: 0 },
   
-  currentModelPath: '',
+  currentModelPath: 'keyboard',
   
   // Actions
-  setVisible: (visible) => set({ visible }),
-  setOpacity: (opacity) => set({ opacity }),
-  setAlwaysOnTop: (alwaysOnTop) => set({ alwaysOnTop }),
-  setPenetrable: (penetrable) => set({ penetrable }),
-  setMirrorMode: (mirrorMode) => set({ mirrorMode }),
-  setPosition: (x, y) => set({ x, y }),
-  setScale: (scale) => set({ scale }),
-  setPressedKeys: (pressedKeys) => set({ pressedKeys }),
-  setMousePressed: (mousePressed) => set({ mousePressed }),
-  setMousePosition: (x, y) => set({ mousePosition: { x, y } }),
-  setCurrentModelPath: (currentModelPath) => set({ currentModelPath }),
+  setVisible: (visible) => { set({ visible }) },
+  setOpacity: (opacity) => { set({ opacity }) },
+  setAlwaysOnTop: (alwaysOnTop) => { set({ alwaysOnTop }) },
+  setPenetrable: (penetrable) => { set({ penetrable }) },
+  setMirrorMode: (mirrorMode) => { set({ mirrorMode }) },
+  setSingleMode: (singleMode) => { set({ singleMode }) },
+  setPosition: (x, y) => { set({ x, y }) },
+  setScale: (scale) => { set({ scale }) },
+  setPressedKeys: (pressedKeys) => { set({ pressedKeys }) },
+  setMousePressed: (mousePressed) => { set({ mousePressed }) },
+  setMousePosition: (x, y) => { set({ mousePosition: { x, y } }) },
+  setCurrentModelPath: (currentModelPath) => { set({ currentModelPath }) },
 })) 
