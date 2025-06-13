@@ -54,11 +54,16 @@ pub fn start_listening(app_handle: AppHandle) {
         };
 
         if let Err(e) = app_handle.emit("device-changed", device) {
-            eprintln!("Failed to emit device event: {:?}", e);
+            eprintln!("Failed to emit event: {:?}", e);
         }
     };
 
-    // 在单独的线程中运行设备监听
+    #[cfg(target_os = "macos")]
+    if let Err(e) = listen(callback) {
+        eprintln!("Device listening error: {:?}", e);
+    }
+
+    #[cfg(not(target_os = "macos"))]
     std::thread::spawn(move || {
         if let Err(e) = listen(callback) {
             eprintln!("Device listening error: {:?}", e);

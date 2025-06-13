@@ -10,31 +10,28 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "main",
         "title": "BongoCat Next",
         "url": "/",
-        "width": 300,
-        "height": 300,
         "shadow": false,
         "alwaysOnTop": true,
         "transparent": true,
         "decorations": false,
         "acceptFirstMouse": true,
-        "skipTaskbar": true,
-        "resizable": true
+        "skipTaskbar": true
       },
       {
         "label": "settings",
-        "title": "BongoCat Settings",
+        "title": "偏好设置",
         "url": "/settings",
         "visible": false,
-        "width": 800,
-        "height": 600,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
         "minWidth": 800,
-        "minHeight": 600,
-        "center": true
+        "minHeight": 600
       }
     ],
     "security": {
@@ -51,7 +48,6 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
     "category": "Game",
     "shortDescription": "BongoCat Next - Desktop Pet",
     "icon": [
@@ -60,6 +56,14 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "assets/**/*"
     ]
+  },
+  "plugins": {
+    "fs": {
+      "requireLiteralLeadingDot": false
+    }
   }
 }

@@ -1,7 +1,24 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
+  "$schema": "https://schema.tauri.app/config/2/capability",
   "identifier": "default",
-  "description": "enables the default permissions",
-  "windows": ["main"],
-  "permissions": ["core:default", "opener:default"]
+  "description": "Default permissions for BongoCat Next",
+  "windows": ["main", "settings"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-set-ignore-cursor-events",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-size",
+    "core:window:allow-set-position",
+    "core:window:allow-center",
+    "core:menu:allow-new",
+    "core:menu:allow-popup",
+    "fs:allow-read-text-file",
+    "fs:allow-read-dir",
+    "fs:allow-exists"
+  ]
 }
