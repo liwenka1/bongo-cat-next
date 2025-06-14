@@ -1,0 +1,59 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "demomodel2.moc3",
+    "Textures": [
+      "demomodel2.1024/texture_00.png",
+      "demomodel2.1024/texture_01.png",
+      "demomodel2.1024/texture_02.png"
+    ],
+    "DisplayInfo": "demomodel2.cdi3.json",
+    "Expressions": [
+      {
+        "Name": "默认喵",
+        "File": "live2d_expression0.exp3.json"
+      },
+      {
+        "Name": "社会喵",
+        "File": "live2d_expression1.exp3.json",
+        "Description": "喵喵我叼根小烟，耍个帅气俏皮的wink~超有范儿！但直播里用这招，怕是会让铲屎官和平台瞪大眼，本喵还是低调点，偷偷耍酷好啦！"
+      },
+      {
+        "Name": "天使喵",
+        "File": "live2d_expression2.exp3.json"
+      }
+    ],
+    "Motions": {
+      "CAT_motion": [
+        {
+          "Name": "雷霆喵",
+          "File": "live2d_motion1.motion3.json",
+          "Sound": "live2d_motion1.flac",
+          "FadeInTime": 0,
+          "FadeOutTime": 0
+        },
+        {
+          "Name": "摇摆喵",
+          "File": "live2d_motion2.motion3.json",
+          "FadeInTime": 0,
+          "FadeOutTime": 0
+        }
+      ]
+    }
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": []
+    }
+  ]
+}
