@@ -1,15 +1,47 @@
 import type { LiteralUnion } from 'antd/es/_util/type'
 
-export function join(...paths: LiteralUnion<'resources' | 'left-keys' | 'right-keys' | 'background.png' | 'cover.png'>[]) {
-  const separator = '/'
+/**
+ * Join path segments
+ */
+export function join(...segments: string[]): string {
+  return segments
+    .filter(segment => segment && segment !== '.')
+    .join('/')
+    .replace(/\/+/g, '/')
+}
+
+/**
+ * Get file extension
+ */
+export function getExtension(filename: string): string {
+  const lastDot = filename.lastIndexOf('.')
+  return lastDot === -1 ? '' : filename.slice(lastDot + 1)
+}
+
+/**
+ * Get filename without extension
+ */
+export function getBasename(filename: string): string {
+  const lastDot = filename.lastIndexOf('.')
+  const lastSlash = Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\'))
   
-  const joinPaths = paths.map((path) => {
-    if (path.endsWith(separator)) {
-      return path.slice(0, -1)
-    }
+  if (lastDot === -1) {
+    return filename.slice(lastSlash + 1)
+  }
+  
+  return filename.slice(lastSlash + 1, lastDot)
+}
 
-    return path
-  })
+/**
+ * Check if path is absolute
+ */
+export function isAbsolute(path: string): boolean {
+  return /^([a-zA-Z]:)?[/\\]/.test(path)
+}
 
-  return joinPaths.join(separator)
+/**
+ * Normalize path separators
+ */
+export function normalize(path: string): string {
+  return path.replace(/[/\\]+/g, '/')
 } 

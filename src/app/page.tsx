@@ -1,185 +1,162 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from 'react'
-import { Menu } from '@tauri-apps/api/menu'
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { useCatStore } from '@/stores/catStore'
-import { useDeviceEvents } from '@/hooks/useDeviceEvents'
-import { useModel } from '@/hooks/useModel'
-import { openGitCommitPage, openSettingsPage } from '@/utils/scripts'
+import { useEffect, useState } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { useCatStore } from "@/stores/catStore";
+import { useModelStore } from "@/stores/modelStore";
+import { useLive2D } from "@/hooks/useLive2D";
+import { useKeyboard } from "@/hooks/useKeyboard";
+import { KeyboardVisualization } from "@/components/KeyboardVisualization";
+import { join } from "@/utils/path";
+import Image from "next/image";
 
-export default function MainPage() {
-  const { 
-    visible, 
-    opacity, 
-    mirrorMode,
-    scale,
-    pressedKeys, 
+export default function Home() {
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
+  const [isClient, setIsClient] = useState(false);
+
+  const {
+    pressedKeys,
     mousePressed,
-    setCurrentModelPath
-  } = useCatStore()
-  
-  const { 
-    backgroundImage, 
-    handleDestroy, 
-    handleResize, 
-    handleMouseDown, 
-    handleMouseMove, 
-    handleKeyDown 
-  } = useModel()
+    mousePosition,
+    scale,
+    opacity,
+    mirrorMode,
+  } = useCatStore();
 
-  // 启用设备事件监听
-  useDeviceEvents()
+  const { currentModel, initializeModels } = useModelStore();
 
-  // 初始化时设置默认模型
+  const {
+    isLoading: isLive2DLoading,
+    error: live2dError,
+    handleResize,
+    handleMouseDown,
+    handleKeyDown,
+  } = useLive2D();
+
+  // 启用键盘监听
+  useKeyboard();
+
+  // 确保在客户端运行
   useEffect(() => {
-    setCurrentModelPath('keyboard')
-  }, [setCurrentModelPath])
+    setIsClient(true);
+  }, []);
 
-  // 组件卸载时清理
+  // 初始化模型
   useEffect(() => {
-    return handleDestroy
-  }, [handleDestroy])
-
-  const handleWindowDrag = useCallback(async () => {
-    try {
-      const appWindow = getCurrentWebviewWindow()
-      await appWindow.startDragging()
-    } catch (error) {
-      console.error('Failed to start dragging:', error)
+    if (isClient) {
+      void initializeModels();
     }
-  }, [])
+  }, [isClient, initializeModels]);
 
-  const handleContextMenu = useCallback(async (event: React.MouseEvent) => {
-    event.preventDefault()
-    
-    try {
-      // 创建右键菜单
-      const menu = await Menu.new({
-        items: [
-          {
-            id: 'settings',
-            text: '偏好设置',
-            action: () => {
-              openSettingsPage().catch((err: unknown) => { 
-                console.error('Failed to open settings page:', err) 
-              })
-            }
-          },
-          {
-            id: 'git-commit',
-            text: 'Git 提交工具',
-            action: () => {
-              openGitCommitPage().catch((err: unknown) => { 
-                console.error('Failed to open git commit page:', err)
-              })
-            }
-          },
-          {
-            id: 'separator',
-            text: '---'
-          },
-          {
-            id: 'hide',
-            text: '隐藏',
-            action: () => {
-              useCatStore.getState().setVisible(false)
-            }
-          }
-        ]
-      })
-
-      await menu.popup()
-    } catch (error) {
-      console.error('Failed to show context menu:', error)
+  // 加载背景图片
+  useEffect(() => {
+    if (isClient && currentModel) {
+      const loadBackground = async () => {
+        try {
+          const bgPath = join(currentModel.path, "resources", "background.png");
+          const bgUrl = convertFileSrc(bgPath);
+          setBackgroundImage(bgUrl);
+        } catch (error) {
+          console.error("Failed to load background:", error);
+        }
+      };
+      void loadBackground();
     }
-  }, [])
+  }, [isClient, currentModel]);
 
-  // 解析键盘图片路径
-  const resolveKeyImagePath = useCallback((key: string, side: 'left' | 'right' = 'left') => {
-    return `/models/keyboard/resources/${side}-keys/${key}.png`
-  }, [])
+  // 处理窗口大小变化
+  useEffect(() => {
+    const handleWindowResize = () => {
+      handleResize();
+    };
 
-  if (!visible) {
-    return null
+    window.addEventListener("resize", handleWindowResize);
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, [handleResize]);
+
+  // 处理鼠标按下事件
+  useEffect(() => {
+    handleMouseDown(mousePressed.length > 0);
+  }, [mousePressed, handleMouseDown]);
+
+  // 处理键盘按下事件
+  useEffect(() => {
+    const leftKeys = [
+      "KeyQ",
+      "KeyW",
+      "KeyE",
+      "KeyR",
+      "KeyT",
+      "KeyA",
+      "KeyS",
+      "KeyD",
+      "KeyF",
+      "KeyG",
+      "KeyZ",
+      "KeyX",
+      "KeyC",
+      "KeyV",
+      "KeyB",
+    ];
+    const rightKeys = [
+      "KeyY",
+      "KeyU",
+      "KeyI",
+      "KeyO",
+      "KeyP",
+      "KeyH",
+      "KeyJ",
+      "KeyK",
+      "KeyL",
+      "KeyN",
+      "KeyM",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "Space",
+    ];
+
+    const hasLeftPressed = pressedKeys.some((key) => leftKeys.includes(key));
+    const hasRightPressed = pressedKeys.some((key) => rightKeys.includes(key));
+
+    handleKeyDown("left", hasLeftPressed);
+    handleKeyDown("right", hasRightPressed);
+  }, [pressedKeys, handleKeyDown]);
+
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <div 
-      className="relative w-screen h-screen overflow-hidden select-none"
-      style={{ 
-        opacity: opacity / 100,
-        transform: `scale(${scale}) ${mirrorMode ? 'scaleX(-1)' : 'scaleX(1)'}`
-      }}
-      onContextMenu={(e) => void handleContextMenu(e)}
-      onMouseDown={() => void handleWindowDrag()}
+    <div
+      className={`relative w-screen h-screen overflow-hidden ${
+        mirrorMode ? "-scale-x-100" : "scale-x-100"
+      }`}
+      style={{ opacity: opacity / 100 }}
     >
-      {/* 背景图片 */}
+      {/* 背景图片 - 参考 BongoCat 原项目样式 */}
       {backgroundImage && (
-        <img 
-          src={backgroundImage} 
-          alt="background"
-          className="absolute inset-0 w-full h-full object-contain"
+        <Image
+          width={612}
+          height={354}
+          src={backgroundImage}
+          className="absolute size-full"
+          alt="keyboard background"
         />
       )}
 
-      {/* Live2D Canvas */}
-      <canvas 
-        id="live2dCanvas" 
-        className="absolute inset-0 w-full h-full"
-      />
+      {/* Live2D Canvas - 简化样式 */}
+      <canvas id="live2dCanvas" className="absolute size-full" />
 
-      {/* 左手按键可视化 */}
-      {pressedKeys.map((key) => (
-        <img
-          key={`left-${key}`}
-          src={resolveKeyImagePath(key, 'left')}
-          alt={`Left ${key}`}
-          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-          onError={(e) => {
-            // 如果左手图片不存在，尝试右手
-            e.currentTarget.style.display = 'none'
-          }}
-        />
-      ))}
-
-      {/* 右手按键可视化 */}
-      {pressedKeys.map((key) => (
-        <img
-          key={`right-${key}`}
-          src={resolveKeyImagePath(key, 'right')}
-          alt={`Right ${key}`}
-          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-          style={{ display: 'none' }}
-          onLoad={(e) => {
-            // 只有当右手图片存在时才显示
-            e.currentTarget.style.display = 'block'
-          }}
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
-        />
-      ))}
-
-      {/* 调试信息 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white text-xs p-2 rounded pointer-events-none">
-          <div>Pressed Keys: {pressedKeys.join(', ') || 'None'}</div>
-          <div>Mouse: {mousePressed ? 'Pressed' : 'Released'}</div>
-          <div>Opacity: {opacity}%</div>
-          <div>Scale: {scale}</div>
-          <div>Mirror: {mirrorMode ? 'On' : 'Off'}</div>
-        </div>
-      )}
-
-      {/* 重新调整大小时的提示 */}
-      <div 
-        id="resize-indicator"
-        className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center text-white text-5xl"
-        style={{ display: 'none' }}
-      >
-        重绘中...
-      </div>
+      {/* 键盘按键 - 简化为直接显示图片 */}
+      <KeyboardVisualization />
     </div>
-  )
+  );
 }

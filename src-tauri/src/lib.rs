@@ -12,8 +12,8 @@ fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-pub fn show_settings_window(app_handle: &tauri::AppHandle) {
-    if let Some(settings_window) = app_handle.get_webview_window(SETTINGS_WINDOW_LABEL) {
+pub fn show_settings_window(_app_handle: &tauri::AppHandle) {
+    if let Some(settings_window) = _app_handle.get_webview_window(SETTINGS_WINDOW_LABEL) {
         let _ = settings_window.show();
         let _ = settings_window.set_focus();
     }
@@ -23,14 +23,14 @@ pub fn show_settings_window(app_handle: &tauri::AppHandle) {
 pub fn run() {
     let app = tauri::Builder::default()
         .setup(|app| {
-            let app_handle = app.handle();
+            let _app_handle = app.handle();
 
             let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
 
-            setup::default(&app_handle, main_window.clone(), settings_window.clone());
+            setup::default(&_app_handle, main_window.clone(), settings_window.clone());
 
-            device::start_listening(app_handle.clone());
+            device::start_listening(_app_handle.clone());
 
             println!("BongoCat Next started successfully!");
 
@@ -41,8 +41,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|app_handle, _argv, _cwd| {
-            show_settings_window(app_handle);
+        .plugin(tauri_plugin_single_instance::init(|_app_handle, _argv, _cwd| {
+            show_settings_window(_app_handle);
         }))
         .on_window_event(|window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {
@@ -54,10 +54,10 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
-    app.run(|app_handle, event| match event {
+    app.run(|_app_handle, event| match event {
         #[cfg(target_os = "macos")]
         tauri::RunEvent::Reopen { .. } => {
-            show_settings_window(app_handle);
+            show_settings_window(_app_handle);
         }
         _ => {}
     });

@@ -1,43 +1,79 @@
-// Live2D Manager - 只在客户端运行
-class Live2DManager {
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { join } from './path'
+import { modelConfigs } from '@/data/modelConfig'
+
+// 检查是否在浏览器环境
+const isBrowser = typeof window !== 'undefined'
+
+// 动态导入和初始化 Live2D
+async function initLive2D() {
+  if (!isBrowser) {
+    throw new Error('Live2D can only be used in browser environment')
+  }
+
+  // 等待 Live2D 脚本加载
+  let attempts = 0
+  const maxAttempts = 100
+  
+  while (attempts < maxAttempts) {
+    try {
+      // 检查全局 Live2D 对象是否存在
+      if ((window as any).Live2D || (window as any).Live2DFramework) {
+        break
+      }
+    } catch {
+      // 继续等待
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 100))
+    attempts++
+  }
+
+  // 动态导入必要的模块
+  const [pixiModule, live2dModule] = await Promise.all([
+    import('pixi.js'),
+    import('pixi-live2d-display')
+  ])
+
+  const { Application, Ticker } = pixiModule
+  const { Live2DModel, Cubism4ModelSettings } = live2dModule
+
+  // 注册 Ticker
+  Live2DModel.registerTicker(Ticker)
+
+  return {
+    Application,
+    Live2DModel,
+    Cubism4ModelSettings
+  }
+}
+
+class Live2d {
   private app: any = null
   public model: any = null
-  private isClient: boolean = false
 
-  constructor() {
-    this.isClient = typeof window !== 'undefined'
-  }
+  constructor() { }
 
   private async mount() {
-    if (!this.isClient) return
-
+    const { Application } = await initLive2D()
     const view = document.getElementById('live2dCanvas') as HTMLCanvasElement
+
     if (!view) {
-      throw new Error('Canvas element with id "live2dCanvas" not found')
+      throw new Error('Canvas element not found')
     }
 
-    try {
-      // 动态导入PIXI.js，避免SSR问题
-      const { Application } = await import('pixi.js')
-      
-      this.app = new Application({
-        view,
-        resizeTo: window,
-        backgroundAlpha: 0,
-        autoDensity: true,
-        resolution: devicePixelRatio,
-      })
-    } catch (error) {
-      console.error('Failed to initialize PIXI application:', error)
-      throw error
-    }
+    this.app = new Application({
+      view,
+      resizeTo: window,
+      backgroundAlpha: 0,
+      autoDensity: true,
+      resolution: window.devicePixelRatio || 1,
+    })
   }
 
-  public async load(modelPath: string) {
-    if (!this.isClient) {
-      console.warn('Live2D load called on server side, skipping')
-      return { motions: {}, expressions: {} }
-    }
+  public async load(path: string) {
+    // 初始化 Live2D 模块
+    const { Live2DModel: Live2DModelClass, Cubism4ModelSettings: Cubism4ModelSettingsClass } = await initLive2D()
 
     if (!this.app) {
       await this.mount()
@@ -45,163 +81,118 @@ class Live2DManager {
 
     this.destroy()
 
-    try {
-      // 动态导入Live2D相关库
-      const { Cubism4ModelSettings, Live2DModel } = await import('pixi-live2d-display')
-      const { Ticker } = await import('pixi.js')
-      
-      // 注册Ticker
-      Live2DModel.registerTicker(Ticker)
+    // 从硬编码配置中获取模型数据，避免文件系统权限问题
+    const modelName = path.includes('keyboard') ? 'keyboard' : 'standard'
+    const modelJSON = modelConfigs[modelName as keyof typeof modelConfigs]
+    
+    if (!modelJSON) {
+      throw new Error(`不支持的模型类型: ${modelName}`)
+    }
+    
+    console.log('Loading model config for:', modelName)
 
-      // 使用Tauri的asset协议访问模型文件
-      let modelConfigPath: string
-      let resolvedPath: string
+    // 创建一个虚拟的模型配置文件路径
+    const virtualModelPath = join(path, 'cat.model3.json')
+    
+    const modelSettings = new Cubism4ModelSettingsClass({
+      ...modelJSON,
+      url: convertFileSrc(virtualModelPath),
+    } as any)
 
-      if (window.__TAURI_INTERNALS__) {
-        // 在Tauri环境中使用asset协议
-        const { convertFileSrc } = await import('@tauri-apps/api/core')
-        resolvedPath = `assets/models/${modelPath}`
-        modelConfigPath = convertFileSrc(`${resolvedPath}/cat.model3.json`)
-      } else {
-        // 在浏览器环境中使用public路径
-        resolvedPath = `/models/${modelPath}`
-        modelConfigPath = `${resolvedPath}/cat.model3.json`
-      }
-      
-      console.log('Loading model from:', modelConfigPath)
-      console.log('Resolved path:', resolvedPath)
+    modelSettings.replaceFiles((file: string) => {
+      return convertFileSrc(join(path, file))
+    })
 
-      // 加载模型配置
-      const response = await fetch(modelConfigPath)
-      if (!response.ok) {
-        throw new Error(`Failed to load model config: ${response.statusText}`)
-      }
-      
-      const modelJSON = await response.json() as Record<string, any>
+    this.model = await Live2DModelClass.from(modelSettings)
 
-      // 创建模型设置
-      const modelSettings = new Cubism4ModelSettings({
-        ...modelJSON,
-        url: modelConfigPath,
-      } as any)
+    if (!this.model || !this.app) {
+      throw new Error('Failed to create Live2D model or PIXI application')
+    }
 
-      // 替换文件路径为正确的路径
-      modelSettings.replaceFiles((file: string) => {
-        if (window.__TAURI_INTERNALS__) {
-          const { convertFileSrc } = require('@tauri-apps/api/core')
-          return convertFileSrc(`${resolvedPath}/${file}`)
-        } else {
-          return `${resolvedPath}/${file}`
-        }
-      })
+    this.app.stage.addChild(this.model)
 
-      // 加载Live2D模型
-      this.model = await Live2DModel.from(modelSettings)
+    // 设置模型位置和缩放 - 让猫咪与键盘背景对齐
+    this.model.anchor.set(0.5, 0.5)
+    
+    // 调整位置和缩放以匹配键盘背景
+    // 根据窗口大小计算合适的缩放比例
+    const windowScale = Math.min(
+      this.app.screen.width / this.model.width,
+      this.app.screen.height / this.model.height
+    )
+    
+    // 设置缩放 - 让模型填满整个窗口
+    const scale = windowScale * 1.0
+    this.model.scale.set(scale)
+    
+    // 居中显示
+    this.model.position.set(this.app.screen.width / 2, this.app.screen.height / 2)
 
-      if (!this.model) {
-        throw new Error('Failed to create Live2D model')
-      }
+    const { motions, expressions } = modelSettings
 
-      this.app.stage.addChild(this.model)
-
-      // 设置模型位置和缩放
-      this.model.anchor.set(0.5, 0.5)
-      this.model.position.set(window.innerWidth / 2, window.innerHeight / 2)
-      
-      // 自适应缩放
-      const scale = Math.min(window.innerWidth / this.model.width, window.innerHeight / this.model.height) * 0.8
-      this.model.scale.set(scale)
-
-      console.log('Model loaded successfully:', {
-        width: this.model.width,
-        height: this.model.height,
-        scale: scale
-      })
-
-      const { motions, expressions } = modelSettings
-
-      return {
-        motions,
-        expressions,
-      }
-    } catch (error) {
-      console.error('Error loading Live2D model:', error)
-      throw error
+    return {
+      motions,
+      expressions,
     }
   }
 
   public destroy() {
     if (this.model) {
-      try {
-        this.model.destroy()
-      } catch (error) {
-        console.warn('Error destroying model:', error)
-      }
+      this.model.destroy()
       this.model = null
     }
   }
 
   public playMotion(group: string, index: number) {
-    if (!this.isClient || !this.model) return
-    try {
-      return this.model.motion(group, index)
-    } catch (error) {
-      console.warn('Error playing motion:', error)
-    }
+    return this.model?.motion(group, index)
   }
 
-  public playExpression(index: number) {
-    if (!this.isClient || !this.model) return
-    try {
-      return this.model.expression(index)
-    } catch (error) {
-      console.warn('Error playing expression:', error)
-    }
+  public playExpressions(index: number) {
+    return this.model?.expression(index)
   }
 
   public getCoreModel() {
-    if (!this.isClient || !this.model) return null
-    const internalModel = this.model.internalModel
+    const internalModel = this.model?.internalModel
     return internalModel?.coreModel
   }
 
   public getParameterRange(id: string) {
-    if (!this.isClient) return { min: 0, max: 1 }
-    
     const coreModel = this.getCoreModel()
-    
     if (!coreModel) return { min: 0, max: 1 }
-    
-    try {
-      const index = coreModel.getParameterIndex?.(id)
-      const min = coreModel.getParameterMinimumValue?.(index)
-      const max = coreModel.getParameterMaximumValue?.(index)
 
-      return {
-        min: min ?? 0,
-        max: max ?? 1,
-      }
-    } catch (error) {
-      console.warn('Error getting parameter range:', id, error)
-      return { min: 0, max: 1 }
-    }
+    const index = coreModel.getParameterIndex?.(id)
+    const min = coreModel.getParameterMinimumValue?.(index) ?? 0
+    const max = coreModel.getParameterMaximumValue?.(index) ?? 1
+
+    return { min, max }
   }
 
   public setParameterValue(id: string, value: number) {
-    if (!this.isClient) return
-    
     const coreModel = this.getCoreModel()
-    if (!coreModel) return
-    
-    try {
-      return coreModel.setParameterValueById?.(id, Number(value))
-    } catch (error) {
-      console.warn('Error setting parameter:', id, value, error)
+    return coreModel?.setParameterValueById?.(id, Number(value))
+  }
+
+  public resize() {
+    if (this.app) {
+      this.app.resize()
+      
+      // 重新调整模型位置和缩放以保持对齐
+      if (this.model) {
+        // 重新计算缩放
+        const windowScale = Math.min(
+          this.app.screen.width / this.model.width,
+          this.app.screen.height / this.model.height
+        )
+        const scale = windowScale * 1.0
+        this.model.scale.set(scale)
+        
+        // 居中显示
+        this.model.position.set(this.app.screen.width / 2, this.app.screen.height / 2)
+      }
     }
   }
 }
 
-// 创建单例实例
-const live2d = new Live2DManager()
+const live2d = new Live2d()
 
 export default live2d 

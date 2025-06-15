@@ -1,266 +1,93 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { readDir } from '@tauri-apps/plugin-fs'
+import { useModelStore } from '@/stores/modelStore'
 import { useCatStore } from '@/stores/catStore'
-import { isImage } from '@/utils/is'
 import { join } from '@/utils/path'
-import { isWindows } from '@/utils/platform'
-
-interface MouseButtonEvent {
-  kind: 'MousePress' | 'MouseRelease'
-  value: string
-}
+import { isImage } from '@/utils/is'
 
 interface MouseMoveValue {
   x: number
   y: number
 }
 
-interface MouseMoveEvent {
-  kind: 'MouseMove'
-  value: MouseMoveValue
-}
-
-interface KeyboardEvent {
-  kind: 'KeyboardPress' | 'KeyboardRelease'
-  value: string
-}
-
-type DeviceEvent = MouseButtonEvent | MouseMoveEvent | KeyboardEvent
-
 export function useDevice() {
   const [supportLeftKeys, setSupportLeftKeys] = useState<string[]>([])
   const [supportRightKeys, setSupportRightKeys] = useState<string[]>([])
-  const [pressedMouses, setPressedMouses] = useState<string[]>([])
-  const [mousePosition, setMousePosition] = useState<MouseMoveValue>({ x: 0, y: 0 })
   const [pressedLeftKeys, setPressedLeftKeys] = useState<string[]>([])
   const [pressedRightKeys, setPressedRightKeys] = useState<string[]>([])
+  const [mousePosition, setMousePosition] = useState<MouseMoveValue>({ x: 0, y: 0 })
   
-  const { currentModelPath, singleMode } = useCatStore()
-  const releaseTimers = useRef(new Map<string, NodeJS.Timeout>())
+  const { currentModel } = useModelStore()
+  const { pressedKeys, mousePressed } = useCatStore()
 
   // 加载支持的按键列表
-  const loadSupportedKeys = useCallback(async () => {
-    if (!currentModelPath) return
+  useEffect(() => {
+    if (!currentModel) return
 
-    const keySides = [
-      { side: 'left', setSupportKeys: setSupportLeftKeys, setPressedKeys: setPressedLeftKeys },
-      { side: 'right', setSupportKeys: setSupportRightKeys, setPressedKeys: setPressedRightKeys },
-    ]
-
-    for (const { side, setSupportKeys, setPressedKeys } of keySides) {
+    const loadSupportedKeys = async () => {
       try {
-        // 在Tauri环境中，这里应该使用真实的文件系统API
-        // 现在先使用模拟数据
-        const mockKeyFiles = [
-          'KeyA.png', 'KeyS.png', 'KeyD.png', 'KeyF.png', 'KeyG.png', 'KeyH.png',
-          'KeyJ.png', 'KeyK.png', 'KeyL.png', 'KeyQ.png', 'KeyW.png', 'KeyE.png',
-          'KeyR.png', 'KeyT.png', 'KeyY.png', 'KeyU.png', 'KeyI.png', 'KeyO.png',
-          'KeyP.png', 'KeyZ.png', 'KeyX.png', 'KeyC.png', 'KeyV.png', 'KeyB.png',
-          'KeyN.png', 'KeyM.png', 'Space.png', 'Shift.png', 'Control.png',
-          'Alt.png', 'Tab.png', 'Escape.png', 'Enter.png', 'Backspace.png'
-        ]
+        // 加载左手按键
+        try {
+          const leftKeysPath = join(currentModel.path, 'resources', 'left-keys')
+          const leftFiles = await readDir(leftKeysPath)
+          const leftImageFiles = leftFiles.filter(file => {
+            const name = file.name || ''
+            return isImage(name)
+          })
+          setSupportLeftKeys(leftImageFiles.map(file => {
+            const name = file.name || ''
+            return name.split('.')[0]
+          }))
+        } catch {
+          setSupportLeftKeys([])
+        }
 
-        const supportedKeys = mockKeyFiles
-          .filter(file => isImage(file))
-          .map(file => file.split('.')[0])
-
-        setSupportKeys(supportedKeys)
-        
-        // 过滤掉不支持的按键
-        setPressedKeys(prev => prev.filter(key => supportedKeys.includes(key)))
+        // 加载右手按键
+        try {
+          const rightKeysPath = join(currentModel.path, 'resources', 'right-keys')
+          const rightFiles = await readDir(rightKeysPath)
+          const rightImageFiles = rightFiles.filter(file => {
+            const name = file.name || ''
+            return isImage(name)
+          })
+          setSupportRightKeys(rightImageFiles.map(file => {
+            const name = file.name || ''
+            return name.split('.')[0]
+          }))
+        } catch {
+          setSupportRightKeys([])
+        }
       } catch (error) {
-        console.error(`Failed to load ${side} keys:`, error)
-        setSupportKeys([])
-        setPressedKeys([])
+        console.error('Failed to load supported keys:', error)
       }
     }
-  }, [currentModelPath])
 
-  // 处理按键按下
-  const handlePress = useCallback((setter: React.Dispatch<React.SetStateAction<string[]>>, value?: string) => {
-    if (!value) return
-
-    setter(prev => {
-      if (singleMode) {
-        return [value]
-      } else {
-        return Array.from(new Set([...prev, value]))
-      }
-    })
-  }, [singleMode])
-
-  // 处理按键释放
-  const handleRelease = useCallback((setter: React.Dispatch<React.SetStateAction<string[]>>, value?: string) => {
-    if (!value) return
-
-    setter(prev => prev.filter(item => item !== value))
-  }, [])
-
-  // 获取支持的按键名（处理按键映射）
-  const getSupportedKey = useCallback((key: string) => {
-    for (const side of ['left', 'right']) {
-      let nextKey = key
-      const supportKeys = side === 'left' ? supportLeftKeys : supportRightKeys
-
-      const unsupportedKeys = !supportKeys.includes(key)
-
-      // F键映射到Fn
-      if (key.startsWith('F') && unsupportedKeys) {
-        nextKey = key.replace(/F(\d+)/, 'Fn')
-      }
-
-      // 修饰键映射
-      for (const item of ['Meta', 'Shift', 'Alt', 'Control']) {
-        if (key.startsWith(item) && unsupportedKeys) {
-          const regex = new RegExp(`^(${item}).*`)
-          nextKey = key.replace(regex, '$1')
-        }
-      }
-
-      if (!supportKeys.includes(nextKey)) continue
-
-      return nextKey
-    }
-    return null
-  }, [supportLeftKeys, supportRightKeys])
-
-  // 延时释放按键
-  const handleScheduleRelease = useCallback((
-    setter: React.Dispatch<React.SetStateAction<string[]>>, 
-    key: string, 
-    delay = 500
-  ) => {
-    const timers = releaseTimers.current
-    
-    if (timers.has(key)) {
-      clearTimeout(timers.get(key))
-    }
-
-    const timer = setTimeout(() => {
-      handleRelease(setter, key)
-      timers.delete(key)
-    }, delay)
-
-    timers.set(key, timer)
-  }, [handleRelease])
-
-  // 处理设备事件
-  const handleDeviceEvent = useCallback((event: DeviceEvent) => {
-    const { kind, value } = event
-
-    if (kind === 'KeyboardPress' || kind === 'KeyboardRelease') {
-      const nextValue = getSupportedKey(value)
-      if (!nextValue) return
-
-      const isLeftSide = supportLeftKeys.includes(nextValue)
-      const setter = isLeftSide ? setPressedLeftKeys : setPressedRightKeys
-
-      // CapsLock特殊处理
-      if (nextValue === 'CapsLock') {
-        handlePress(setter, nextValue)
-        handleScheduleRelease(setter, nextValue, 100)
-        return
-      }
-
-      if (kind === 'KeyboardPress') {
-        if (isWindows) {
-          handleScheduleRelease(setter, nextValue)
-        }
-        handlePress(setter, nextValue)
-        return
-      }
-
-      handleRelease(setter, nextValue)
-      return
-    }
-
-    switch (kind) {
-      case 'MousePress':
-        handlePress(setPressedMouses, value)
-        break
-      case 'MouseRelease':
-        handleRelease(setPressedMouses, value)
-        break
-      case 'MouseMove':
-        setMousePosition(value)
-        break
-    }
-  }, [getSupportedKey, supportLeftKeys, handlePress, handleRelease, handleScheduleRelease])
-
-  // 模拟键盘事件监听（在真实环境中应该使用Tauri的事件监听）
-  useEffect(() => {
-    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
-      handleDeviceEvent({
-        kind: 'KeyboardPress',
-        value: e.code || e.key
-      })
-    }
-
-    const handleKeyUp = (e: globalThis.KeyboardEvent) => {
-      handleDeviceEvent({
-        kind: 'KeyboardRelease',
-        value: e.code || e.key
-      })
-    }
-
-    const handleMouseDown = (e: MouseEvent) => {
-      const button = e.button === 0 ? 'Left' : e.button === 2 ? 'Right' : 'Middle'
-      handleDeviceEvent({
-        kind: 'MousePress',
-        value: button
-      })
-    }
-
-    const handleMouseUp = (e: MouseEvent) => {
-      const button = e.button === 0 ? 'Left' : e.button === 2 ? 'Right' : 'Middle'
-      handleDeviceEvent({
-        kind: 'MouseRelease',
-        value: button
-      })
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      handleDeviceEvent({
-        kind: 'MouseMove',
-        value: { x: e.clientX, y: e.clientY }
-      })
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', handleKeyDown)
-      window.addEventListener('keyup', handleKeyUp)
-      window.addEventListener('mousedown', handleMouseDown)
-      window.addEventListener('mouseup', handleMouseUp)
-      window.addEventListener('mousemove', handleMouseMove)
-
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown)
-        window.removeEventListener('keyup', handleKeyUp)
-        window.removeEventListener('mousedown', handleMouseDown)
-        window.removeEventListener('mouseup', handleMouseUp)
-        window.removeEventListener('mousemove', handleMouseMove)
-      }
-    }
-  }, [handleDeviceEvent])
-
-  // 加载支持的按键
-  useEffect(() => {
     void loadSupportedKeys()
-  }, [loadSupportedKeys])
+  }, [currentModel])
 
-  // 更新store中的状态
+  // 根据 catStore 中的按键状态更新左右手按键
   useEffect(() => {
-    const { setPressedKeys, setMousePressed, setMousePosition } = useCatStore.getState()
-    setPressedKeys([...pressedLeftKeys, ...pressedRightKeys])
-    setMousePressed(pressedMouses)
-    setMousePosition(mousePosition.x, mousePosition.y)
-  }, [pressedLeftKeys, pressedRightKeys, pressedMouses, mousePosition])
+    const leftKeys = pressedKeys.filter(key => supportLeftKeys.includes(key))
+    const rightKeys = pressedKeys.filter(key => supportRightKeys.includes(key))
+    
+    setPressedLeftKeys(leftKeys)
+    setPressedRightKeys(rightKeys)
+  }, [pressedKeys, supportLeftKeys, supportRightKeys])
+
+  // 获取按键图片路径
+  const getKeyImagePath = (key: string, side: 'left' | 'right') => {
+    if (!currentModel) return null
+    const keyPath = join(currentModel.path, 'resources', `${side}-keys`, `${key}.png`)
+    return convertFileSrc(keyPath)
+  }
 
   return {
-    pressedMouses,
-    mousePosition,
-    pressedLeftKeys,
-    pressedRightKeys,
     supportLeftKeys,
     supportRightKeys,
+    pressedLeftKeys,
+    pressedRightKeys,
+    mousePosition,
+    getKeyImagePath,
   }
 } 
