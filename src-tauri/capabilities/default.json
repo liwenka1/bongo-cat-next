@@ -17,8 +17,8 @@
     "core:window:allow-center",
     "core:menu:allow-new",
     "core:menu:allow-popup",
-    "fs:allow-read-text-file",
-    "fs:allow-read-dir",
-    "fs:allow-exists"
+    "core:path:default",
+    "core:event:default",
+    "opener:default"
   ]
 }
