@@ -5,7 +5,9 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { useCatStore } from "@/stores/catStore";
 import { useModelStore } from "@/stores/modelStore";
 import { useLive2D } from "@/hooks/useLive2D";
-import { useKeyboard } from "@/hooks/useKeyboard";
+import { useSharedMenu } from "@/hooks/useSharedMenu";
+import { useDeviceEvents } from "@/hooks/useDeviceEvents";
+import { useWindowResize } from "@/hooks/useWindowResize";
 import { KeyboardVisualization } from "@/components/KeyboardVisualization";
 import { join } from "@/utils/path";
 import Image from "next/image";
@@ -33,8 +35,14 @@ export default function Home() {
     handleKeyDown,
   } = useLive2D();
 
-  // 启用键盘监听
-  useKeyboard();
+  // 启用右键菜单
+  const { showContextMenu } = useSharedMenu();
+
+  // 启用全局设备事件监听 (替代原来的 useKeyboard)
+  useDeviceEvents();
+
+  // 启用窗口大小调整功能
+  const { isResizing, handleAutoResize } = useWindowResize();
 
   // 确保在客户端运行
   useEffect(() => {
@@ -67,18 +75,19 @@ export default function Home() {
   // 处理窗口大小变化
   useEffect(() => {
     const handleWindowResize = () => {
-      handleResize();
+      void handleResize();
+      void handleAutoResize();
     };
 
     window.addEventListener("resize", handleWindowResize);
     return () => {
       window.removeEventListener("resize", handleWindowResize);
     };
-  }, [handleResize]);
+  }, [handleResize, handleAutoResize]);
 
   // 处理鼠标按下事件
   useEffect(() => {
-    handleMouseDown(mousePressed.length > 0);
+    void handleMouseDown(mousePressed.length > 0);
   }, [mousePressed, handleMouseDown]);
 
   // 处理键盘按下事件
@@ -122,8 +131,8 @@ export default function Home() {
     const hasLeftPressed = pressedKeys.some((key) => leftKeys.includes(key));
     const hasRightPressed = pressedKeys.some((key) => rightKeys.includes(key));
 
-    handleKeyDown("left", hasLeftPressed);
-    handleKeyDown("right", hasRightPressed);
+    void handleKeyDown("left", hasLeftPressed);
+    void handleKeyDown("right", hasRightPressed);
   }, [pressedKeys, handleKeyDown]);
 
   if (!isClient) {
@@ -134,12 +143,28 @@ export default function Home() {
     );
   }
 
+  // 处理窗口拖拽
+  const handleWindowDrag = async (e: React.MouseEvent) => {
+    // 只在左键点击且没有按住其他键时启动拖拽
+    if (e.button === 0 && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      try {
+        const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow')
+        const appWindow = getCurrentWebviewWindow()
+        await appWindow.startDragging()
+      } catch (error) {
+        console.error('Failed to start window dragging:', error)
+      }
+    }
+  }
+
   return (
     <div
       className={`relative w-screen h-screen overflow-hidden ${
         mirrorMode ? "-scale-x-100" : "scale-x-100"
       }`}
       style={{ opacity: opacity / 100 }}
+      onContextMenu={(e) => { void showContextMenu(e) }}
+              onMouseDown={(e) => { void handleWindowDrag(e) }}
     >
       {/* 背景图片 - 参考 BongoCat 原项目样式 */}
       {backgroundImage && (
@@ -157,6 +182,15 @@ export default function Home() {
 
       {/* 键盘按键 - 简化为直接显示图片 */}
       <KeyboardVisualization />
+
+      {/* 重绘状态提示 - 参考原项目样式 */}
+      {isResizing && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <span className="text-center text-5xl text-white font-bold">
+            重绘中...
+          </span>
+        </div>
+      )}
     </div>
   );
 }
