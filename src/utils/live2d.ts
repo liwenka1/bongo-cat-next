@@ -18,7 +18,8 @@ async function initLive2D() {
   while (attempts < maxAttempts) {
     try {
       // 检查全局 Live2D 对象是否存在
-      if ((window as any).Live2D || (window as any).Live2DFramework) {
+      const globalWindow = window as any
+      if (globalWindow.Live2D || globalWindow.Live2DFramework) {
         break
       }
     } catch {
@@ -71,7 +72,7 @@ class Live2d {
     })
   }
 
-  public async load(path: string) {
+    public async load(path: string) {
     // 初始化 Live2D 模块
     const { Live2DModel: Live2DModelClass, Cubism4ModelSettings: Cubism4ModelSettingsClass } = await initLive2D()
 
@@ -81,29 +82,41 @@ class Live2d {
 
     this.destroy()
 
-    // 从硬编码配置中获取模型数据，避免文件系统权限问题
-    const modelName = path.includes('keyboard') ? 'keyboard' : 'standard'
-    const modelJSON = modelConfigs[modelName as keyof typeof modelConfigs]
+    // 构建模型配置文件路径
+    const modelConfigPath = join(path, 'cat.model3.json')
+    const modelUrl = convertFileSrc(modelConfigPath)
     
-    if (!modelJSON) {
-      throw new Error(`不支持的模型类型: ${modelName}`)
+    console.log('Loading model from:', modelUrl)
+
+    try {
+      // 加载模型配置文件
+      const response = await fetch(modelUrl)
+      if (!response.ok) {
+        throw new Error(`Failed to load model config: ${response.statusText}`)
+      }
+      
+      const modelJSON = await response.json()
+      console.log('Model config loaded:', modelJSON)
+
+      // 创建模型设置
+      const modelSettings = new Cubism4ModelSettingsClass({
+        ...modelJSON,
+        url: modelUrl,
+      } as any)
+
+      // 替换文件路径为正确的Tauri资源路径
+      modelSettings.replaceFiles((file: string) => {
+        const fullPath = join(path, file)
+        const convertedPath = convertFileSrc(fullPath)
+        console.log(`Converting file: ${file} -> ${convertedPath}`)
+        return convertedPath
+      })
+
+      this.model = await Live2DModelClass.from(modelSettings)
+    } catch (error) {
+      console.error('Error loading Live2D model:', error)
+      throw error
     }
-    
-    console.log('Loading model config for:', modelName)
-
-    // 创建一个虚拟的模型配置文件路径
-    const virtualModelPath = join(path, 'cat.model3.json')
-    
-    const modelSettings = new Cubism4ModelSettingsClass({
-      ...modelJSON,
-      url: convertFileSrc(virtualModelPath),
-    } as any)
-
-    modelSettings.replaceFiles((file: string) => {
-      return convertFileSrc(join(path, file))
-    })
-
-    this.model = await Live2DModelClass.from(modelSettings)
 
     if (!this.model || !this.app) {
       throw new Error('Failed to create Live2D model or PIXI application')
