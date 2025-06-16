@@ -7,10 +7,10 @@ export type ModelMode = 'standard' | 'keyboard' | 'handle'
 
 export interface Model {
   id: string
+  name: string
   path: string
   mode: ModelMode
   isPreset: boolean
-  name?: string
 }
 
 export interface Motion {
@@ -32,76 +32,88 @@ export interface Expression {
 
 interface ModelState {
   models: Model[]
-  currentModel?: Model
+  currentModel: Model | null
   motions: MotionGroup
   expressions: Expression[]
   
   // Actions
-  initializeModels: () => Promise<void>
-  setCurrentModel: (model: Model) => void
-  addModel: (model: Model) => void
-  removeModel: (id: string) => void
+  setModels: (models: Model[]) => void
+  setCurrentModel: (model: Model | null) => void
   setMotions: (motions: MotionGroup) => void
   setExpressions: (expressions: Expression[]) => void
+  initializeModels: () => Promise<void>
 }
 
-export const useModelStore = create<ModelState>()(
-  subscribeWithSelector((set, get) => ({
-    models: [],
-    currentModel: undefined,
-    motions: {},
-    expressions: [],
+export const useModelStore = create<ModelState>((set, get) => ({
+  models: [],
+  currentModel: null,
+  motions: {},
+  expressions: [],
 
-    initializeModels: async () => {
-      try {
-        const modelsPath = await resolveResource('assets/models')
-        
-        const modes: ModelMode[] = ['standard', 'keyboard']
-        const models: Model[] = []
+  setModels: (models) => { set({ models }) },
+  setCurrentModel: (currentModel) => { set({ currentModel }) },
+  setMotions: (motions) => { set({ motions }) },
+  setExpressions: (expressions) => { set({ expressions }) },
 
-        for (const mode of modes) {
-          const path = join(modelsPath, mode)
-          
-          models.push({
-            id: `preset-${mode}`,
-            path,
-            mode,
-            isPreset: true,
-          })
-        }
+  initializeModels: async () => {
+    const state = get()
+    
+    if (state.models.length > 0) {
+      return
+    }
 
-        set({ 
-          models,
-          currentModel: models[1] // 默认使用 keyboard 模型
-        })
-      } catch (error) {
-        console.error('Failed to initialize models:', error)
-        // 设置默认值以防出错
-        set({
-          models: [],
-          currentModel: undefined
-        })
-      }
-    },
+    try {
+      // 解析 Tauri 资源路径
+      const standardPath = await resolveResource('assets/models/standard')
+      const keyboardPath = await resolveResource('assets/models/keyboard')
 
-    setCurrentModel: (model) => {
-      set({ currentModel: model })
-    },
-    addModel: (model) => {
-      set((state) => ({ 
-        models: [...state.models, model] 
-      }))
-    },
-    removeModel: (id) => {
-      set((state) => ({ 
-        models: state.models.filter(m => m.id !== id) 
-      }))
-    },
-    setMotions: (motions) => {
-      set({ motions })
-    },
-    setExpressions: (expressions) => {
-      set({ expressions })
-    },
-  }))
-) 
+      // 初始化预设模型
+      const presetModels: Model[] = [
+        {
+          id: 'standard',
+          name: '鼠标模式',
+          path: standardPath,
+          mode: 'standard',
+          isPreset: true,
+        },
+        {
+          id: 'keyboard',
+          name: '键盘模式',
+          path: keyboardPath,
+          mode: 'keyboard',
+          isPreset: true,
+        },
+      ]
+
+      set({ 
+        models: presetModels,
+        currentModel: presetModels.find(m => m.mode === 'keyboard') ?? presetModels[0]
+      })
+    } catch (error) {
+      console.error('Failed to resolve model paths:', error)
+      
+      // 降级到直接使用路径（开发环境或者路径解析失败时）
+      const presetModels: Model[] = [
+        {
+          id: 'standard',
+          name: '鼠标模式',
+          path: 'assets/models/standard',
+          mode: 'standard',
+          isPreset: true,
+        },
+        {
+          id: 'keyboard',
+          name: '键盘模式',
+          path: 'assets/models/keyboard',
+          mode: 'keyboard',
+          isPreset: true,
+        },
+      ]
+
+      set({ 
+        models: presetModels,
+        currentModel: presetModels.find(m => m.mode === 'keyboard') ?? presetModels[0]
+      })
+    }
+  },
+})) 

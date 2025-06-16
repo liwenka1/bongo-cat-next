@@ -8,6 +8,7 @@ interface CatState {
   penetrable: boolean
   mirrorMode: boolean
   singleMode: boolean
+  mouseMirror: boolean
   
   // 位置和大小
   x: number
@@ -29,6 +30,7 @@ interface CatState {
   setPenetrable: (penetrable: boolean) => void
   setMirrorMode: (mirrorMode: boolean) => void
   setSingleMode: (singleMode: boolean) => void
+  setMouseMirror: (mouseMirror: boolean) => void
   setPosition: (x: number, y: number) => void
   setScale: (scale: number) => void
   setPressedKeys: (keys: string[]) => void
@@ -45,6 +47,7 @@ export const useCatStore = create<CatState>((set) => ({
   penetrable: false,
   mirrorMode: false,
   singleMode: false,
+  mouseMirror: false,
   
   x: 0,
   y: 0,
@@ -63,6 +66,7 @@ export const useCatStore = create<CatState>((set) => ({
   setPenetrable: (penetrable) => { set({ penetrable }) },
   setMirrorMode: (mirrorMode) => { set({ mirrorMode }) },
   setSingleMode: (singleMode) => { set({ singleMode }) },
+  setMouseMirror: (mouseMirror) => { set({ mouseMirror }) },
   setPosition: (x, y) => { set({ x, y }) },
   setScale: (scale) => { set({ scale }) },
   setPressedKeys: (pressedKeys) => { set({ pressedKeys }) },
