@@ -51,13 +51,13 @@ export const useCatStore = create<CatState>((set) => ({
   
   x: 0,
   y: 0,
-  scale: 1,
+  scale: 0.5,
   
   pressedKeys: [],
   mousePressed: [],
   mousePosition: { x: 0, y: 0 },
   
-  currentModelPath: 'keyboard',
+  currentModelPath: 'standard',
   
   // Actions
   setVisible: (visible) => { set({ visible }) },
