@@ -1,3 +1,6 @@
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { cursorPosition, monitorFromPoint } from '@tauri-apps/api/window'
+
 interface CursorPosition {
   x: number
   y: number
@@ -11,23 +14,22 @@ interface Monitor {
   cursorPosition?: CursorPosition
 }
 
-export async function getCursorMonitor(): Promise<Monitor | undefined> {
-  // For browser environment, return mock data or current screen info
-  if (typeof window !== 'undefined' && !(window as any).__TAURI_INTERNALS__) {
-    return {
-      position: { x: 0, y: 0 },
-      size: { width: window.screen.width, height: window.screen.height },
-      scaleFactor: window.devicePixelRatio || 1,
-      cursorPosition: { x: 0, y: 0 }
-    }
-  }
+export async function getCursorMonitor() {
+  try {
+    const appWindow = getCurrentWebviewWindow()
+    const scaleFactor = await appWindow.scaleFactor()
+    const point = await cursorPosition()
+    const { x, y } = point.toLogical(scaleFactor)
+    const monitor = await monitorFromPoint(x, y)
 
-  // In Tauri environment, this would use actual Tauri APIs
-  // For now, return mock data
-  return {
-    position: { x: 0, y: 0 },
-    size: { width: 1920, height: 1080 },
-    scaleFactor: 1,
-    cursorPosition: { x: 0, y: 0 }
+    if (!monitor) return null
+
+    return {
+      ...monitor,
+      cursorPosition: point,
+    }
+  } catch (error) {
+    console.error('Failed to get cursor monitor:', error)
+    return null
   }
 } 
