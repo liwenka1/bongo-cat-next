@@ -153,7 +153,7 @@ export function useSharedMenu() {
           checked: catStore.mouseMirror,
           action: () => {
             catStore.setMouseMirror(!catStore.mouseMirror)
-          },
+        },
         })
       ] : []),
       
