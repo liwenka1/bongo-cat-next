@@ -37,9 +37,15 @@ interface CatState {
   setMousePressed: (pressed: string[]) => void
   setMousePosition: (x: number, y: number) => void
   setCurrentModelPath: (path: string) => void
+  
+  // 新增：精细化控制方法
+  addPressedKey: (key: string) => void
+  removePressedKey: (key: string) => void
+  addMousePressed: (button: string) => void
+  removeMousePressed: (button: string) => void
 }
 
-export const useCatStore = create<CatState>((set) => ({
+export const useCatStore = create<CatState>((set, get) => ({
   // 初始状态
   visible: true,
   opacity: 100,
@@ -73,4 +79,34 @@ export const useCatStore = create<CatState>((set) => ({
   setMousePressed: (mousePressed) => { set({ mousePressed }) },
   setMousePosition: (x, y) => { set({ mousePosition: { x, y } }) },
   setCurrentModelPath: (currentModelPath) => { set({ currentModelPath }) },
+  
+  // 🎯 精细化键盘控制
+  addPressedKey: (key) => {
+    const { pressedKeys, singleMode } = get()
+    if (singleMode) {
+      set({ pressedKeys: [key] })
+    } else {
+      if (!pressedKeys.includes(key)) {
+        set({ pressedKeys: [...pressedKeys, key] })
+      }
+    }
+  },
+  
+  removePressedKey: (key) => {
+    const { pressedKeys } = get()
+    set({ pressedKeys: pressedKeys.filter(k => k !== key) })
+  },
+  
+  // 🎯 精细化鼠标控制
+  addMousePressed: (button) => {
+    const { mousePressed } = get()
+    if (!mousePressed.includes(button)) {
+      set({ mousePressed: [...mousePressed, button] })
+    }
+  },
+  
+  removeMousePressed: (button) => {
+    const { mousePressed } = get()
+    set({ mousePressed: mousePressed.filter(b => b !== button) })
+  },
 })) 

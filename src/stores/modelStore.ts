@@ -45,24 +45,24 @@ interface ModelState {
 }
 
 export const useModelStore = create<ModelState>((set, get) => ({
-  models: [],
+    models: [],
   currentModel: null,
-  motions: {},
-  expressions: [],
+    motions: {},
+    expressions: [],
 
   setModels: (models) => { set({ models }) },
   setCurrentModel: (currentModel) => { set({ currentModel }) },
   setMotions: (motions) => { set({ motions }) },
   setExpressions: (expressions) => { set({ expressions }) },
 
-  initializeModels: async () => {
+    initializeModels: async () => {
     const state = get()
     
     if (state.models.length > 0) {
       return
     }
 
-    try {
+      try {
       // 解析 Tauri 资源路径
       const standardPath = await resolveResource('assets/models/standard')
       const keyboardPath = await resolveResource('assets/models/keyboard')
@@ -81,15 +81,15 @@ export const useModelStore = create<ModelState>((set, get) => ({
           name: '键盘模式',
           path: keyboardPath,
           mode: 'keyboard',
-          isPreset: true,
+            isPreset: true,
         },
       ]
 
-      set({ 
+        set({ 
         models: presetModels,
         currentModel: presetModels.find(m => m.mode === 'keyboard') ?? presetModels[0]
-      })
-    } catch (error) {
+        })
+      } catch (error) {
       console.error('Failed to resolve model paths:', error)
       
       // 降级到直接使用路径（开发环境或者路径解析失败时）
@@ -110,10 +110,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
         },
       ]
 
-      set({ 
+        set({
         models: presetModels,
         currentModel: presetModels.find(m => m.mode === 'keyboard') ?? presetModels[0]
-      })
-    }
-  },
+        })
+      }
+    },
 })) 
