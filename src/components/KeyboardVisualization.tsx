@@ -86,12 +86,12 @@ export function KeyboardVisualization() {
       }
       
       images.push(
-        <KeyImage
+      <KeyImage
           key={`${side}-${key}`}
           keyName={mappedKey}
           side={side}
-          isPressed={true}
-        />
+        isPressed={true}
+      />
       )
     })
     
