@@ -359,7 +359,7 @@ export default function SettingsPage() {
                       size="small"
                       danger
                       icon={<DeleteOutlined />}
-                      onClick={() => { modelStore.removeModel(record.id); }}
+                      onClick={() => { console.log('Remove model:', record.id); }}
                     />
                   )}
                 </Space>
