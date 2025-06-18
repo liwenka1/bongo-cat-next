@@ -22,6 +22,7 @@ interface CatState {
   
   // 模型相关
   currentModelPath: string
+  backgroundImage: string
   
   // Actions
   setVisible: (visible: boolean) => void
@@ -37,6 +38,7 @@ interface CatState {
   setMousePressed: (pressed: string[]) => void
   setMousePosition: (x: number, y: number) => void
   setCurrentModelPath: (path: string) => void
+  setBackgroundImage: (image: string) => void
   
   // 新增：精细化控制方法
   addPressedKey: (key: string) => void
@@ -64,6 +66,7 @@ export const useCatStore = create<CatState>((set, get) => ({
   mousePosition: { x: 0, y: 0 },
   
   currentModelPath: 'standard',
+  backgroundImage: '',
   
   // Actions
   setVisible: (visible) => { set({ visible }) },
@@ -79,6 +82,7 @@ export const useCatStore = create<CatState>((set, get) => ({
   setMousePressed: (mousePressed) => { set({ mousePressed }) },
   setMousePosition: (x, y) => { set({ mousePosition: { x, y } }) },
   setCurrentModelPath: (currentModelPath) => { set({ currentModelPath }) },
+  setBackgroundImage: (backgroundImage) => { set({ backgroundImage }) },
   
   // 🎯 精细化键盘控制
   addPressedKey: (key) => {
