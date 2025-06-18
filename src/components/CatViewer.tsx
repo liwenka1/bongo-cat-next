@@ -1,72 +1,45 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
+import { useLive2DSystem } from '@/hooks/useLive2DSystem'
 import { useCatStore } from '@/stores/catStore'
-import { useModel } from '@/hooks/useModel'
-import { useDevice } from '@/hooks/useDevice'
 import { KeyboardVisualization } from './KeyboardVisualization'
+import Image from 'next/image'
 
+/**
+ * 🎯 CatViewer - Live2D 渲染器组件
+ * 
+ * 职责：
+ * - Live2D 模型渲染和管理
+ * - 背景图片显示
+ * - 键盘可视化
+ * - 设备事件处理
+ */
 export default function CatViewer() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { 
-    visible, 
-    opacity, 
-    scale, 
-    mirrorMode,
-    currentModelPath 
-  } = useCatStore()
-  
-  const {
-    backgroundImage,
-    isLoading,
-    error,
-    isClient,
-    handleLoad,
-    handleDestroy,
-    handleResize
-  } = useModel()
+  // 🚀 统一的 Live2D 系统 - 所有 Live2D 逻辑在这里
+  const { visible, opacity, scale, mirrorMode } = useLive2DSystem()
+  const { backgroundImage } = useCatStore()
 
-  // 启用设备事件监听
-  useDevice()
-
-  // 初始化Live2D
-  useEffect(() => {
-    if (isClient && currentModelPath) {
-              handleLoad().catch((err) => { console.error(err) })
-    }
-
-    return () => {
-      handleDestroy()
-    }
-  }, [isClient, currentModelPath, handleLoad, handleDestroy])
-
-  // 处理窗口大小变化
-  useEffect(() => {
-    const handleWindowResize = () => {
-      handleResize()
-    }
-
-    window.addEventListener('resize', handleWindowResize)
-    return () => window.removeEventListener('resize', handleWindowResize)
-  }, [handleResize])
-
+  // 如果不可见，不渲染任何内容
   if (!visible) return null
 
   return (
     <div 
-      className="w-full h-full relative overflow-hidden"
+      className="absolute inset-0 w-full h-full overflow-hidden"
       style={{
         opacity: opacity / 100,
         transform: `scale(${scale}) ${mirrorMode ? 'scaleX(-1)' : ''}`,
         transformOrigin: 'center bottom'
       }}
     >
-      {/* 背景图片 */}
+      {/* 🖼️ 背景图片 */}
       {backgroundImage && (
-        <img
+        <Image
           src={backgroundImage}
           alt="Background"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          fill
+          className="object-cover pointer-events-none"
+          priority
           onError={(e) => {
             console.warn('Background image failed to load:', backgroundImage)
             e.currentTarget.style.display = 'none'
@@ -74,39 +47,15 @@ export default function CatViewer() {
         />
       )}
       
-      {/* Live2D Canvas */}
+      {/* 🎭 Live2D Canvas - 核心渲染区域 */}
       <canvas
-        ref={canvasRef}
+        id="live2dCanvas"
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 5 }}
       />
       
-      {/* 键盘可视化 */}
+      {/* ⌨️ 键盘可视化层 */}
       <KeyboardVisualization />
-      
-      {/* 加载状态 */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="text-white text-lg">Loading model...</div>
-        </div>
-      )}
-      
-      {/* 错误状态 */}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-500 bg-opacity-50">
-          <div className="text-white text-lg">Error: {error}</div>
-        </div>
-      )}
-      
-      {/* 调试信息 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-50 p-2 rounded pointer-events-none">
-          <div>Model: {currentModelPath}</div>
-          <div>Scale: {scale}</div>
-          <div>Mirror: {mirrorMode ? 'On' : 'Off'}</div>
-          <div>Client: {isClient ? 'Ready' : 'Loading'}</div>
-        </div>
-      )}
     </div>
   )
 } 
