@@ -50,3 +50,16 @@ body {
     color: #e5e5e5;
   }
 }
+
+/* Live2D 相关样式 */
+#live2dCanvas {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+
