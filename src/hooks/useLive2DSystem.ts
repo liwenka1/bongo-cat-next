@@ -70,6 +70,14 @@ export function useLive2DSystem() {
     }
   }, [initializeLive2D, setBackgroundImage])
 
+  // 重新调整模型（使用Live2D类的resize方法）
+  const resizeModel = useCallback(async () => {
+    const live2d = await initializeLive2D()
+    if (live2d) {
+      live2d.resize()
+    }
+  }, [initializeLive2D])
+
   // 设备事件处理
   const setupDeviceEvents = useCallback(async () => {
     const live2d = await initializeLive2D()
@@ -175,8 +183,10 @@ export function useLive2DSystem() {
     const live2d = await initializeLive2D()
     if (live2d?.app) {
       live2d.app.resize()
+      // 重新调整模型
+      await resizeModel()
     }
-  }, [initializeLive2D])
+  }, [initializeLive2D, resizeModel])
 
   // 初始化整个系统
   useEffect(() => {
@@ -189,6 +199,20 @@ export function useLive2DSystem() {
       void loadModelAndAssets(currentModel.path)
     }
   }, [currentModel, loadModelAndAssets])
+
+  // 监听尺寸变化，重新调整模型
+  useEffect(() => {
+    if (currentModel) {
+      void resizeModel()
+    }
+  }, [scale, resizeModel, currentModel])
+
+  // 监听镜像模式变化，重新调整模型
+  useEffect(() => {
+    if (currentModel) {
+      void resizeModel()
+    }
+  }, [mirrorMode, resizeModel, currentModel])
 
   // 设置设备事件监听
   useEffect(() => {
@@ -219,6 +243,7 @@ export function useLive2DSystem() {
     scale,
     mirrorMode,
     handleResize,
+    resizeModel,
     // 直接暴露Live2D方法
     playMotion: useCallback(async (group: string, index: number) => {
       const live2d = await initializeLive2D()
