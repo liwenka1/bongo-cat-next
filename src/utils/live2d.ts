@@ -16,16 +16,37 @@ class Live2d {
   private mount() {
     const view = document.getElementById('live2dCanvas') as HTMLCanvasElement
 
+    if (!view) {
+      throw new Error('Canvas element with id "live2dCanvas" not found')
+    }
+
+    // 清理现有的应用
+    this.app?.destroy(true)
+
     this.app = new Application({
       view,
       resizeTo: window,
       backgroundAlpha: 0,
       autoDensity: true,
       resolution: devicePixelRatio,
+      antialias: true,
     })
+
+    // 确保canvas样式正确
+    view.style.position = 'absolute'
+    view.style.top = '0'
+    view.style.left = '0'
+    view.style.width = '100%'
+    view.style.height = '100%'
+    view.style.pointerEvents = 'none'
+    view.style.zIndex = '2'
+
+    console.log('Live2D Application mounted:', this.app.screen.width, 'x', this.app.screen.height)
   }
 
   public async load(path: string) {
+    console.log('Loading Live2D model from:', path)
+
     if (!this.app) {
       this.mount()
     }
@@ -58,7 +79,30 @@ class Live2d {
 
       this.model = await Live2DModel.from(modelSettings)
 
-      this.app?.stage.addChild(this.model)
+      // 设置模型的初始位置和缩放
+      if (this.model && this.app) {
+        // 居中定位
+        this.model.x = this.app.screen.width / 2
+        this.model.y = this.app.screen.height / 2
+        this.model.anchor.set(0.5, 0.5)
+
+        // 初始缩放 - 适应窗口大小并留一些边距
+        const scaleX = this.app.screen.width / this.model.width
+        const scaleY = this.app.screen.height / this.model.height
+        const scale = Math.min(scaleX, scaleY) * 0.8 // 稍微缩小一点留出边距
+
+        this.model.scale.set(scale)
+
+        this.app.stage.addChild(this.model)
+
+        console.log('Live2D model loaded and positioned:', {
+          x: this.model.x,
+          y: this.model.y,
+          scale: scale,
+          modelSize: { width: this.model.width, height: this.model.height },
+          screenSize: { width: this.app.screen.width, height: this.app.screen.height }
+        })
+      }
 
       // 🚀 完全复制原始项目的返回格式
       const { motions, expressions } = modelSettings
@@ -74,7 +118,35 @@ class Live2d {
   }
 
   public destroy() {
-    this.model?.destroy()
+    if (this.model) {
+      console.log('Destroying Live2D model')
+      this.model.destroy()
+      this.model = null
+    }
+  }
+
+  public resize() {
+    if (this.app && this.model) {
+      console.log('Resizing Live2D model:', this.app.screen.width, 'x', this.app.screen.height)
+      
+      // 重新计算模型位置和缩放
+      this.model.x = this.app.screen.width / 2
+      this.model.y = this.app.screen.height / 2
+
+      const scaleX = this.app.screen.width / this.model.width
+      const scaleY = this.app.screen.height / this.model.height
+      const scale = Math.min(scaleX, scaleY) * 0.8
+
+      this.model.scale.set(scale)
+
+      this.app.resize()
+
+      console.log('Live2D model resized:', {
+        x: this.model.x,
+        y: this.model.y,
+        scale: scale
+      })
+    }
   }
 
   public playMotion(group: string, index: number) {
