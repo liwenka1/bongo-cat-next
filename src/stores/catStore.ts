@@ -15,10 +15,16 @@ interface CatState {
   y: number
   scale: number
   
-  // 交互状态
-  pressedKeys: string[]
+  // 交互状态 - 新的键盘分组
+  pressedLeftKeys: string[]
+  pressedRightKeys: string[]
+  supportedLeftKeys: string[]
+  supportedRightKeys: string[]
   mousePressed: string[]
   mousePosition: { x: number; y: number }
+  
+  // 兼容旧版本
+  pressedKeys: string[]
   
   // 模型相关
   currentModelPath: string
@@ -34,13 +40,22 @@ interface CatState {
   setMouseMirror: (mouseMirror: boolean) => void
   setPosition: (x: number, y: number) => void
   setScale: (scale: number) => void
+  
+  // 新的键盘管理方法
+  setPressedLeftKeys: (keys: string[]) => void
+  setPressedRightKeys: (keys: string[]) => void
+  setSupportedLeftKeys: (keys: string[]) => void
+  setSupportedRightKeys: (keys: string[]) => void
+  
+  // 兼容旧版本
   setPressedKeys: (keys: string[]) => void
+  
   setMousePressed: (pressed: string[]) => void
   setMousePosition: (x: number, y: number) => void
   setCurrentModelPath: (path: string) => void
   setBackgroundImage: (image: string) => void
   
-  // 新增：精细化控制方法
+  // 精细化控制方法
   addPressedKey: (key: string) => void
   removePressedKey: (key: string) => void
   addMousePressed: (button: string) => void
@@ -61,7 +76,15 @@ export const useCatStore = create<CatState>((set, get) => ({
   y: 0,
   scale: 0.5,
   
+  // 新的键盘分组状态
+  pressedLeftKeys: [],
+  pressedRightKeys: [],
+  supportedLeftKeys: [],
+  supportedRightKeys: [],
+  
+  // 兼容旧版本
   pressedKeys: [],
+  
   mousePressed: [],
   mousePosition: { x: 0, y: 0 },
   
@@ -78,7 +101,28 @@ export const useCatStore = create<CatState>((set, get) => ({
   setMouseMirror: (mouseMirror) => { set({ mouseMirror }) },
   setPosition: (x, y) => { set({ x, y }) },
   setScale: (scale) => { set({ scale }) },
+  
+  // 新的键盘管理方法
+  setPressedLeftKeys: (pressedLeftKeys) => { 
+    set({ 
+      pressedLeftKeys,
+      // 同时更新兼容的 pressedKeys
+      pressedKeys: [...pressedLeftKeys, ...get().pressedRightKeys]
+    }) 
+  },
+  setPressedRightKeys: (pressedRightKeys) => { 
+    set({ 
+      pressedRightKeys,
+      // 同时更新兼容的 pressedKeys
+      pressedKeys: [...get().pressedLeftKeys, ...pressedRightKeys]
+    }) 
+  },
+  setSupportedLeftKeys: (supportedLeftKeys) => { set({ supportedLeftKeys }) },
+  setSupportedRightKeys: (supportedRightKeys) => { set({ supportedRightKeys }) },
+  
+  // 兼容旧版本的方法
   setPressedKeys: (pressedKeys) => { set({ pressedKeys }) },
+  
   setMousePressed: (mousePressed) => { set({ mousePressed }) },
   setMousePosition: (x, y) => { set({ mousePosition: { x, y } }) },
   setCurrentModelPath: (currentModelPath) => { set({ currentModelPath }) },
