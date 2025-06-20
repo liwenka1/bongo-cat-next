@@ -17,21 +17,14 @@ import Image from "next/image";
  */
 export default function CatViewer() {
   // 🚀 统一的 Live2D 系统 - 所有 Live2D 逻辑在这里
-  const { visible, opacity, scale, mirrorMode } = useLive2DSystem();
+  const { visible } = useLive2DSystem();
   const { backgroundImage } = useCatStore();
 
   // 如果不可见，不渲染任何内容
   if (!visible) return null;
 
   return (
-    <div
-      className="absolute inset-0 w-full h-full overflow-hidden"
-      style={{
-        opacity: opacity / 100,
-        transform: `scale(${scale}) ${mirrorMode ? "scaleX(-1)" : ""}`,
-        transformOrigin: "center bottom",
-      }}
-    >
+    <>
       {/* 🖼️ 背景图片层 - z-index: 1 */}
       {backgroundImage && (
         <Image
@@ -46,12 +39,12 @@ export default function CatViewer() {
       {/* 🎭 Live2D Canvas - 核心渲染区域 - z-index: 2 */}
       <canvas
         id="live2dCanvas"
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="absolute size-full"
         style={{ zIndex: 2 }}
       />
 
       {/* ⌨️ 键盘可视化层 - z-index: 3 */}
       <KeyboardVisualization />
-    </div>
+    </>
   );
 }
