@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useCatStore } from '@/stores/catStore'
 import { useModelStore } from '@/stores/modelStore'
+import { useKeyboard } from '@/hooks/useKeyboard'
 import { listen } from '@tauri-apps/api/event'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { join } from '@/utils/path'
@@ -26,8 +27,13 @@ export function useLive2DSystem() {
     opacity, 
     scale, 
     mirrorMode,
+    pressedLeftKeys,
+    pressedRightKeys,
     setBackgroundImage 
   } = useCatStore()
+  
+  // 🎯 使用新的键盘处理逻辑
+  useKeyboard()
 
   // 动态导入Live2D模块（避免SSR问题）
   const initializeLive2D = useCallback(async () => {
@@ -78,8 +84,8 @@ export function useLive2DSystem() {
     }
   }, [initializeLive2D])
 
-  // 设备事件处理
-  const setupDeviceEvents = useCallback(async () => {
+  // 鼠标事件处理（键盘事件由 useKeyboard hook 处理）
+  const setupMouseEvents = useCallback(async () => {
     const live2d = await initializeLive2D()
     if (!live2d) return
 
@@ -143,38 +149,13 @@ export function useLive2DSystem() {
             }
             break
           }
-          case 'KeyboardPress':
-          case 'KeyboardRelease': {
-            if (typeof value === 'string') {
-              const isPressed = kind === 'KeyboardPress'
-              
-              // 键盘分区映射
-              const leftKeys = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB']
-              const rightKeys = ['KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'KeyN', 'KeyM']
-
-              let paramId: string | null = null
-              if (leftKeys.includes(value)) {
-                paramId = 'CatParamLeftHandDown'
-              } else if (rightKeys.includes(value)) {
-                paramId = 'CatParamRightHandDown'
-              }
-
-              if (paramId) {
-                const { min, max } = live2d.getParameterRange(paramId)
-                if (min !== undefined && max !== undefined) {
-                  live2d.setParameterValue(paramId, isPressed ? max : min)
-                }
-              }
-            }
-            break
-          }
         }
       })
 
       unlistenRef.current = unlisten
-      console.log('✅ Device event listener established')
+      console.log('✅ Mouse event listener established')
     } catch (error) {
-      console.error('❌ Failed to setup device listener:', error)
+      console.error('❌ Failed to setup mouse listener:', error)
     }
   }, [initializeLive2D])
 
@@ -214,16 +195,42 @@ export function useLive2DSystem() {
     }
   }, [mirrorMode, resizeModel, currentModel])
 
-  // 设置设备事件监听
+  // 🎯 监听键盘状态变化，控制手部动画
   useEffect(() => {
-    void setupDeviceEvents()
+    const updateHandState = async () => {
+      const live2d = await initializeLive2D()
+      if (!live2d) return
+
+      // 左手状态
+      const leftPressed = pressedLeftKeys.length > 0
+      const leftParamId = 'CatParamLeftHandDown'
+      const leftRange = live2d.getParameterRange(leftParamId)
+      if (leftRange.min !== undefined && leftRange.max !== undefined) {
+        live2d.setParameterValue(leftParamId, leftPressed ? leftRange.max : leftRange.min)
+      }
+
+      // 右手状态
+      const rightPressed = pressedRightKeys.length > 0
+      const rightParamId = 'CatParamRightHandDown'
+      const rightRange = live2d.getParameterRange(rightParamId)
+      if (rightRange.min !== undefined && rightRange.max !== undefined) {
+        live2d.setParameterValue(rightParamId, rightPressed ? rightRange.max : rightRange.min)
+      }
+    }
+
+    void updateHandState()
+  }, [pressedLeftKeys, pressedRightKeys, initializeLive2D])
+
+  // 设置鼠标事件监听
+  useEffect(() => {
+    void setupMouseEvents()
 
     return () => {
       if (unlistenRef.current) {
         unlistenRef.current()
       }
     }
-  }, [setupDeviceEvents])
+  }, [setupMouseEvents])
 
   // 窗口大小调整监听
   useEffect(() => {
