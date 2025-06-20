@@ -34,7 +34,7 @@ const keyMapping: Record<string, string> = {
   KeyX: "KeyX",
   KeyY: "KeyY",
   KeyZ: "KeyZ",
-  
+
   // 数字键
   Digit0: "Num0",
   Digit1: "Num1",
@@ -46,7 +46,7 @@ const keyMapping: Record<string, string> = {
   Digit7: "Num7",
   Digit8: "Num8",
   Digit9: "Num9",
-  
+
   // 功能键
   Space: "Space",
   Tab: "Tab",
@@ -55,7 +55,7 @@ const keyMapping: Record<string, string> = {
   Delete: "Delete",
   Escape: "Escape",
   CapsLock: "CapsLock",
-  
+
   // 修饰键
   ShiftLeft: "ShiftLeft",
   ShiftRight: "ShiftRight",
@@ -67,86 +67,75 @@ const keyMapping: Record<string, string> = {
   AltRight: "AltGr",
   MetaLeft: "Meta",
   MetaRight: "Meta",
-  
+
   // 箭头键 - 修复命名
   ArrowUp: "UpArrow",
   ArrowDown: "DownArrow",
   ArrowLeft: "LeftArrow",
   ArrowRight: "RightArrow",
-  
+
   // 其他键
   Backquote: "BackQuote",
   Slash: "Slash",
-  
+
   // 功能键
   F1: "Fn",
 };
 
 export function KeyboardVisualization() {
-  const { pressedKeys } = useCatStore();
+  const { pressedLeftKeys, pressedRightKeys } = useCatStore();
   const { currentModel } = useModelStore();
 
-  const keyImages = useMemo(() => {
-    if (!currentModel || !pressedKeys.length) return [];
+  // 根据按键生成图片路径
+  const resolveImagePath = (key: string, side: "left" | "right" = "left") => {
+    if (!currentModel) return "";
+    return convertFileSrc(
+      join(currentModel.path, "resources", `${side}-keys`, `${key}.png`)
+    );
+  };
 
-    const isKeyboardModel = currentModel.mode === 'keyboard';
+  const leftKeyImages = useMemo(() => {
+    if (!currentModel || !pressedLeftKeys.length) return [];
 
-    // 键盘模式的左右分区
-    const leftKeyCodes = [
-      "KeyQ", "KeyW", "KeyE", "KeyR", "KeyT",
-      "KeyA", "KeyS", "KeyD", "KeyF", "KeyG",
-      "KeyZ", "KeyX", "KeyC", "KeyV", "KeyB",
-      "Digit1", "Digit2", "Digit3", "Digit4", "Digit5",
-      "Tab", "CapsLock", "ShiftLeft", "ControlLeft", "AltLeft", "MetaLeft",
-      "Space", "Escape", "Backquote", "Backspace"
-    ];
+    return pressedLeftKeys.map((key) => (
+      <Image
+        key={`left-${key}`}
+        width={100}
+        height={100}
+        src={resolveImagePath(key, "left")}
+        alt={`${key} key`}
+        className="absolute size-full"
+        onError={(e) => {
+          console.warn(`Failed to load left key image: ${key}`);
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    ));
+  }, [pressedLeftKeys, currentModel]);
 
-    const rightKeyCodes = [
-      "KeyY", "KeyU", "KeyI", "KeyO", "KeyP",
-      "KeyH", "KeyJ", "KeyK", "KeyL",
-      "KeyN", "KeyM",
-      "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
-      "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
-      "ShiftRight", "ControlRight", "AltRight", "MetaRight",
-      "Enter", "Delete", "Slash"
-    ];
+  const rightKeyImages = useMemo(() => {
+    if (!currentModel || !pressedRightKeys.length) return [];
 
-    return pressedKeys.map((key) => {
-      const mappedKey = keyMapping[key];
-      if (!mappedKey) return null;
+    return pressedRightKeys.map((key) => (
+      <Image
+        key={`right-${key}`}
+        width={100}
+        height={100}
+        src={resolveImagePath(key, "right")}
+        alt={`${key} key`}
+        className="absolute size-full"
+        onError={(e) => {
+          console.warn(`Failed to load right key image: ${key}`);
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    ));
+  }, [pressedRightKeys, currentModel]);
 
-      let imagePath: string;
-
-      if (isKeyboardModel) {
-        // keyboard 模型：根据按键类型决定路径
-        const isRightKey = rightKeyCodes.includes(key);
-        const keyDir = isRightKey ? "right-keys" : "left-keys";
-        imagePath = convertFileSrc(
-          join(currentModel.path, "resources", keyDir, `${mappedKey}.png`)
-        );
-      } else {
-        // standard 模型：所有按键都在 left-keys 目录
-        imagePath = convertFileSrc(
-          join(currentModel.path, "resources", "left-keys", `${mappedKey}.png`)
-        );
-      }
-
-      return (
-        <Image
-          width={100}
-          height={100}
-          key={`${key}-${currentModel.mode}`}
-          src={imagePath}
-          alt={`${key} key`}
-          className="absolute size-full"
-          onError={(e) => {
-            console.warn(`Failed to load key image: ${imagePath}`);
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      );
-    }).filter(Boolean);
-  }, [pressedKeys, currentModel]);
-
-  return <>{keyImages}</>;
+  return (
+    <>
+      {leftKeyImages}
+      {rightKeyImages}
+    </>
+  );
 }
