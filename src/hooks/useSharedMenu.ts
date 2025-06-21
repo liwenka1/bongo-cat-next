@@ -17,9 +17,9 @@ export function useSharedMenu() {
   const getScaleMenuItems = useCallback(async () => {
     if (!isClient) return []
     
-    // 🎯 基于 BongoCat 的缩放选项（50-150，每25一个档位）
+    // 缩放选项（50-150，每25一个档位）
     const scaleOptions = [50, 75, 100, 125, 150]
-    const currentScale = Math.round(catStore.scale * 100)
+    const currentScale = catStore.scale
 
     const items = await Promise.all(
       scaleOptions.map(async (scaleValue) => {
@@ -28,8 +28,8 @@ export function useSharedMenu() {
           checked: currentScale === scaleValue,
           action: () => {
             console.log(`🎚️ Setting scale to ${scaleValue}%`)
-            // 🎯 直接设置 scale（不是百分比，而是小数）
-            catStore.setScale(scaleValue / 100)
+            // 直接设置百分比值
+            catStore.setScale(scaleValue)
           },
         })
       })
@@ -51,7 +51,7 @@ export function useSharedMenu() {
   const getOpacityMenuItems = useCallback(async () => {
     if (!isClient) return []
     
-    // 🎯 基于 BongoCat 的透明度选项
+    // 透明度选项
     const opacityOptions = [25, 50, 75, 100]
 
     const items = await Promise.all(
@@ -96,7 +96,7 @@ export function useSharedMenu() {
     )
   }, [models, currentModel, setCurrentModel, isClient])
 
-  // 🎯 基于 BongoCat 的完整菜单结构
+  // 完整菜单结构
   const getSharedMenu = useCallback(async () => {
     if (!isClient) return []
     
@@ -190,7 +190,7 @@ export function useSharedMenu() {
     ])
   }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems, isClient])
 
-  // 🎯 显示上下文菜单的方法（基于 BongoCat 的实现）
+  // 显示上下文菜单的方法
   const showContextMenu = useCallback(async () => {
     if (!isClient) return
 
