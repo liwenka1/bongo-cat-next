@@ -4,14 +4,73 @@ import { Cubism4ModelSettings, Live2DModel } from 'pixi-live2d-display'
 import { Application, Ticker } from 'pixi.js'
 import { join } from './path'
 
-// 🚀 完全复制原始项目的初始化方式
-Live2DModel.registerTicker(Ticker)
+// 检查 Live2D 运行时是否已加载
+function checkLive2DRuntime(): boolean {
+  if (typeof window === 'undefined') return false
+  
+  // 检查 Live2D Cubism Core
+  const hasCore = !!(window as any).Live2DCubismCore
+  // 检查 Live2D SDK
+  const hasSDK = !!(window as any).Live2DFramework || !!(window as any).LIVE2DCUBISMFRAMEWORK
+  
+  console.log('Live2D Runtime Check:', { hasCore, hasSDK })
+  
+  return hasCore || hasSDK // 至少需要其中一个
+}
+
+// 等待 Live2D 运行时加载
+function waitForLive2DRuntime(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (checkLive2DRuntime()) {
+      resolve()
+      return
+    }
+
+    let attempts = 0
+    const maxAttempts = 50 // 5秒超时
+
+    const checkInterval = setInterval(() => {
+      attempts++
+      
+      if (checkLive2DRuntime()) {
+        clearInterval(checkInterval)
+        console.log('✅ Live2D runtime loaded after', attempts * 100, 'ms')
+        resolve()
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval)
+        console.error('❌ Live2D runtime failed to load within timeout')
+        reject(new Error('Live2D runtime not available. Please ensure live2d.min.js and live2dcubismcore.min.js are loaded.'))
+      }
+    }, 100)
+  })
+}
+
+// 初始化 Live2D Ticker（只在运行时可用时）
+async function initializeLive2DTicker() {
+  try {
+    await waitForLive2DRuntime()
+    Live2DModel.registerTicker(Ticker)
+    console.log('✅ Live2D Ticker registered')
+  } catch (error) {
+    console.error('❌ Failed to initialize Live2D Ticker:', error)
+    throw error
+  }
+}
 
 class Live2d {
   private app: Application | null = null
   public model: Live2DModel | null = null
+  private userScale: number = 1 // 用户设置的缩放比例
+  private initialized: boolean = false
 
-  constructor() { }
+  constructor() {}
+
+  private async ensureInitialized() {
+    if (!this.initialized) {
+      await initializeLive2DTicker()
+      this.initialized = true
+    }
+  }
 
   private mount() {
     const view = document.getElementById('live2dCanvas') as HTMLCanvasElement
@@ -21,7 +80,7 @@ class Live2d {
     }
 
     // 清理现有的应用
-    this.app?.destroy(true)
+    this.destroy()
 
     this.app = new Application({
       view,
@@ -47,11 +106,15 @@ class Live2d {
   public async load(path: string) {
     console.log('Loading Live2D model from:', path)
 
+    // 确保 Live2D 运行时已初始化
+    await this.ensureInitialized()
+
     if (!this.app) {
       this.mount()
     }
 
-    this.destroy()
+    // 重要：销毁现有模型
+    this.destroyModel()
 
     // 🎯 直接使用固定的模型文件名，就像原始项目
     const modelPath = join(path, 'cat.model3.json')
@@ -86,25 +149,20 @@ class Live2d {
         this.model.y = this.app.screen.height / 2
         this.model.anchor.set(0.5, 0.5)
 
-        // 初始缩放 - 适应窗口大小并留一些边距
-        const scaleX = this.app.screen.width / this.model.width
-        const scaleY = this.app.screen.height / this.model.height
-        const scale = Math.min(scaleX, scaleY) * 0.8 // 稍微缩小一点留出边距
-
-        this.model.scale.set(scale)
+        // 应用用户设置的缩放
+        this.applyUserScale()
 
         this.app.stage.addChild(this.model)
 
         console.log('Live2D model loaded and positioned:', {
           x: this.model.x,
           y: this.model.y,
-          scale: scale,
+          scale: this.model.scale.x,
           modelSize: { width: this.model.width, height: this.model.height },
           screenSize: { width: this.app.screen.width, height: this.app.screen.height }
         })
       }
 
-      // 🚀 完全复制原始项目的返回格式
       const { motions, expressions } = modelSettings
 
       return {
@@ -112,40 +170,69 @@ class Live2d {
         expressions,
       }
     } catch (error) {
-      console.error('Live2D model loading error:', error)
+      console.error('Failed to load Live2D model:', error)
       throw error
     }
   }
 
-  public destroy() {
-    if (this.model) {
-      console.log('Destroying Live2D model')
-      this.model.destroy()
-      this.model = null
+  private applyUserScale() {
+    if (this.model && this.app) {
+      // 计算基础缩放以适应窗口
+      const scaleX = this.app.screen.width / this.model.width
+      const scaleY = this.app.screen.height / this.model.height
+      const baseScale = Math.min(scaleX, scaleY) * 0.8 // 稍微缩小一点留出边距
+
+      // 应用用户设置的缩放
+      const finalScale = baseScale * this.userScale
+      this.model.scale.set(finalScale)
+
+      console.log('Applied user scale:', {
+        userScale: this.userScale,
+        baseScale: baseScale,
+        finalScale: finalScale
+      })
     }
+  }
+
+  public setUserScale(scale: number) {
+    this.userScale = scale
+    this.applyUserScale()
   }
 
   public resize() {
     if (this.app && this.model) {
       console.log('Resizing Live2D model:', this.app.screen.width, 'x', this.app.screen.height)
       
-      // 重新计算模型位置和缩放
+      // 重新计算模型位置
       this.model.x = this.app.screen.width / 2
       this.model.y = this.app.screen.height / 2
 
-      const scaleX = this.app.screen.width / this.model.width
-      const scaleY = this.app.screen.height / this.model.height
-      const scale = Math.min(scaleX, scaleY) * 0.8
+      // 重新应用缩放
+      this.applyUserScale()
 
-      this.model.scale.set(scale)
-
+      // 确保应用程序调整大小
       this.app.resize()
 
       console.log('Live2D model resized:', {
         x: this.model.x,
         y: this.model.y,
-        scale: scale
+        scale: this.model.scale.x
       })
+    }
+  }
+
+  public destroyModel() {
+    if (this.model) {
+      this.model.destroy()
+      this.model = null
+    }
+  }
+
+  public destroy() {
+    this.destroyModel()
+    if (this.app) {
+      this.app.destroy(true)
+      this.app = null
     }
   }
 
@@ -153,7 +240,7 @@ class Live2d {
     return this.model?.motion(group, index)
   }
 
-  public playExpressions(index: number) {
+  public playExpression(index: number) {
     return this.model?.expression(index)
   }
 
@@ -164,7 +251,6 @@ class Live2d {
 
   public getParameterRange(id: string) {
     const coreModel = this.getCoreModel()
-
     const index = coreModel?.getParameterIndex(id)
     const min = coreModel?.getParameterMinimumValue(index)
     const max = coreModel?.getParameterMaximumValue(index)
