@@ -104,7 +104,7 @@ export function KeyboardVisualization() {
         height={100}
         src={resolveImagePath(key, "left")}
         alt={`${key} key`}
-        className="absolute size-full"
+        className="absolute size-full z-10"
       />
     ));
   }, [pressedLeftKeys, currentModel]);
@@ -119,7 +119,7 @@ export function KeyboardVisualization() {
         height={100}
         src={resolveImagePath(key, "right")}
         alt={`${key} key`}
-        className="absolute size-full"
+        className="absolute size-full z-10"
       />
     ));
   }, [pressedRightKeys, currentModel]);
