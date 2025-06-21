@@ -1,14 +1,23 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Menu, CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from '@tauri-apps/api/menu'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useCatStore } from '@/stores/catStore'
 import { useModelStore } from '@/stores/modelStore'
 
 export function useSharedMenu() {
+  const [isClient, setIsClient] = useState(false)
   const catStore = useCatStore()
   const { models, currentModel, setCurrentModel } = useModelStore()
 
+  // 确保只在客户端运行
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const getScaleMenuItems = useCallback(async () => {
+    if (!isClient) return []
+    
+    // 🎯 基于 BongoCat 的缩放选项（50-150，每25一个档位）
     const scaleOptions = [50, 75, 100, 125, 150]
     const currentScale = Math.round(catStore.scale * 100)
 
@@ -18,6 +27,8 @@ export function useSharedMenu() {
           text: scaleValue === 100 ? '默认' : `${scaleValue}%`,
           checked: currentScale === scaleValue,
           action: () => {
+            console.log(`🎚️ Setting scale to ${scaleValue}%`)
+            // 🎯 直接设置 scale（不是百分比，而是小数）
             catStore.setScale(scaleValue / 100)
           },
         })
@@ -35,9 +46,12 @@ export function useSharedMenu() {
     }
 
     return items
-  }, [catStore])
+  }, [catStore.scale, isClient])
 
   const getOpacityMenuItems = useCallback(async () => {
+    if (!isClient) return []
+    
+    // 🎯 基于 BongoCat 的透明度选项
     const opacityOptions = [25, 50, 75, 100]
 
     const items = await Promise.all(
@@ -63,55 +77,52 @@ export function useSharedMenu() {
     }
 
     return items
-  }, [catStore.opacity])
+  }, [catStore.opacity, isClient])
 
   const getModeMenuItems = useCallback(async () => {
+    if (!isClient) return []
+    
     return await Promise.all(
       models.map(async (model) => {
         return await CheckMenuItem.new({
           text: model.name,
           checked: currentModel?.id === model.id,
           action: () => {
+            console.log(`🎭 Switching to model: ${model.name}`)
             setCurrentModel(model)
           },
         })
       })
     )
-  }, [models, currentModel, setCurrentModel])
+  }, [models, currentModel, setCurrentModel, isClient])
 
+  // 🎯 基于 BongoCat 的完整菜单结构
   const getSharedMenu = useCallback(async () => {
+    if (!isClient) return []
+    
     return await Promise.all([
-      // 偏好设置
-      MenuItem.new({
-        text: '偏好设置...',
-        action: () => {
-          // TODO: 实现设置窗口
-          console.log('Opening preferences...')
-        },
-      }),
-      
-      // 显示/隐藏
-      MenuItem.new({
+      // 显示/隐藏猫咪
+      await MenuItem.new({
         text: catStore.visible ? '隐藏猫咪' : '显示猫咪',
         action: () => {
           catStore.setVisible(!catStore.visible)
         },
       }),
       
-      // 分隔线
-      PredefinedMenuItem.new({ item: 'Separator' }),
+      // 分隔符
+      await PredefinedMenuItem.new({ item: 'Separator' }),
       
-      // 模式切换子菜单
-      Submenu.new({
-        text: '模式切换',
+      // 模型模式子菜单
+      await Submenu.new({
+        text: '模型模式',
         items: await getModeMenuItems(),
       }),
       
-      // 分隔线
-      PredefinedMenuItem.new({ item: 'Separator' }),
+      // 分隔符
+      await PredefinedMenuItem.new({ item: 'Separator' }),
       
       // 窗口穿透
-      CheckMenuItem.new({
+      await CheckMenuItem.new({
         text: '窗口穿透',
         checked: catStore.penetrable,
         action: () => {
@@ -120,7 +131,7 @@ export function useSharedMenu() {
       }),
       
       // 始终置顶
-      CheckMenuItem.new({
+      await CheckMenuItem.new({
         text: '始终置顶',
         checked: catStore.alwaysOnTop,
         action: () => {
@@ -129,7 +140,7 @@ export function useSharedMenu() {
       }),
       
       // 镜像模式
-      CheckMenuItem.new({
+      await CheckMenuItem.new({
         text: '镜像模式',
         checked: catStore.mirrorMode,
         action: () => {
@@ -137,77 +148,69 @@ export function useSharedMenu() {
         },
       }),
       
-      // 单键模式
-      CheckMenuItem.new({
-        text: '单键模式',
-        checked: catStore.singleMode,
-        action: () => {
-          catStore.setSingleMode(!catStore.singleMode)
-        },
-      }),
-      
-      // 鼠标镜像 (仅在鼠标模式下显示)
-      ...(currentModel?.mode === 'standard' ? [
-        CheckMenuItem.new({
-          text: '鼠标镜像',
-          checked: catStore.mouseMirror,
-          action: () => {
-            catStore.setMouseMirror(!catStore.mouseMirror)
-        },
-        })
-      ] : []),
-      
-      // 分隔线
-      PredefinedMenuItem.new({ item: 'Separator' }),
+      // 分隔符
+      await PredefinedMenuItem.new({ item: 'Separator' }),
       
       // 窗口尺寸子菜单
-      Submenu.new({
+      await Submenu.new({
         text: '窗口尺寸',
         items: await getScaleMenuItems(),
       }),
       
       // 不透明度子菜单
-      Submenu.new({
+      await Submenu.new({
         text: '不透明度',
         items: await getOpacityMenuItems(),
       }),
       
-      // 分隔线
-      PredefinedMenuItem.new({ item: 'Separator' }),
+      // 分隔符
+      await PredefinedMenuItem.new({ item: 'Separator' }),
       
-      // 退出
-      MenuItem.new({
-        text: '退出',
+      // 设置页面
+      await MenuItem.new({
+        text: '设置',
         action: () => {
-          try {
+          void (async () => {
             const appWindow = getCurrentWebviewWindow()
-            appWindow.close().catch((error: unknown) => {
-              console.error('Failed to close window:', error)
-            })
-          } catch (error) {
-            console.error('Failed to close window:', error)
-          }
+            await appWindow.emit('navigate-to-settings')
+          })()
         },
       }),
-    ].flat()) // 使用 flat() 来处理条件性的菜单项
-  }, [catStore, currentModel, getScaleMenuItems, getOpacityMenuItems, getModeMenuItems])
-
-  const showContextMenu = useCallback(async (event: React.MouseEvent) => {
-    try {
-      event.preventDefault()
       
+      // 退出
+      await MenuItem.new({
+        text: '退出',
+        action: () => {
+          void (async () => {
+            const appWindow = getCurrentWebviewWindow()
+            await appWindow.close()
+          })()
+        },
+      }),
+    ])
+  }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems, isClient])
+
+  // 🎯 显示上下文菜单的方法（基于 BongoCat 的实现）
+  const showContextMenu = useCallback(async () => {
+    if (!isClient) return
+
+    try {
       const menu = await Menu.new({
         items: await getSharedMenu(),
       })
-      
+
       await menu.popup()
     } catch (error) {
       console.error('Failed to show context menu:', error)
     }
-  }, [getSharedMenu])
+  }, [getSharedMenu, isClient])
 
   return {
     getSharedMenu,
     showContextMenu,
+    getModeMenuItems,
+    getScaleMenuItems,
+    getOpacityMenuItems,
+    isClient,
   }
 } 
