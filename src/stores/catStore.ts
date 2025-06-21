@@ -74,7 +74,7 @@ export const useCatStore = create<CatState>((set, get) => ({
   
   x: 0,
   y: 0,
-  scale: 0.5,
+  scale: 100,
   
   // 新的键盘分组状态
   pressedLeftKeys: [],
