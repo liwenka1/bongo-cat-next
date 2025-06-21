@@ -24,6 +24,8 @@ interface Live2DInstance {
   load: (path: string) => Promise<void>
   getParameterRange: (id: string) => { min?: number; max?: number }
   setParameterValue: (id: string, value: number) => void
+  setUserScale?: (scale: number) => void
+  resize?: () => void
   playMotion?: (group: string, index: number) => Promise<void>
   playExpression?: (index: number) => Promise<void>
 }
@@ -114,6 +116,8 @@ export function useLive2DSystem() {
       const live2d = await initializeLive2D()
       if (!live2d) return
 
+      console.log('🎚️ Handling scale change:', { scale, currentModel: currentModel.name })
+
       // 获取背景图片
       const bgPath = join(currentModel.path, "resources", "background.png")
       const bgUrl = convertFileSrc(bgPath)
@@ -124,10 +128,8 @@ export function useLive2DSystem() {
 
       // 🎯 关键：基于 BongoCat 的缩放计算方式
       // scale 在 catStore 中是小数（如 0.5, 1.0, 1.5）
-      // 需要转换为百分比进行计算
-      const scalePercent = scale * 100
-      const newWidth = Math.round(width * scalePercent / 100)
-      const newHeight = Math.round(height * scalePercent / 100)
+      const newWidth = Math.round(width * scale)
+      const newHeight = Math.round(height * scale)
 
       // 设置窗口大小（这会触发Live2D Canvas的自动调整）
       const appWindow = getCurrentWebviewWindow()
@@ -136,14 +138,23 @@ export function useLive2DSystem() {
         height: newHeight,
       }))
 
+      // 🎯 关键修复：同时更新 Live2D 模型的用户缩放
+      if (live2d.setUserScale) {
+        live2d.setUserScale(scale)
+        console.log('✅ Live2D user scale updated:', scale)
+      }
+
       // Live2D模型会根据新的窗口尺寸自动调整
       setTimeout(() => {
         if (live2d.app) {
           live2d.app.resize()
         }
+        if (live2d.resize) {
+          live2d.resize()
+        }
       }, 100) // 给窗口调整一点时间
 
-      console.log('✅ Window and model scaled:', { newWidth, newHeight, scale, scalePercent })
+      console.log('✅ Window and model scaled:', { newWidth, newHeight, scale })
     } catch (error) {
       console.error('❌ Failed to handle scale change:', error)
     }
@@ -197,6 +208,9 @@ export function useLive2DSystem() {
     if (live2d?.app) {
       live2d.app.resize()
     }
+    if (live2d?.resize) {
+      live2d.resize()
+    }
   }, [initializeLive2D])
 
   // 鼠标事件处理
@@ -213,8 +227,8 @@ export function useLive2DSystem() {
         switch (kind) {
           case 'MouseMove': {
             if (value && typeof value === 'object' && 'x' in value && 'y' in value) {
-              const xRatio = value.x / window.screen.width
-              const yRatio = value.y / window.screen.height
+              const xRatio = (value as any).x / window.screen.width
+              const yRatio = (value as any).y / window.screen.height
 
               // 鼠标追踪参数
               for (const id of ['ParamMouseX', 'ParamMouseY', 'ParamAngleX', 'ParamAngleY']) {
@@ -295,7 +309,7 @@ export function useLive2DSystem() {
   // 🎯 监听缩放变化（关键修复）
   useEffect(() => {
     if (currentModel && scale > 0) {
-      console.log('📏 Scale changed to:', scale)
+      console.log('📏 Scale changed to:', scale, 'for model:', currentModel.name)
       void handleScaleChange()
     }
   }, [scale, handleScaleChange, currentModel?.id])
@@ -377,7 +391,7 @@ export function useLive2DSystem() {
     
     setParameterValue: useCallback(async (id: string, value: number) => {
       const live2d = await initializeLive2D()
-      return live2d?.setParameterValue?.(id, value)
+      live2d?.setParameterValue?.(id, value)
     }, [initializeLive2D])
   }
 } 
