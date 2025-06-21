@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSharedMenu } from "@/hooks/useSharedMenu";
 import { useCatStore } from "@/stores/catStore";
+import { useSharedMenu } from "@/hooks/useSharedMenu";
 import dynamic from "next/dynamic";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
@@ -36,10 +36,11 @@ export default function Home() {
     }
   };
 
-  // 右键菜单
+  // 🎯 基于 BongoCat 的右键菜单处理
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    void showContextMenu(e);
+    console.log('Context menu requested at:', { x: e.clientX, y: e.clientY });
+    void showContextMenu();
   };
 
   if (!isClient) {
