@@ -105,10 +105,6 @@ export function KeyboardVisualization() {
         src={resolveImagePath(key, "left")}
         alt={`${key} key`}
         className="absolute size-full"
-        onError={(e) => {
-          console.warn(`Failed to load left key image: ${key}`);
-          e.currentTarget.style.display = "none";
-        }}
       />
     ));
   }, [pressedLeftKeys, currentModel]);
@@ -124,10 +120,6 @@ export function KeyboardVisualization() {
         src={resolveImagePath(key, "right")}
         alt={`${key} key`}
         className="absolute size-full"
-        onError={(e) => {
-          console.warn(`Failed to load right key image: ${key}`);
-          e.currentTarget.style.display = "none";
-        }}
       />
     ));
   }, [pressedRightKeys, currentModel]);
