@@ -152,11 +152,11 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <Text strong>缩放: {catStore.scale.toFixed(1)}x</Text>
+            <Text strong>缩放: {catStore.scale}%</Text>
             <Slider
-              min={0.5}
-              max={3.0}
-              step={0.1}
+              min={50}
+              max={300}
+              step={25}
               value={catStore.scale}
               onChange={catStore.setScale}
               className="mt-2"
