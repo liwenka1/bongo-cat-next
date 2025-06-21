@@ -19,7 +19,10 @@ export default function CatViewer() {
   // 🚀 统一的 Live2D 系统 - 所有 Live2D 逻辑在这里
   const { visible } = useLive2DSystem();
   const { backgroundImage } = useCatStore();
-  const [imageDimensions, setImageDimensions] = useState({ width: 800, height: 600 });
+  const [imageDimensions, setImageDimensions] = useState({
+    width: 800,
+    height: 600,
+  });
 
   // 获取图片实际尺寸
   useEffect(() => {

@@ -36,7 +36,7 @@ export default function Home() {
     }
   };
 
-  // 🎯 基于 BongoCat 的右键菜单处理
+      // 右键菜单处理
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     console.log('Context menu requested at:', { x: e.clientX, y: e.clientY });
