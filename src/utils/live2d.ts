@@ -4,14 +4,41 @@ import { Cubism4ModelSettings, Live2DModel } from 'pixi-live2d-display'
 import { Application, Ticker } from 'pixi.js'
 import { join } from './path'
 
+// Live2D 全局类型定义
+declare global {
+  interface Window {
+    Live2DCubismCore?: unknown;
+    Live2DFramework?: unknown;
+    LIVE2DCUBISMFRAMEWORK?: unknown;
+  }
+}
+
+// 模型JSON类型定义
+interface ModelJSON {
+  Version: number;
+  FileReferences: {
+    Moc?: string;
+    Textures?: string[];
+    Physics?: string;
+    Pose?: string;
+    Expressions?: Array<{ Name: string; File: string }>;
+    Motions?: Record<string, Array<{ File: string; Sound?: string }>>;
+  };
+  Groups?: Array<{
+    Target: string;
+    Name: string;
+    Ids: string[];
+  }>;
+}
+
 // 检查 Live2D 运行时是否已加载
 function checkLive2DRuntime(): boolean {
   if (typeof window === 'undefined') return false
   
   // 检查 Live2D Cubism Core
-  const hasCore = !!(window as any).Live2DCubismCore
+  const hasCore = !!window.Live2DCubismCore
   // 检查 Live2D SDK
-  const hasSDK = !!(window as any).Live2DFramework || !!(window as any).LIVE2DCUBISMFRAMEWORK
+  const hasSDK = !!window.Live2DFramework || !!window.LIVE2DCUBISMFRAMEWORK
   
   console.log('Live2D Runtime Check:', { hasCore, hasSDK })
   
@@ -73,9 +100,9 @@ class Live2d {
   }
 
   private mount() {
-    const view = document.getElementById('live2dCanvas') as HTMLCanvasElement
+    const view = document.getElementById('live2dCanvas')
 
-    if (!view) {
+    if (!(view instanceof HTMLCanvasElement)) {
       throw new Error('Canvas element with id "live2dCanvas" not found')
     }
 
@@ -127,13 +154,14 @@ class Live2d {
         throw new Error(`Failed to load model config: ${response.statusText}`)
       }
       
-      const modelJSON = await response.json()
+      const modelJSON = await response.json() as Record<string, unknown>
 
       // 🚀 完全复制原始项目的模型设置创建方式
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const modelSettings = new Cubism4ModelSettings({
         ...modelJSON,
         url: modelUrl,
-      })
+      } as any)
 
       // 🚀 完全复制原始项目的文件路径替换逻辑
       modelSettings.replaceFiles((file: string) => {
@@ -143,25 +171,27 @@ class Live2d {
       this.model = await Live2DModel.from(modelSettings)
 
       // 设置模型的初始位置和缩放
-      if (this.model && this.app) {
-        // 居中定位
-        this.model.x = this.app.screen.width / 2
-        this.model.y = this.app.screen.height / 2
-        this.model.anchor.set(0.5, 0.5)
+      // 此时 model 和 app 都已经被创建，使用非空断言
+      const model = this.model;
+      const app = this.app!;
+      
+      // 居中定位
+      model.x = app.screen.width / 2
+      model.y = app.screen.height / 2
+      model.anchor.set(0.5, 0.5)
 
-        // 应用用户设置的缩放
-        this.applyUserScale()
+      // 应用用户设置的缩放
+      this.applyUserScale()
 
-        this.app.stage.addChild(this.model)
+      app.stage.addChild(model)
 
-        console.log('Live2D model loaded and positioned:', {
-          x: this.model.x,
-          y: this.model.y,
-          scale: this.model.scale.x,
-          modelSize: { width: this.model.width, height: this.model.height },
-          screenSize: { width: this.app.screen.width, height: this.app.screen.height }
-        })
-      }
+      console.log('Live2D model loaded and positioned:', {
+        x: model.x,
+        y: model.y,
+        scale: model.scale.x,
+        modelSize: { width: model.width, height: model.height },
+        screenSize: { width: app.screen.width, height: app.screen.height }
+      })
 
       const { motions, expressions } = modelSettings
 
@@ -245,15 +275,18 @@ class Live2d {
   }
 
   public getCoreModel() {
-    const internalModel = this.model?.internalModel as Cubism4InternalModel
-    return internalModel?.coreModel
+    if (!this.model) return null;
+    const internalModel = this.model.internalModel as Cubism4InternalModel
+    return internalModel.coreModel;
   }
 
   public getParameterRange(id: string) {
     const coreModel = this.getCoreModel()
-    const index = coreModel?.getParameterIndex(id)
-    const min = coreModel?.getParameterMinimumValue(index)
-    const max = coreModel?.getParameterMaximumValue(index)
+    if (!coreModel) return { min: undefined, max: undefined };
+    
+    const index = coreModel.getParameterIndex(id)
+    const min = coreModel.getParameterMinimumValue(index)
+    const max = coreModel.getParameterMaximumValue(index)
 
     return {
       min,
@@ -263,7 +296,9 @@ class Live2d {
 
   public setParameterValue(id: string, value: number) {
     const coreModel = this.getCoreModel()
-    return coreModel?.setParameterValueById?.(id, Number(value))
+    if (!coreModel) return;
+    
+    coreModel.setParameterValueById(id, Number(value))
   }
 }
 
