@@ -6,12 +6,7 @@ import { useCatStore } from '@/stores/catStore'
 import { useModelStore } from '@/stores/modelStore'
 import { readDir } from '@tauri-apps/plugin-fs'
 import { join } from '@/utils/path'
-
-// 设备事件类型定义
-interface DeviceEvent {
-  kind: 'MousePress' | 'MouseRelease' | 'MouseMove' | 'KeyboardPress' | 'KeyboardRelease'
-  value: string | { x: number; y: number }
-}
+import type { SpecificDeviceEvent } from '@/types'
 
 // 浏览器键码到文件名的映射
 const browserKeyMapping: Record<string, string> = {
@@ -264,7 +259,7 @@ export function useKeyboard() {
   useEffect(() => {
     const setupTauriListener = async () => {
       try {
-        const unlisten = await listen<DeviceEvent>('device-changed', ({ payload }) => {
+        const unlisten = await listen<SpecificDeviceEvent>('device-changed', ({ payload }) => {
           const { kind, value } = payload
 
           if (kind === 'KeyboardPress' || kind === 'KeyboardRelease') {

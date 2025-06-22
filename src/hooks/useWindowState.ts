@@ -1,17 +1,9 @@
 import { useState, useCallback } from 'react'
-
-interface WindowState {
-  width: number
-  height: number
-  x: number
-  y: number
-  isMaximized: boolean
-  isVisible: boolean
-}
+import type { HookWindowState } from '@/types'
 
 export function useWindowState() {
   const [isRestored, setIsRestored] = useState(true) // Start as restored for now
-  const [windowState, setWindowState] = useState<WindowState>({
+  const [windowState, setWindowState] = useState<HookWindowState>({
     width: 800,
     height: 600,
     x: 0,

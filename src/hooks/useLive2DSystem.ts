@@ -9,36 +9,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
-
-interface DeviceEvent {
-  kind: string;
-  value?: unknown;
-}
-
-// Live2D 模型类型定义
-interface Live2DModel {
-  scale: {
-    set: (value: number) => void;
-  };
-}
-
-// Live2D 应用类型定义
-interface Live2DApp {
-  resize: () => void;
-}
-
-// Live2D 实例类型定义
-interface Live2DInstance {
-  model: Live2DModel | null;
-  app: Live2DApp | null;
-  load: (path: string) => Promise<void>;
-  getParameterRange: (id: string) => { min?: number; max?: number };
-  setParameterValue: (id: string, value: number) => void;
-  setUserScale: (scale: number) => void;
-  resize: () => void;
-  playMotion?: (group: string, index: number) => Promise<void>;
-  playExpression?: (index: number) => Promise<void>;
-}
+import type { DeviceEvent, Live2DInstance } from '@/types';
 
 // 获取图片尺寸的工具函数
 function getImageSize(src: string): Promise<{ width: number; height: number }> {

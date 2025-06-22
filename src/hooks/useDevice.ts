@@ -5,11 +5,7 @@ import { useModelStore } from '@/stores/modelStore'
 import { useCatStore } from '@/stores/catStore'
 import { join } from '@/utils/path'
 import { isImage } from '@/utils/is'
-
-interface MouseMoveValue {
-  x: number
-  y: number
-}
+import type { MouseMoveValue } from '@/types'
 
 export function useDevice() {
   const [supportLeftKeys, setSupportLeftKeys] = useState<string[]>([])
