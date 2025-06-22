@@ -1,29 +1,16 @@
 import { create } from "zustand";
-
-interface WindowState {
-  focused?: boolean;
-  maximized?: boolean;
-  minimized?: boolean;
-  fullscreen?: boolean;
-  resizable?: boolean;
-  decorations?: boolean;
-  alwaysOnTop?: boolean;
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
-}
+import type { AppWindowState } from '@/types';
 
 interface AppState {
   name: string;
   version: string;
-  windowState: WindowState;
+  windowState: AppWindowState;
 
   // Actions
   setName: (name: string) => void;
   setVersion: (version: string) => void;
-  setWindowState: (state: Partial<WindowState>) => void;
-  updateWindowState: (updates: Partial<WindowState>) => void;
+  setWindowState: (state: Partial<AppWindowState>) => void;
+  updateWindowState: (updates: Partial<AppWindowState>) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
