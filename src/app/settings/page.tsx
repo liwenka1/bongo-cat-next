@@ -18,10 +18,8 @@ import {
   Table,
   Modal,
   Form,
-  Upload,
 } from "antd";
 import {
-  UploadOutlined,
   DownloadOutlined,
   GithubOutlined,
   SettingOutlined,
@@ -35,11 +33,13 @@ import {
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useCatStore } from "@/stores/catStore";
-import { useModelStore } from "@/stores/modelStore";
+import { useModelStore, type Model } from "@/stores/modelStore";
 import { useGeneralStore } from "@/stores/generalStore";
-import { useShortcutStore } from "@/stores/shortcutStore";
+import { useShortcutStore, type Shortcut } from "@/stores/shortcutStore";
 import { useAppStore } from "@/stores/appStore";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import type { ColumnsType } from "antd/es/table";
 
 const { Title, Text, Paragraph } = Typography;
 const { Sider, Content } = Layout;
@@ -50,7 +50,7 @@ type TabKey = "cat" | "general" | "model" | "shortcut" | "about";
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("cat");
   const [isShortcutModalVisible, setIsShortcutModalVisible] = useState(false);
-  const [editingShortcut, setEditingShortcut] = useState<any>(null);
+  const [editingShortcut, setEditingShortcut] = useState<Shortcut | null>(null);
   const [form] = Form.useForm();
   const router = useRouter();
 
@@ -97,7 +97,7 @@ export default function SettingsPage() {
     },
   ];
 
-  const handleShortcutEdit = (shortcut: any) => {
+  const handleShortcutEdit = (shortcut: Shortcut) => {
     setEditingShortcut(shortcut);
     form.setFieldsValue(shortcut);
     setIsShortcutModalVisible(true);
@@ -105,7 +105,7 @@ export default function SettingsPage() {
 
   const handleShortcutSave = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await form.validateFields() as Omit<Shortcut, 'id'>;
       if (editingShortcut) {
         shortcutStore.updateShortcut(editingShortcut.id, values);
         message.success("快捷键更新成功");
@@ -299,10 +299,10 @@ export default function SettingsPage() {
       >
         <div className="mb-4">
           <Text strong>当前模型: </Text>
-          <Tag color="blue">{modelStore.currentModel?.name || "未选择"}</Tag>
+          <Tag color="blue">{modelStore.currentModel?.name ?? "未选择"}</Tag>
         </div>
 
-        <Table
+        <Table<Model>
           dataSource={modelStore.models}
           rowKey="id"
           size="small"
@@ -316,7 +316,7 @@ export default function SettingsPage() {
               title: "类型",
               dataIndex: "mode",
               key: "mode",
-              render: (mode) => (
+              render: (mode: string) => (
                 <Tag color={mode === "keyboard" ? "green" : "blue"}>
                   {mode === "keyboard"
                     ? "键盘"
@@ -330,7 +330,7 @@ export default function SettingsPage() {
               title: "来源",
               dataIndex: "isPreset",
               key: "isPreset",
-              render: (isPreset) => (
+              render: (isPreset: boolean) => (
                 <Tag color={isPreset ? "default" : "orange"}>
                   {isPreset ? "预设" : "自定义"}
                 </Tag>
@@ -339,7 +339,7 @@ export default function SettingsPage() {
             {
               title: "操作",
               key: "actions",
-              render: (_, record) => (
+              render: (_, record: Model) => (
                 <Space>
                   <Button
                     size="small"
@@ -348,7 +348,9 @@ export default function SettingsPage() {
                         ? "primary"
                         : "default"
                     }
-                    onClick={() => { modelStore.setCurrentModel(record); }}
+                    onClick={() => {
+                      modelStore.setCurrentModel(record);
+                    }}
                   >
                     {modelStore.currentModel?.id === record.id
                       ? "当前"
@@ -359,7 +361,9 @@ export default function SettingsPage() {
                       size="small"
                       danger
                       icon={<DeleteOutlined />}
-                      onClick={() => { console.log('Remove model:', record.id); }}
+                      onClick={() => {
+                        console.log("Remove model:", record.id);
+                      }}
                     />
                   )}
                 </Space>
@@ -371,7 +375,7 @@ export default function SettingsPage() {
     </Space>
   );
 
-  const shortcutColumns = [
+  const shortcutColumns: ColumnsType<Shortcut> = [
     {
       title: "名称",
       dataIndex: "name",
@@ -399,17 +403,21 @@ export default function SettingsPage() {
     {
       title: "操作",
       key: "actions",
-      render: (_: any, record: any) => (
+      render: (_, record: Shortcut) => (
         <Space>
           <Button
             size="small"
             icon={<EditOutlined />}
-            onClick={() => { handleShortcutEdit(record); }}
+            onClick={() => {
+              handleShortcutEdit(record);
+            }}
           />
           <Switch
             size="small"
             checked={record.enabled}
-            onChange={() => { shortcutStore.toggleShortcut(record.id); }}
+            onChange={() => {
+              shortcutStore.toggleShortcut(record.id);
+            }}
           />
         </Space>
       ),
@@ -445,7 +453,9 @@ export default function SettingsPage() {
       <Modal
         title={editingShortcut ? "编辑快捷键" : "添加快捷键"}
         open={isShortcutModalVisible}
-        onOk={handleShortcutSave}
+        onOk={() => {
+          void handleShortcutSave();
+        }}
         onCancel={() => {
           setIsShortcutModalVisible(false);
           setEditingShortcut(null);
@@ -483,14 +493,17 @@ export default function SettingsPage() {
       <Card title="关于应用">
         <Space direction="vertical" size="middle" className="w-full">
           <div className="text-center">
-            <img
-              src="/logo.png"
-              alt="BongoCat"
-              className="w-20 h-20 mx-auto mb-4"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
+            <div className="relative w-16 h-16 mx-auto mb-4">
+              <Image
+                fill
+                src="/logo.png"
+                alt="BongoCat"
+                className="object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </div>
             <Title level={3}>{appStore.name}</Title>
             <Text type="secondary">版本 {appStore.version}</Text>
           </div>
@@ -556,14 +569,17 @@ export default function SettingsPage() {
           }}
         >
           <div className="p-4 text-center border-b">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-12 h-12 mx-auto mb-2"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
+            <div className="relative w-12 h-12 mx-auto mb-2">
+              <Image
+                fill
+                src="/logo.png"
+                alt="Logo"
+                className="object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </div>
             <Title level={4} className="m-0">
               {appStore.name}
             </Title>
@@ -574,14 +590,18 @@ export default function SettingsPage() {
             selectedKeys={[activeTab]}
             items={menuItems}
             className="border-0"
-            onClick={({ key }) => { setActiveTab(key as TabKey); }}
+            onClick={({ key }) => {
+              setActiveTab(key as TabKey);
+            }}
           />
 
           <div className="absolute bottom-4 left-4 right-4">
             <Button
               block
               icon={<ArrowLeftOutlined />}
-              onClick={() => { router.push("/"); }}
+              onClick={() => {
+                router.push("/");
+              }}
             >
               返回主界面
             </Button>

@@ -8,14 +8,14 @@ import dynamic from "next/dynamic";
 // 🎯 动态导入 CatViewer 避免 SSR 问题
 const CatViewer = dynamic(() => import("@/components/CatViewer"), {
   ssr: false,
-  loading: () => <div className="w-screen h-screen bg-transparent" />
+  loading: () => <div className="w-screen h-screen bg-transparent" />,
 });
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  
+
   // 🎯 page.tsx 只负责应用级别的状态和事件
-  const { visible, opacity, mirrorMode } = useCatStore();
+  const { opacity, mirrorMode } = useCatStore();
   const { showContextMenu } = useSharedMenu();
 
   // 客户端检查
@@ -27,19 +27,21 @@ export default function Home() {
   const handleWindowDrag = async (e: React.MouseEvent) => {
     if (e.button === 0) {
       try {
-        const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
         const appWindow = getCurrentWebviewWindow();
         await appWindow.startDragging();
       } catch (error) {
-        console.error('Failed to start window dragging:', error);
+        console.error("Failed to start window dragging:", error);
       }
     }
   };
 
-      // 右键菜单处理
+  // 右键菜单处理
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('Context menu requested at:', { x: e.clientX, y: e.clientY });
+    console.log("Context menu requested at:", { x: e.clientX, y: e.clientY });
     void showContextMenu();
   };
 
