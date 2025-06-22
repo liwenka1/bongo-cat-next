@@ -1,5 +1,3 @@
-import type { LiteralUnion } from 'antd/es/_util/type'
-
 /**
  * Join path segments
  */

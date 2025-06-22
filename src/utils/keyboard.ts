@@ -1,10 +1,5 @@
 import { isMac } from './platform'
-
-export interface Key {
-  eventKey: string
-  tauriKey?: string
-  symbol?: string
-}
+import type { Key } from '@/types'
 
 export const modifierKeys: Key[] = [
   {

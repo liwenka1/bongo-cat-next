@@ -3,33 +3,10 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 import { Cubism4ModelSettings, Live2DModel } from 'pixi-live2d-display'
 import { Application, Ticker } from 'pixi.js'
 import { join } from './path'
+import type { ModelJSON } from '@/types'
 
-// Live2D 全局类型定义
-declare global {
-  interface Window {
-    Live2DCubismCore?: unknown;
-    Live2DFramework?: unknown;
-    LIVE2DCUBISMFRAMEWORK?: unknown;
-  }
-}
-
-// 模型JSON类型定义
-interface ModelJSON {
-  Version: number;
-  FileReferences: {
-    Moc?: string;
-    Textures?: string[];
-    Physics?: string;
-    Pose?: string;
-    Expressions?: Array<{ Name: string; File: string }>;
-    Motions?: Record<string, Array<{ File: string; Sound?: string }>>;
-  };
-  Groups?: Array<{
-    Target: string;
-    Name: string;
-    Ids: string[];
-  }>;
-}
+// 导入全局类型定义
+import '@/types/live2d'
 
 // 检查 Live2D 运行时是否已加载
 function checkLive2DRuntime(): boolean {

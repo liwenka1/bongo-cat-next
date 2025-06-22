@@ -1,18 +1,6 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { cursorPosition, monitorFromPoint } from '@tauri-apps/api/window'
-
-interface CursorPosition {
-  x: number
-  y: number
-}
-
-interface Monitor {
-  name?: string
-  position: { x: number; y: number }
-  size: { width: number; height: number }
-  scaleFactor: number
-  cursorPosition?: CursorPosition
-}
+import type { CursorPosition, Monitor } from '@/types'
 
 export async function getCursorMonitor() {
   try {
