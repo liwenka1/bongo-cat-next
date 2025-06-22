@@ -1,7 +1,4 @@
-interface LogoProps {
-  size?: number
-  className?: string
-}
+import type { LogoProps } from '@/types'
 
 export default function Logo({ size = 48, className = "" }: LogoProps) {
   return (

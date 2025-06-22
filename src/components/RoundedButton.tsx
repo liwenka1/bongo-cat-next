@@ -1,7 +1,4 @@
-interface RoundedButtonProps {
-  onClick: () => void;
-  title: string;
-}
+import type { RoundedButtonProps } from '@/types'
 
 export const RoundedButton: React.FC<RoundedButtonProps> = ({
   onClick,
