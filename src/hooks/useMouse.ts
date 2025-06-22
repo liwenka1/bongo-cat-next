@@ -7,12 +7,13 @@ export function useMouse() {
   const { setMousePressed, setMousePosition } = useCatStore()
   
   useEffect(() => {
-    const handleMouseDown = () => {
-      setMousePressed(true)
+    const handleMouseDown = (event: MouseEvent) => {
+      const button = event.button === 0 ? 'left' : event.button === 2 ? 'right' : 'middle'
+      setMousePressed([button])
     }
     
     const handleMouseUp = () => {
-      setMousePressed(false)
+      setMousePressed([])
     }
     
     const handleMouseMove = (event: MouseEvent) => {
