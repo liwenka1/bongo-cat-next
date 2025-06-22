@@ -12,20 +12,30 @@ import { PhysicalSize } from "@tauri-apps/api/dpi";
 
 interface DeviceEvent {
   kind: string;
-  value?: any;
+  value?: unknown;
 }
 
-// Live2D 类型定义
-interface Live2DInstance {
-  model?: any;
-  app?: {
-    resize: () => void;
+// Live2D 模型类型定义
+interface Live2DModel {
+  scale: {
+    set: (value: number) => void;
   };
+}
+
+// Live2D 应用类型定义
+interface Live2DApp {
+  resize: () => void;
+}
+
+// Live2D 实例类型定义
+interface Live2DInstance {
+  model: Live2DModel | null;
+  app: Live2DApp | null;
   load: (path: string) => Promise<void>;
   getParameterRange: (id: string) => { min?: number; max?: number };
   setParameterValue: (id: string, value: number) => void;
-  setUserScale?: (scale: number) => void;
-  resize?: () => void;
+  setUserScale: (scale: number) => void;
+  resize: () => void;
   playMotion?: (group: string, index: number) => Promise<void>;
   playExpression?: (index: number) => Promise<void>;
 }
@@ -54,8 +64,8 @@ function waitForCanvas(
     let attempts = 0;
 
     const checkCanvas = () => {
-      const canvas = document.getElementById(id) as HTMLCanvasElement;
-      if (canvas) {
+      const canvas = document.getElementById(id);
+      if (canvas instanceof HTMLCanvasElement) {
         console.log("✅ Canvas element found:", id);
         resolve(canvas);
         return;
@@ -110,7 +120,7 @@ export function useLive2DSystem() {
       if (!live2dRef.current) {
         try {
           const { default: live2d } = await import("@/utils/live2d");
-          live2dRef.current = live2d as Live2DInstance;
+          live2dRef.current = live2d as unknown as Live2DInstance;
         } catch (error) {
           console.error("Failed to load Live2D module:", error);
         }
@@ -154,19 +164,15 @@ export function useLive2DSystem() {
       );
 
       // 同时更新 Live2D 模型的用户缩放
-      if (live2d.setUserScale) {
-        live2d.setUserScale(scaleRatio);
-        console.log("✅ Live2D user scale updated:", scaleRatio);
-      }
+      live2d.setUserScale(scaleRatio);
+      console.log("✅ Live2D user scale updated:", scaleRatio);
 
       // Live2D模型会根据新的窗口尺寸自动调整
       setTimeout(() => {
         if (live2d.app) {
           live2d.app.resize();
         }
-        if (live2d.resize) {
-          live2d.resize();
-        }
+        live2d.resize();
       }, 100); // 给窗口调整一点时间
 
       console.log("✅ Window and model scaled:", {
@@ -193,10 +199,8 @@ export function useLive2DSystem() {
       const { width, height } = await getImageSize(bgUrl);
 
       // 🎯 关键：按照 BongoCat 的模型缩放逻辑
-      // live2d.model?.scale.set(innerWidth / width)
-      if (live2d.model?.scale?.set) {
-        live2d.model.scale.set(innerWidth / width);
-      }
+      // model 在此时应该已经加载，使用非空断言
+      live2d.model.scale.set(innerWidth / width);
 
       // 🎯 如果窗口比例不对，调整窗口大小
       const currentRatio = Math.round((innerWidth / innerHeight) * 10) / 10;
@@ -309,8 +313,9 @@ export function useLive2DSystem() {
                 "x" in value &&
                 "y" in value
               ) {
-                const xRatio = (value).x / window.screen.width;
-                const yRatio = (value).y / window.screen.height;
+                const mousePos = value as { x: number; y: number };
+                const xRatio = mousePos.x / window.screen.width;
+                const yRatio = mousePos.y / window.screen.height;
 
                 // 鼠标追踪参数
                 for (const id of [
@@ -339,11 +344,10 @@ export function useLive2DSystem() {
                 } as const;
 
                 const paramId = paramMap[value as keyof typeof paramMap];
-                if (paramId) {
-                  const { min, max } = live2d.getParameterRange(paramId);
-                  if (min !== undefined && max !== undefined) {
-                    live2d.setParameterValue(paramId, max);
-                  }
+                // paramId 来自 const 断言，总是存在的
+                const { min, max } = live2d.getParameterRange(paramId);
+                if (min !== undefined && max !== undefined) {
+                  live2d.setParameterValue(paramId, max);
                 }
               }
               break;
@@ -356,11 +360,10 @@ export function useLive2DSystem() {
                 } as const;
 
                 const paramId = paramMap[value as keyof typeof paramMap];
-                if (paramId) {
-                  const { min, max } = live2d.getParameterRange(paramId);
-                  if (min !== undefined && max !== undefined) {
-                    live2d.setParameterValue(paramId, min);
-                  }
+                // paramId 来自 const 断言，总是存在的
+                const { min, max } = live2d.getParameterRange(paramId);
+                if (min !== undefined && max !== undefined) {
+                  live2d.setParameterValue(paramId, min);
                 }
               }
               break;
@@ -486,6 +489,7 @@ export function useLive2DSystem() {
     playMotion: useCallback(
       async (group: string, index: number) => {
         const live2d = await initializeLive2D();
+         
         return live2d?.playMotion?.(group, index);
       },
       [initializeLive2D]
@@ -494,6 +498,7 @@ export function useLive2DSystem() {
     playExpression: useCallback(
       async (index: number) => {
         const live2d = await initializeLive2D();
+         
         return live2d?.playExpression?.(index);
       },
       [initializeLive2D]
@@ -502,7 +507,7 @@ export function useLive2DSystem() {
     setParameterValue: useCallback(
       async (id: string, value: number) => {
         const live2d = await initializeLive2D();
-        live2d?.setParameterValue?.(id, value);
+        live2d?.setParameterValue(id, value);
       },
       [initializeLive2D]
     ),
