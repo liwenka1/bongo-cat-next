@@ -2,7 +2,7 @@
 
 @theme {
   --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: 'Courier New', monospace;
+  --font-mono: "Courier New", monospace;
 }
 
 /* Reset and base styles */
@@ -44,7 +44,7 @@ body {
   body {
     color: #e5e5e5;
   }
-  
+
   .ant-card {
     background: rgba(20, 20, 20, 0.95);
     color: #e5e5e5;
@@ -61,5 +61,3 @@ body {
   pointer-events: none !important;
   z-index: 2 !important;
 }
-
-
