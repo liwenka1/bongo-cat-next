@@ -10,7 +10,7 @@ const eslintConfig = tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
-  ...compat.extends("next/core-web-vitals"),
+  ...compat.extends("next/core-web-vitals", "prettier"),
   {
     // Disabled rules taken from https://biomejs.dev/linter/rules-sources for ones that
     // are already handled by Biome
