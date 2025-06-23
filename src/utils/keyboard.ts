@@ -1,272 +1,272 @@
-import { isMac } from './platform'
-import type { Key } from '@/types'
+import { isMac } from "./platform";
+import type { Key } from "@/types";
 
 export const modifierKeys: Key[] = [
   {
-    eventKey: 'Shift',
-    symbol: isMac ? '⇧' : 'Shift',
+    eventKey: "Shift",
+    symbol: isMac ? "⇧" : "Shift"
   },
   {
-    eventKey: 'Control',
-    symbol: isMac ? '⌃' : 'Ctrl',
+    eventKey: "Control",
+    symbol: isMac ? "⌃" : "Ctrl"
   },
   {
-    eventKey: 'Alt',
-    symbol: isMac ? '⌥' : 'Alt',
+    eventKey: "Alt",
+    symbol: isMac ? "⌥" : "Alt"
   },
   {
-    eventKey: 'Command',
-    symbol: isMac ? '⌘' : 'Super',
-  },
+    eventKey: "Command",
+    symbol: isMac ? "⌘" : "Super"
+  }
 ].map((item) => {
-  return { ...item, tauriKey: item.eventKey }
-})
+  return { ...item, tauriKey: item.eventKey };
+});
 
 export const standardKeys: Key[] = [
   // 第一排
   {
-    eventKey: 'Escape',
-    symbol: isMac ? '⎋' : 'Esc',
+    eventKey: "Escape",
+    symbol: isMac ? "⎋" : "Esc"
   },
   {
-    eventKey: 'F1',
+    eventKey: "F1"
   },
   {
-    eventKey: 'F2',
+    eventKey: "F2"
   },
   {
-    eventKey: 'F3',
+    eventKey: "F3"
   },
   {
-    eventKey: 'F4',
+    eventKey: "F4"
   },
   {
-    eventKey: 'F5',
+    eventKey: "F5"
   },
   {
-    eventKey: 'F6',
+    eventKey: "F6"
   },
   {
-    eventKey: 'F7',
+    eventKey: "F7"
   },
   {
-    eventKey: 'F8',
+    eventKey: "F8"
   },
   {
-    eventKey: 'F9',
+    eventKey: "F9"
   },
   {
-    eventKey: 'F10',
+    eventKey: "F10"
   },
   {
-    eventKey: 'F11',
+    eventKey: "F11"
   },
   {
-    eventKey: 'F12',
+    eventKey: "F12"
   },
   // 第二排
   {
-    eventKey: 'Backquote',
-    symbol: '`',
+    eventKey: "Backquote",
+    symbol: "`"
   },
   {
-    eventKey: 'Digit1',
+    eventKey: "Digit1"
   },
   {
-    eventKey: 'Digit2',
+    eventKey: "Digit2"
   },
   {
-    eventKey: 'Digit3',
+    eventKey: "Digit3"
   },
   {
-    eventKey: 'Digit4',
+    eventKey: "Digit4"
   },
   {
-    eventKey: 'Digit5',
+    eventKey: "Digit5"
   },
   {
-    eventKey: 'Digit6',
+    eventKey: "Digit6"
   },
   {
-    eventKey: 'Digit7',
+    eventKey: "Digit7"
   },
   {
-    eventKey: 'Digit8',
+    eventKey: "Digit8"
   },
   {
-    eventKey: 'Digit9',
+    eventKey: "Digit9"
   },
   {
-    eventKey: 'Digit0',
+    eventKey: "Digit0"
   },
   {
-    eventKey: 'Minus',
-    tauriKey: '-',
-    symbol: '-',
+    eventKey: "Minus",
+    tauriKey: "-",
+    symbol: "-"
   },
   {
-    eventKey: 'Equal',
-    tauriKey: '=',
-    symbol: '=',
+    eventKey: "Equal",
+    tauriKey: "=",
+    symbol: "="
   },
   {
-    eventKey: 'Backspace',
-    symbol: isMac ? '⌫' : undefined,
+    eventKey: "Backspace",
+    symbol: isMac ? "⌫" : undefined
   },
   // 第三排
   {
-    eventKey: 'Tab',
-    symbol: isMac ? '⇥' : undefined,
+    eventKey: "Tab",
+    symbol: isMac ? "⇥" : undefined
   },
   {
-    eventKey: 'KeyQ',
+    eventKey: "KeyQ"
   },
   {
-    eventKey: 'KeyW',
+    eventKey: "KeyW"
   },
   {
-    eventKey: 'KeyE',
+    eventKey: "KeyE"
   },
   {
-    eventKey: 'KeyR',
+    eventKey: "KeyR"
   },
   {
-    eventKey: 'KeyT',
+    eventKey: "KeyT"
   },
   {
-    eventKey: 'KeyY',
+    eventKey: "KeyY"
   },
   {
-    eventKey: 'KeyU',
+    eventKey: "KeyU"
   },
   {
-    eventKey: 'KeyI',
+    eventKey: "KeyI"
   },
   {
-    eventKey: 'KeyO',
+    eventKey: "KeyO"
   },
   {
-    eventKey: 'KeyP',
+    eventKey: "KeyP"
   },
   {
-    eventKey: 'BracketLeft',
-    symbol: '[',
+    eventKey: "BracketLeft",
+    symbol: "["
   },
   {
-    eventKey: 'BracketRight',
-    symbol: ']',
+    eventKey: "BracketRight",
+    symbol: "]"
   },
   {
-    eventKey: 'Backslash',
-    symbol: '\\',
+    eventKey: "Backslash",
+    symbol: "\\"
   },
   // 第四排
   {
-    eventKey: 'KeyA',
+    eventKey: "KeyA"
   },
   {
-    eventKey: 'KeyS',
+    eventKey: "KeyS"
   },
   {
-    eventKey: 'KeyD',
+    eventKey: "KeyD"
   },
   {
-    eventKey: 'KeyF',
+    eventKey: "KeyF"
   },
   {
-    eventKey: 'KeyG',
+    eventKey: "KeyG"
   },
   {
-    eventKey: 'KeyH',
+    eventKey: "KeyH"
   },
   {
-    eventKey: 'KeyJ',
+    eventKey: "KeyJ"
   },
   {
-    eventKey: 'KeyK',
+    eventKey: "KeyK"
   },
   {
-    eventKey: 'KeyL',
+    eventKey: "KeyL"
   },
   {
-    eventKey: 'Semicolon',
-    symbol: ';',
+    eventKey: "Semicolon",
+    symbol: ";"
   },
   {
-    eventKey: 'Quote',
-    symbol: '\'',
+    eventKey: "Quote",
+    symbol: "'"
   },
   {
-    eventKey: 'Enter',
-    symbol: isMac ? '↩︎' : undefined,
+    eventKey: "Enter",
+    symbol: isMac ? "↩︎" : undefined
   },
   // 第五排
   {
-    eventKey: 'KeyZ',
+    eventKey: "KeyZ"
   },
   {
-    eventKey: 'KeyX',
+    eventKey: "KeyX"
   },
   {
-    eventKey: 'KeyC',
+    eventKey: "KeyC"
   },
   {
-    eventKey: 'KeyV',
+    eventKey: "KeyV"
   },
   {
-    eventKey: 'KeyB',
+    eventKey: "KeyB"
   },
   {
-    eventKey: 'KeyN',
+    eventKey: "KeyN"
   },
   {
-    eventKey: 'KeyM',
+    eventKey: "KeyM"
   },
   {
-    eventKey: 'Comma',
-    symbol: ',',
+    eventKey: "Comma",
+    symbol: ","
   },
   {
-    eventKey: 'Period',
-    symbol: '.',
+    eventKey: "Period",
+    symbol: "."
   },
   {
-    eventKey: 'Slash',
-    symbol: '/',
+    eventKey: "Slash",
+    symbol: "/"
   },
   // 第六排
   {
-    eventKey: 'Space',
-    symbol: isMac ? '␣' : undefined,
+    eventKey: "Space",
+    symbol: isMac ? "␣" : undefined
   },
   // 方向键
   {
-    eventKey: 'ArrowUp',
-    symbol: '↑',
+    eventKey: "ArrowUp",
+    symbol: "↑"
   },
   {
-    eventKey: 'ArrowDown',
-    symbol: '↓',
+    eventKey: "ArrowDown",
+    symbol: "↓"
   },
   {
-    eventKey: 'ArrowLeft',
-    symbol: '←',
+    eventKey: "ArrowLeft",
+    symbol: "←"
   },
   {
-    eventKey: 'ArrowRight',
-    symbol: '→',
-  },
+    eventKey: "ArrowRight",
+    symbol: "→"
+  }
 ].map((item) => {
-  const { eventKey } = item
+  const { eventKey } = item;
 
-  item.symbol ??= eventKey
-  item.tauriKey ??= eventKey
+  item.symbol ??= eventKey;
+  item.tauriKey ??= eventKey;
 
-  if (eventKey.startsWith('Digit') || eventKey.startsWith('Key')) {
-    item.tauriKey = item.symbol = eventKey.slice(-1)
+  if (eventKey.startsWith("Digit") || eventKey.startsWith("Key")) {
+    item.tauriKey = item.symbol = eventKey.slice(-1);
   }
 
-  return item
-})
+  return item;
+});
 
-export const keys = modifierKeys.concat(standardKeys) 
+export const keys = modifierKeys.concat(standardKeys);
