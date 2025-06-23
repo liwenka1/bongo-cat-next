@@ -9,7 +9,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
-import type { DeviceEvent, Live2DInstance } from '@/types';
+import type { DeviceEvent, Live2DInstance } from "@/types";
 
 // 获取图片尺寸的工具函数
 function getImageSize(src: string): Promise<{ width: number; height: number }> {
@@ -18,7 +18,7 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
     img.onload = () => {
       resolve({
         width: img.naturalWidth,
-        height: img.naturalHeight,
+        height: img.naturalHeight
       });
     };
     img.onerror = reject;
@@ -27,10 +27,7 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
 }
 
 // 等待 Canvas 元素可用
-function waitForCanvas(
-  id: string,
-  maxAttempts = 10
-): Promise<HTMLCanvasElement> {
+function waitForCanvas(id: string, maxAttempts = 10): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
     let attempts = 0;
 
@@ -44,17 +41,11 @@ function waitForCanvas(
 
       attempts++;
       if (attempts >= maxAttempts) {
-        reject(
-          new Error(
-            `Canvas element with id "${id}" not found after ${maxAttempts} attempts`
-          )
-        );
+        reject(new Error(`Canvas element with id "${id}" not found after ${maxAttempts} attempts`));
         return;
       }
 
-      console.log(
-        `⏳ Waiting for canvas element... (${attempts}/${maxAttempts})`
-      );
+      console.log(`⏳ Waiting for canvas element... (${attempts}/${maxAttempts})`);
       setTimeout(checkCanvas, 100);
     };
 
@@ -72,32 +63,23 @@ export function useLive2DSystem() {
   const isLoadingRef = useRef(false);
 
   const { currentModel, initializeModels } = useModelStore();
-  const {
-    visible,
-    opacity,
-    scale,
-    mirrorMode,
-    pressedLeftKeys,
-    pressedRightKeys,
-    setBackgroundImage,
-  } = useCatStore();
+  const { visible, opacity, scale, mirrorMode, pressedLeftKeys, pressedRightKeys, setBackgroundImage } = useCatStore();
 
   // 🎯 使用新的键盘处理逻辑
   useKeyboard();
 
   // 动态导入Live2D模块（避免SSR问题）
-  const initializeLive2D =
-    useCallback(async (): Promise<Live2DInstance | null> => {
-      if (!live2dRef.current) {
-        try {
-          const { default: live2d } = await import("@/utils/live2d");
-          live2dRef.current = live2d as unknown as Live2DInstance;
-        } catch (error) {
-          console.error("Failed to load Live2D module:", error);
-        }
+  const initializeLive2D = useCallback(async (): Promise<Live2DInstance | null> => {
+    if (!live2dRef.current) {
+      try {
+        const { default: live2d } = await import("@/utils/live2d");
+        live2dRef.current = live2d as unknown as Live2DInstance;
+      } catch (error) {
+        console.error("Failed to load Live2D module:", error);
       }
-      return live2dRef.current;
-    }, []);
+    }
+    return live2dRef.current;
+  }, []);
 
   // 🎯 基于 BongoCat 的窗口大小调整逻辑
   const handleScaleChange = useCallback(async () => {
@@ -109,7 +91,7 @@ export function useLive2DSystem() {
 
       console.log("🎚️ Handling scale change:", {
         scale,
-        currentModel: currentModel.name,
+        currentModel: currentModel.name
       });
 
       // 获取背景图片
@@ -130,7 +112,7 @@ export function useLive2DSystem() {
       await appWindow.setSize(
         new PhysicalSize({
           width: newWidth,
-          height: newHeight,
+          height: newHeight
         })
       );
 
@@ -149,7 +131,7 @@ export function useLive2DSystem() {
       console.log("✅ Window and model scaled:", {
         newWidth,
         newHeight,
-        scale,
+        scale
       });
     } catch (error) {
       console.error("❌ Failed to handle scale change:", error);
@@ -182,7 +164,7 @@ export function useLive2DSystem() {
         await appWindow.setSize(
           new PhysicalSize({
             width: innerWidth,
-            height: Math.ceil(innerWidth * (height / width)),
+            height: Math.ceil(innerWidth * (height / width))
           })
         );
       }
@@ -200,7 +182,7 @@ export function useLive2DSystem() {
         innerWidth,
         innerHeight,
         modelScale: innerWidth / width,
-        calculatedScale,
+        calculatedScale
       });
     } catch (error) {
       console.error("❌ Failed to resize:", error);
@@ -269,79 +251,66 @@ export function useLive2DSystem() {
     if (!live2d) return;
 
     try {
-      const unlisten = await listen<DeviceEvent>(
-        "device-changed",
-        ({ payload }) => {
-          const { kind, value } = payload;
+      const unlisten = await listen<DeviceEvent>("device-changed", ({ payload }) => {
+        const { kind, value } = payload;
 
-          if (!live2d.model) return;
+        if (!live2d.model) return;
 
-          switch (kind) {
-            case "MouseMove": {
-              if (
-                value &&
-                typeof value === "object" &&
-                "x" in value &&
-                "y" in value
-              ) {
-                const mousePos = value as { x: number; y: number };
-                const xRatio = mousePos.x / window.screen.width;
-                const yRatio = mousePos.y / window.screen.height;
+        switch (kind) {
+          case "MouseMove": {
+            if (value && typeof value === "object" && "x" in value && "y" in value) {
+              const mousePos = value as { x: number; y: number };
+              const xRatio = mousePos.x / window.screen.width;
+              const yRatio = mousePos.y / window.screen.height;
 
-                // 鼠标追踪参数
-                for (const id of [
-                  "ParamMouseX",
-                  "ParamMouseY",
-                  "ParamAngleX",
-                  "ParamAngleY",
-                ]) {
-                  const { min, max } = live2d.getParameterRange(id);
-                  if (min === undefined || max === undefined) continue;
+              // 鼠标追踪参数
+              for (const id of ["ParamMouseX", "ParamMouseY", "ParamAngleX", "ParamAngleY"]) {
+                const { min, max } = live2d.getParameterRange(id);
+                if (min === undefined || max === undefined) continue;
 
-                  const isXAxis = id.endsWith("X");
-                  const ratio = isXAxis ? xRatio : yRatio;
-                  const paramValue = max - ratio * (max - min);
+                const isXAxis = id.endsWith("X");
+                const ratio = isXAxis ? xRatio : yRatio;
+                const paramValue = max - ratio * (max - min);
 
-                  live2d.setParameterValue(id, paramValue);
-                }
+                live2d.setParameterValue(id, paramValue);
               }
-              break;
             }
-            case "MousePress": {
-              if (typeof value === "string") {
-                const paramMap = {
-                  Left: "ParamMouseLeftDown",
-                  Right: "ParamMouseRightDown",
-                } as const;
+            break;
+          }
+          case "MousePress": {
+            if (typeof value === "string") {
+              const paramMap = {
+                Left: "ParamMouseLeftDown",
+                Right: "ParamMouseRightDown"
+              } as const;
 
-                const paramId = paramMap[value as keyof typeof paramMap];
-                // paramId 来自 const 断言，总是存在的
-                const { min, max } = live2d.getParameterRange(paramId);
-                if (min !== undefined && max !== undefined) {
-                  live2d.setParameterValue(paramId, max);
-                }
+              const paramId = paramMap[value as keyof typeof paramMap];
+              // paramId 来自 const 断言，总是存在的
+              const { min, max } = live2d.getParameterRange(paramId);
+              if (min !== undefined && max !== undefined) {
+                live2d.setParameterValue(paramId, max);
               }
-              break;
             }
-            case "MouseRelease": {
-              if (typeof value === "string") {
-                const paramMap = {
-                  Left: "ParamMouseLeftDown",
-                  Right: "ParamMouseRightDown",
-                } as const;
+            break;
+          }
+          case "MouseRelease": {
+            if (typeof value === "string") {
+              const paramMap = {
+                Left: "ParamMouseLeftDown",
+                Right: "ParamMouseRightDown"
+              } as const;
 
-                const paramId = paramMap[value as keyof typeof paramMap];
-                // paramId 来自 const 断言，总是存在的
-                const { min, max } = live2d.getParameterRange(paramId);
-                if (min !== undefined && max !== undefined) {
-                  live2d.setParameterValue(paramId, min);
-                }
+              const paramId = paramMap[value as keyof typeof paramMap];
+              // paramId 来自 const 断言，总是存在的
+              const { min, max } = live2d.getParameterRange(paramId);
+              if (min !== undefined && max !== undefined) {
+                live2d.setParameterValue(paramId, min);
               }
-              break;
             }
+            break;
           }
         }
-      );
+      });
 
       unlistenRef.current = unlisten;
       console.log("✅ Mouse event listener established");
@@ -358,29 +327,22 @@ export function useLive2DSystem() {
   // 当模型改变时，加载新模型和资源（添加延迟确保 DOM 已渲染）
   useEffect(() => {
     if (currentModel) {
-      console.log(
-        "🎭 Model changed, loading:",
-        currentModel.name,
-        currentModel.path
-      );
+      console.log("🎭 Model changed, loading:", currentModel.name, currentModel.path);
       // 添加小延迟确保 Canvas 元素已经渲染
       const timer = setTimeout(() => {
         void loadModelAndAssets(currentModel.path);
       }, 50);
 
-      return () => { clearTimeout(timer); };
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [currentModel?.id, currentModel?.path]);
 
   // 🎯 监听缩放变化（关键修复）
   useEffect(() => {
     if (currentModel && scale > 0) {
-      console.log(
-        "📏 Scale changed to:",
-        scale,
-        "for model:",
-        currentModel.name
-      );
+      console.log("📏 Scale changed to:", scale, "for model:", currentModel.name);
       void handleScaleChange();
     }
   }, [scale, handleScaleChange, currentModel?.id]);
@@ -404,10 +366,7 @@ export function useLive2DSystem() {
       const leftParamId = "CatParamLeftHandDown";
       const leftRange = live2d.getParameterRange(leftParamId);
       if (leftRange.min !== undefined && leftRange.max !== undefined) {
-        live2d.setParameterValue(
-          leftParamId,
-          leftPressed ? leftRange.max : leftRange.min
-        );
+        live2d.setParameterValue(leftParamId, leftPressed ? leftRange.max : leftRange.min);
       }
 
       // 右手状态
@@ -415,10 +374,7 @@ export function useLive2DSystem() {
       const rightParamId = "CatParamRightHandDown";
       const rightRange = live2d.getParameterRange(rightParamId);
       if (rightRange.min !== undefined && rightRange.max !== undefined) {
-        live2d.setParameterValue(
-          rightParamId,
-          rightPressed ? rightRange.max : rightRange.min
-        );
+        live2d.setParameterValue(rightParamId, rightPressed ? rightRange.max : rightRange.min);
       }
     };
 
@@ -443,7 +399,9 @@ export function useLive2DSystem() {
     };
 
     window.addEventListener("resize", handleWindowResizeEvent);
-    return () => { window.removeEventListener("resize", handleWindowResizeEvent); };
+    return () => {
+      window.removeEventListener("resize", handleWindowResizeEvent);
+    };
   }, [handleResize]);
 
   // 暴露Live2D实例和控制方法
@@ -460,7 +418,7 @@ export function useLive2DSystem() {
     playMotion: useCallback(
       async (group: string, index: number) => {
         const live2d = await initializeLive2D();
-         
+
         return live2d?.playMotion?.(group, index);
       },
       [initializeLive2D]
@@ -469,7 +427,7 @@ export function useLive2DSystem() {
     playExpression: useCallback(
       async (index: number) => {
         const live2d = await initializeLive2D();
-         
+
         return live2d?.playExpression?.(index);
       },
       [initializeLive2D]
@@ -481,6 +439,6 @@ export function useLive2DSystem() {
         live2d?.setParameterValue(id, value);
       },
       [initializeLive2D]
-    ),
+    )
   };
 }

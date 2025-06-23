@@ -1,34 +1,34 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useCatStore } from '@/stores/catStore'
+import { useEffect } from "react";
+import { useCatStore } from "@/stores/catStore";
 
 export function useMouse() {
-  const { setMousePressed, setMousePosition } = useCatStore()
-  
+  const { setMousePressed, setMousePosition } = useCatStore();
+
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
-      const button = event.button === 0 ? 'left' : event.button === 2 ? 'right' : 'middle'
-      setMousePressed([button])
-    }
-    
+      const button = event.button === 0 ? "left" : event.button === 2 ? "right" : "middle";
+      setMousePressed([button]);
+    };
+
     const handleMouseUp = () => {
-      setMousePressed([])
-    }
-    
+      setMousePressed([]);
+    };
+
     const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition(event.clientX, event.clientY)
-    }
-    
+      setMousePosition(event.clientX, event.clientY);
+    };
+
     // 监听全局鼠标事件
-    window.addEventListener('mousedown', handleMouseDown)
-    window.addEventListener('mouseup', handleMouseUp)
-    window.addEventListener('mousemove', handleMouseMove)
-    
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMouseMove);
+
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown)
-      window.removeEventListener('mouseup', handleMouseUp)
-      window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [setMousePressed, setMousePosition])
-} 
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [setMousePressed, setMousePosition]);
+}
