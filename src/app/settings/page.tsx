@@ -17,7 +17,7 @@ import {
   Tag,
   Table,
   Modal,
-  Form,
+  Form
 } from "antd";
 import {
   DownloadOutlined,
@@ -30,7 +30,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
-  ArrowLeftOutlined,
+  ArrowLeftOutlined
 } from "@ant-design/icons";
 import { useCatStore } from "@/stores/catStore";
 import { useModelStore, type Model } from "@/stores/modelStore";
@@ -73,28 +73,28 @@ export default function SettingsPage() {
     {
       key: "cat",
       icon: <EyeOutlined />,
-      label: "猫咪设置",
+      label: "猫咪设置"
     },
     {
       key: "general",
       icon: <SettingOutlined />,
-      label: "通用设置",
+      label: "通用设置"
     },
     {
       key: "model",
       icon: <AppstoreOutlined />,
-      label: "模型管理",
+      label: "模型管理"
     },
     {
       key: "shortcut",
       icon: <ThunderboltOutlined />,
-      label: "快捷键",
+      label: "快捷键"
     },
     {
       key: "about",
       icon: <InfoCircleOutlined />,
-      label: "关于",
-    },
+      label: "关于"
+    }
   ];
 
   const handleShortcutEdit = (shortcut: Shortcut) => {
@@ -105,14 +105,14 @@ export default function SettingsPage() {
 
   const handleShortcutSave = async () => {
     try {
-      const values = await form.validateFields() as Omit<Shortcut, 'id'>;
+      const values = (await form.validateFields()) as Omit<Shortcut, "id">;
       if (editingShortcut) {
         shortcutStore.updateShortcut(editingShortcut.id, values);
         message.success("快捷键更新成功");
       } else {
         shortcutStore.addShortcut({
           id: Date.now().toString(),
-          ...values,
+          ...values
         });
         message.success("快捷键添加成功");
       }
@@ -142,25 +142,12 @@ export default function SettingsPage() {
 
           <div>
             <Text strong>透明度: {catStore.opacity}%</Text>
-            <Slider
-              min={10}
-              max={100}
-              value={catStore.opacity}
-              onChange={catStore.setOpacity}
-              className="mt-2"
-            />
+            <Slider min={10} max={100} value={catStore.opacity} onChange={catStore.setOpacity} className="mt-2" />
           </div>
 
           <div>
             <Text strong>缩放: {catStore.scale}%</Text>
-            <Slider
-              min={50}
-              max={300}
-              step={25}
-              value={catStore.scale}
-              onChange={catStore.setScale}
-              className="mt-2"
-            />
+            <Slider min={50} max={300} step={25} value={catStore.scale} onChange={catStore.setScale} className="mt-2" />
           </div>
 
           <div>
@@ -257,11 +244,7 @@ export default function SettingsPage() {
           <div>
             <Text strong>语言</Text>
             <div className="mt-2">
-              <Select
-                value={generalStore.language}
-                onChange={generalStore.setLanguage}
-                className="w-full"
-              >
+              <Select value={generalStore.language} onChange={generalStore.setLanguage} className="w-full">
                 <Option value="zh-CN">简体中文</Option>
                 <Option value="en-US">English</Option>
               </Select>
@@ -271,11 +254,7 @@ export default function SettingsPage() {
           <div>
             <Text strong>主题</Text>
             <div className="mt-2">
-              <Select
-                value={generalStore.theme}
-                onChange={generalStore.setTheme}
-                className="w-full"
-              >
+              <Select value={generalStore.theme} onChange={generalStore.setTheme} className="w-full">
                 <Option value="auto">跟随系统</Option>
                 <Option value="light">浅色模式</Option>
                 <Option value="dark">深色模式</Option>
@@ -310,7 +289,7 @@ export default function SettingsPage() {
             {
               title: "名称",
               dataIndex: "name",
-              key: "name",
+              key: "name"
             },
             {
               title: "类型",
@@ -318,23 +297,17 @@ export default function SettingsPage() {
               key: "mode",
               render: (mode: string) => (
                 <Tag color={mode === "keyboard" ? "green" : "blue"}>
-                  {mode === "keyboard"
-                    ? "键盘"
-                    : mode === "standard"
-                    ? "标准"
-                    : "手柄"}
+                  {mode === "keyboard" ? "键盘" : mode === "standard" ? "标准" : "手柄"}
                 </Tag>
-              ),
+              )
             },
             {
               title: "来源",
               dataIndex: "isPreset",
               key: "isPreset",
               render: (isPreset: boolean) => (
-                <Tag color={isPreset ? "default" : "orange"}>
-                  {isPreset ? "预设" : "自定义"}
-                </Tag>
-              ),
+                <Tag color={isPreset ? "default" : "orange"}>{isPreset ? "预设" : "自定义"}</Tag>
+              )
             },
             {
               title: "操作",
@@ -343,18 +316,12 @@ export default function SettingsPage() {
                 <Space>
                   <Button
                     size="small"
-                    type={
-                      modelStore.currentModel?.id === record.id
-                        ? "primary"
-                        : "default"
-                    }
+                    type={modelStore.currentModel?.id === record.id ? "primary" : "default"}
                     onClick={() => {
                       modelStore.setCurrentModel(record);
                     }}
                   >
-                    {modelStore.currentModel?.id === record.id
-                      ? "当前"
-                      : "使用"}
+                    {modelStore.currentModel?.id === record.id ? "当前" : "使用"}
                   </Button>
                   {!record.isPreset && (
                     <Button
@@ -367,8 +334,8 @@ export default function SettingsPage() {
                     />
                   )}
                 </Space>
-              ),
-            },
+              )
+            }
           ]}
         />
       </Card>
@@ -379,26 +346,24 @@ export default function SettingsPage() {
     {
       title: "名称",
       dataIndex: "name",
-      key: "name",
+      key: "name"
     },
     {
       title: "快捷键",
       dataIndex: "key",
       key: "key",
-      render: (key: string) => <Tag>{key}</Tag>,
+      render: (key: string) => <Tag>{key}</Tag>
     },
     {
       title: "描述",
       dataIndex: "description",
-      key: "description",
+      key: "description"
     },
     {
       title: "状态",
       dataIndex: "enabled",
       key: "enabled",
-      render: (enabled: boolean) => (
-        <Tag color={enabled ? "green" : "red"}>{enabled ? "启用" : "禁用"}</Tag>
-      ),
+      render: (enabled: boolean) => <Tag color={enabled ? "green" : "red"}>{enabled ? "启用" : "禁用"}</Tag>
     },
     {
       title: "操作",
@@ -420,8 +385,8 @@ export default function SettingsPage() {
             }}
           />
         </Space>
-      ),
-    },
+      )
+    }
   ];
 
   const renderShortcutSettings = () => (
@@ -442,12 +407,7 @@ export default function SettingsPage() {
           </Button>
         }
       >
-        <Table
-          dataSource={shortcutStore.shortcuts}
-          columns={shortcutColumns}
-          rowKey="id"
-          size="small"
-        />
+        <Table dataSource={shortcutStore.shortcuts} columns={shortcutColumns} rowKey="id" size="small" />
       </Card>
 
       <Modal
@@ -463,18 +423,10 @@ export default function SettingsPage() {
         }}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="名称"
-            rules={[{ required: true, message: "请输入快捷键名称!" }]}
-          >
+          <Form.Item name="name" label="名称" rules={[{ required: true, message: "请输入快捷键名称!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="key"
-            label="快捷键"
-            rules={[{ required: true, message: "请输入快捷键组合!" }]}
-          >
+          <Form.Item name="key" label="快捷键" rules={[{ required: true, message: "请输入快捷键组合!" }]}>
             <Input placeholder="例如: Ctrl+Alt+H" />
           </Form.Item>
           <Form.Item name="description" label="描述">
@@ -493,7 +445,7 @@ export default function SettingsPage() {
       <Card title="关于应用">
         <Space direction="vertical" size="middle" className="w-full">
           <div className="text-center">
-            <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="relative mx-auto mb-4 h-16 w-16">
               <Image
                 fill
                 src="/logo.png"
@@ -521,10 +473,7 @@ export default function SettingsPage() {
               icon={<GithubOutlined />}
               onClick={() => {
                 if (typeof window !== "undefined") {
-                  window.open(
-                    "https://github.com/your-repo/bongo-cat-next",
-                    "_blank"
-                  );
+                  window.open("https://github.com/your-repo/bongo-cat-next", "_blank");
                 }
               }}
             >
@@ -565,11 +514,11 @@ export default function SettingsPage() {
             height: "100vh",
             left: 0,
             top: 0,
-            bottom: 0,
+            bottom: 0
           }}
         >
-          <div className="p-4 text-center border-b">
-            <div className="relative w-12 h-12 mx-auto mb-2">
+          <div className="border-b p-4 text-center">
+            <div className="relative mx-auto mb-2 h-12 w-12">
               <Image
                 fill
                 src="/logo.png"
@@ -595,7 +544,7 @@ export default function SettingsPage() {
             }}
           />
 
-          <div className="absolute bottom-4 left-4 right-4">
+          <div className="absolute right-4 bottom-4 left-4">
             <Button
               block
               icon={<ArrowLeftOutlined />}
@@ -610,7 +559,7 @@ export default function SettingsPage() {
 
         <Layout style={{ marginLeft: 240 }}>
           <Content className="p-6">
-            <div className="max-w-4xl mx-auto">{renderContent()}</div>
+            <div className="mx-auto max-w-4xl">{renderContent()}</div>
           </Content>
         </Layout>
       </Layout>

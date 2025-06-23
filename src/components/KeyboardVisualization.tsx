@@ -12,9 +12,7 @@ export function KeyboardVisualization() {
   // 根据按键生成图片路径
   const resolveImagePath = (key: string, side: "left" | "right" = "left") => {
     if (!currentModel) return "";
-    return convertFileSrc(
-      join(currentModel.path, "resources", `${side}-keys`, `${key}.png`)
-    );
+    return convertFileSrc(join(currentModel.path, "resources", `${side}-keys`, `${key}.png`));
   };
 
   const leftKeyImages = useMemo(() => {
@@ -27,7 +25,7 @@ export function KeyboardVisualization() {
         height={100}
         src={resolveImagePath(key, "left")}
         alt={`${key} key`}
-        className="absolute size-full z-10"
+        className="absolute z-10 size-full"
       />
     ));
   }, [pressedLeftKeys, currentModel]);
@@ -42,7 +40,7 @@ export function KeyboardVisualization() {
         height={100}
         src={resolveImagePath(key, "right")}
         alt={`${key} key`}
-        className="absolute size-full z-10"
+        className="absolute z-10 size-full"
       />
     ));
   }, [pressedRightKeys, currentModel]);

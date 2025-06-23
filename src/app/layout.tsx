@@ -6,16 +6,16 @@ import "@/styles/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
@@ -23,20 +23,15 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* Live2D Core Scripts */}
-        <Script
-          src="/js/live2dcubismcore.min.js"
-          strategy="beforeInteractive"
-        />
+        <Script src="/js/live2dcubismcore.min.js" strategy="beforeInteractive" />
         <Script src="/js/live2d.min.js" strategy="beforeInteractive" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ConfigProvider
           theme={{
             token: {
-              colorPrimary: "#1890ff",
-            },
+              colorPrimary: "#1890ff"
+            }
           }}
         >
           {children}

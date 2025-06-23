@@ -21,7 +21,7 @@ export default function CatViewer() {
   const { backgroundImage, scale } = useCatStore();
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,
-    height: 600,
+    height: 600
   });
 
   // 获取图片实际尺寸
@@ -31,11 +31,11 @@ export default function CatViewer() {
       img.onload = () => {
         setImageDimensions({
           width: img.naturalWidth,
-          height: img.naturalHeight,
+          height: img.naturalHeight
         });
         console.log("📏 Background image dimensions:", {
           width: img.naturalWidth,
-          height: img.naturalHeight,
+          height: img.naturalHeight
         });
       };
       img.src = backgroundImage;

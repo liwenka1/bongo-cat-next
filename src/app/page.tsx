@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 // 🎯 动态导入 CatViewer 避免 SSR 问题
 const CatViewer = dynamic(() => import("@/components/CatViewer"), {
   ssr: false,
-  loading: () => <div className="w-screen h-screen bg-transparent" />,
+  loading: () => <div className="h-screen w-screen bg-transparent" />
 });
 
 export default function Home() {
@@ -27,9 +27,7 @@ export default function Home() {
   const handleWindowDrag = async (e: React.MouseEvent) => {
     if (e.button === 0) {
       try {
-        const { getCurrentWebviewWindow } = await import(
-          "@tauri-apps/api/webviewWindow"
-        );
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const appWindow = getCurrentWebviewWindow();
         await appWindow.startDragging();
       } catch (error) {
@@ -46,14 +44,12 @@ export default function Home() {
   };
 
   if (!isClient) {
-    return <div className="w-screen h-screen bg-black" />;
+    return <div className="h-screen w-screen bg-black" />;
   }
 
   return (
     <div
-      className={`relative w-screen h-screen overflow-hidden ${
-        mirrorMode ? "-scale-x-100" : "scale-x-100"
-      }`}
+      className={`relative h-screen w-screen overflow-hidden ${mirrorMode ? "-scale-x-100" : "scale-x-100"}`}
       style={{ opacity: opacity / 100 }}
       onContextMenu={handleContextMenu}
       onMouseDown={(e) => void handleWindowDrag(e)}
