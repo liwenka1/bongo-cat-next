@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AppWindowState } from '@/types';
+import type { AppWindowState } from "@/types";
 
 interface AppState {
   name: string;
@@ -18,11 +18,18 @@ export const useAppStore = create<AppState>((set) => ({
   version: "1.0.0",
   windowState: {},
 
-  setName: (name) => { set({ name }); },
-  setVersion: (version) => { set({ version }); },
-  setWindowState: (windowState) => { set({ windowState }); },
-  updateWindowState: (updates) =>
-    { set((state) => ({
-      windowState: { ...state.windowState, ...updates },
-    })); },
+  setName: (name) => {
+    set({ name });
+  },
+  setVersion: (version) => {
+    set({ version });
+  },
+  setWindowState: (windowState) => {
+    set({ windowState });
+  },
+  updateWindowState: (updates) => {
+    set((state) => ({
+      windowState: { ...state.windowState, ...updates }
+    }));
+  }
 }));
