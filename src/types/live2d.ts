@@ -48,4 +48,4 @@ declare global {
     Live2DFramework?: unknown;
     LIVE2DCUBISMFRAMEWORK?: unknown;
   }
-} 
+}

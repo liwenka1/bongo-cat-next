@@ -11,4 +11,4 @@ export interface Monitor {
   size: { width: number; height: number };
   scaleFactor: number;
   cursorPosition?: CursorPosition;
-} 
+}

@@ -21,4 +21,4 @@ export interface HookWindowState {
   y: number;
   isMaximized: boolean;
   isVisible: boolean;
-} 
+}

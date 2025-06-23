@@ -8,4 +8,4 @@ export interface LogoProps {
 export interface RoundedButtonProps {
   onClick: () => void;
   title: string;
-} 
+}
