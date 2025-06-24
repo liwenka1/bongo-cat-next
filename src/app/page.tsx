@@ -6,7 +6,7 @@ import { useSharedMenu } from "@/hooks/useSharedMenu";
 import dynamic from "next/dynamic";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
-const CatViewer = dynamic(() => import("@/components/CatViewer"), {
+const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
   ssr: false,
   loading: () => <div className="h-screen w-screen bg-transparent" />
 });

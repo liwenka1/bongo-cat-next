@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useLive2DSystem } from "@/hooks/useLive2DSystem";
 import { useCatStore } from "@/stores/catStore";
-import { KeyboardVisualization } from "./KeyboardVisualization";
+import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
 
 /**
