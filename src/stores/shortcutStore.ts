@@ -9,6 +9,7 @@ export interface Shortcut {
 }
 
 interface ShortcutState {
+  // State
   shortcuts: Shortcut[];
 
   // Actions

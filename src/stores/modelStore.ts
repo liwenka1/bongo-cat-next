@@ -31,6 +31,7 @@ export interface Expression {
 }
 
 interface ModelState {
+  // State
   models: Model[];
   currentModel: Model | null;
   motions: MotionGroup;

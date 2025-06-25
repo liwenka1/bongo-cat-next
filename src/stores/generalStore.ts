@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 interface GeneralState {
+  // State
   autostart: boolean;
   checkUpdate: boolean;
   language: string;

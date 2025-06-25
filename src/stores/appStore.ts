@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { AppWindowState } from "@/types";
 
 interface AppState {
+  // State
   name: string;
   version: string;
   windowState: AppWindowState;
