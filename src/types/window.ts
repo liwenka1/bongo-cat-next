@@ -12,13 +12,3 @@ export interface AppWindowState {
   x?: number;
   y?: number;
 }
-
-// 窗口状态类型（用于 useWindowState Hook）
-export interface HookWindowState {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  isMaximized: boolean;
-  isVisible: boolean;
-}
