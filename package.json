@@ -1,7 +1,7 @@
 {
   "name": "bongo-cat-next",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@9.12.1",
   "scripts": {
@@ -10,7 +10,13 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write src/",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:debug": "tauri build --debug",
+    "build:all": "pnpm build && pnpm tauri:build",
+    "release:prepare": "pnpm lint && pnpm format && pnpm build",
+    "release:build": "pnpm release:prepare && pnpm tauri:build"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
