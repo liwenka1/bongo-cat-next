@@ -30,7 +30,7 @@ tauri-plugin-single-instance = "2"
 
 # Fix for rustix process feature issue on Linux
 [target.'cfg(unix)'.dependencies]
-rustix = { version = "0.38", features = ["process"] }
+rustix = { version = "0.38", features = ["process", "std"] }
 
 [features]
 # by default Tauri runs in production mode
