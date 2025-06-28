@@ -49,8 +49,6 @@ jobs:
             target: x86_64-pc-windows-msvc
           - platform: windows-latest
             target: aarch64-pc-windows-msvc
-          - platform: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -92,6 +90,20 @@ jobs:
 
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify and prepare build files
+        run: |
+          echo "=== Current working directory ==="
+          pwd
+          echo "=== Checking src-tauri directory ==="
+          ls -la src-tauri/
+          echo "=== Checking icons in src-tauri ==="
+          ls -la src-tauri/icons/
+          echo "=== Verifying specific required icons ==="
+          test -f src-tauri/icons/32x32.png && echo "✓ 32x32.png found" || echo "✗ 32x32.png missing"
+          test -f src-tauri/icons/128x128.png && echo "✓ 128x128.png found" || echo "✗ 128x128.png missing"
+          test -f src-tauri/icons/icon.ico && echo "✓ icon.ico found" || echo "✗ icon.ico missing"
+          test -f src-tauri/icons/icon.icns && echo "✓ icon.icns found" || echo "✗ icon.icns missing"
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
