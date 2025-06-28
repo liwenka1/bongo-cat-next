@@ -28,6 +28,10 @@ tauri-plugin-dialog = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-single-instance = "2"
 
+# Fix for rustix process feature issue on Linux
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "0.38", features = ["process"] }
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
