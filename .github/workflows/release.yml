@@ -74,7 +74,7 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libxdo-dev libxcb1-dev libxrandr-dev libdbus-1-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -82,7 +82,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
+          workspaces: target
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
@@ -92,21 +92,6 @@ jobs:
 
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Debug - Check icon files
-        run: |
-          echo "=== Checking current directory structure ==="
-          pwd
-          ls -la
-          echo "=== Checking src-tauri directory ==="
-          ls -la src-tauri/
-          echo "=== Checking src-tauri/icons directory ==="
-          ls -la src-tauri/icons/
-          echo "=== Checking specific icon files ==="
-          ls -la src-tauri/icons/32x32.png || echo "32x32.png not found"
-          ls -la src-tauri/icons/128x128.png || echo "128x128.png not found"
-          ls -la src-tauri/icons/icon.ico || echo "icon.ico not found"
-          ls -la src-tauri/icons/icon.icns || echo "icon.icns not found"
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0

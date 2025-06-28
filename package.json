@@ -10,11 +10,12 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write src/",
+    "clean": "rimraf dist src-tauri/target",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:debug": "tauri build --debug",
-    "build:all": "pnpm build && pnpm tauri:build",
+    "build:all": "pnpm clean && pnpm build && pnpm tauri:build",
     "release:prepare": "pnpm lint && pnpm format && pnpm build",
     "release:build": "pnpm release:prepare && pnpm tauri:build"
   },
@@ -50,6 +51,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.6.0",
     "prettier-plugin-tailwindcss": "^0.6.13",
+    "rimraf": "^5.0.10",
     "tailwindcss": "^4.1.7",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.33.1"
