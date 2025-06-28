@@ -1,102 +1,109 @@
-name: 'Build and Release'
+name: Release CI
 
 on:
   push:
     tags:
-      - 'v*' # 当推送 v* 标签时触发
-  workflow_dispatch: # 允许手动触发
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  build:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set output
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate changelog and create release
+        id: create_release
+        run: npx changelogithub --draft --name "${{ steps.vars.outputs.tag }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-app:
+    needs: create-release
     permissions:
-      contents: write # 允许创建和上传到 Release
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # Intel Mac
-            args: '--target x86_64-apple-darwin'
-            target: 'x86_64-apple-darwin'
-          - platform: 'macos-latest' # Apple Silicon Mac
-            args: '--target aarch64-apple-darwin'
-            target: 'aarch64-apple-darwin'
-          - platform: 'ubuntu-20.04' # Linux
-            args: ''
-            target: 'x86_64-unknown-linux-gnu'
-          - platform: 'windows-latest' # Windows
-            args: ''
-            target: 'x86_64-pc-windows-msvc'
+          # macOS builds
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+          
+          # Windows builds  
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+          - platform: windows-latest
+            target: aarch64-pc-windows-msvc
+          
+          # Linux builds
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev libxcb1-dev libxrandr-dev libdbus-1-dev
-
-      - name: Setup Node.js
+      
+      - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-
+          node-version: 20
+          cache: pnpm
+      
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v3
         with:
-          version: 9
-          run_install: false
+          version: latest
 
-      - name: Get pnpm store directory
-        shell: bash
+      - name: Install rust target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Install dependencies (ubuntu only)
+        if: startsWith(matrix.platform, 'ubuntu')
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libxdo-dev libxcb1-dev libxrandr-dev libdbus-1-dev
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Setup Rust
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Install frontend dependencies
-        run: pnpm install
+      - name: Install app dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
+          CI: false
+          PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 可选：代码签名配置 (生产环境推荐)
+          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }} # 使用推送的标签作为发布标签
-          releaseName: 'BongoCat Next ${{ github.ref_name }}' # 发布名称
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: true # 创建草稿发布，你可以手动编辑后发布
+          tagName: ${{ needs.create-release.outputs.tag }}
+          releaseName: 'BongoCat Next ${{ needs.create-release.outputs.tag }}'
+          releaseBody: ''
+          releaseDraft: true
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
-          args: ${{ matrix.args }}
-
-  # 可选：构建完成后的清理任务
-  cleanup:
-    needs: build
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Cleanup
-        run: echo "Build process completed" 
+          args: --target ${{ matrix.target }} 
