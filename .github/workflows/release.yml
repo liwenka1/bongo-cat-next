@@ -22,49 +22,34 @@ jobs:
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Create simple release
+      - name: Create release
         id: create_release
-                run: |
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            # 检查是否是预发布版本
-            TAG="${{ steps.vars.outputs.tag }}"
-            PRERELEASE=""
-            if [[ "$TAG" == *"alpha"* ]] || [[ "$TAG" == *"beta"* ]] || [[ "$TAG" == *"rc"* ]]; then
-              PRERELEASE="--prerelease"
-            fi
-            
-            # 使用 gh CLI 创建简单的 release
-            gh release create "$TAG" \
-              --draft \
-              --title "BongoCat Next $TAG" \
-              --notes "🎉 **BongoCat Next $TAG**
-
-            ## ✨ 主要功能
-            - 桌面宠物显示
-            - 键盘鼠标事件响应
-            - 透明窗口支持
-            - Live2D 模型支持
-            - 设置界面
-
-            ## 📦 下载说明
-            - **Windows**: 下载 \`.msi\` 安装包
-            - **macOS**: 下载 \`.dmg\` 文件  
-            - **Linux**: 下载 \`.deb\` 或 \`.AppImage\`
-
-            > ⚠️ 这是测试版本，可能存在问题，欢迎反馈！
-
-            **完整更新日志**: https://github.com/liwenka1/bongo-cat-next/compare/c8244f07e9cd23b60f0f8c48dd9651d7c850288e...$TAG" \
-              $PRERELEASE
-          else
-            echo "Manual trigger from branch, creating development release"
-            RELEASE_TAG="v0.2.0-dev-$(date +%s)"
-            gh release create "$RELEASE_TAG" \
-              --draft \
-              --title "BongoCat Next Development Build" \
-              --notes "Development build from ${{ github.ref_name }} branch" \
-              --prerelease
-            echo "tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          PRERELEASE=""
+          if [[ "$TAG" == *"alpha"* ]] || [[ "$TAG" == *"beta"* ]] || [[ "$TAG" == *"rc"* ]]; then
+            PRERELEASE="--prerelease"
           fi
+          
+          gh release create "$TAG" \
+            --draft \
+            --title "BongoCat Next $TAG" \
+            --notes "🎉 BongoCat Next $TAG
+
+          ## 主要功能
+          - 桌面宠物显示
+          - 键盘鼠标事件响应
+          - 透明窗口支持
+          - Live2D 模型支持
+          - 设置界面
+
+          ## 下载说明
+          - Windows: 下载 .msi 安装包
+          - macOS: 下载 .dmg 文件  
+          - Linux: 下载 .deb 或 .AppImage
+
+          > 这是测试版本，可能存在问题，欢迎反馈！" \
+            $PRERELEASE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,19 +61,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS builds
           - platform: macos-latest
             target: aarch64-apple-darwin
           - platform: macos-latest
             target: x86_64-apple-darwin
-          
-          # Windows builds  
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
           - platform: windows-latest
             target: aarch64-pc-windows-msvc
-          
-          # Linux builds
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
 
@@ -134,9 +114,6 @@ jobs:
           CI: false
           PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 可选：代码签名配置 (生产环境推荐)
-          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ needs.create-release.outputs.tag }}
           releaseName: 'BongoCat Next ${{ needs.create-release.outputs.tag }}'
