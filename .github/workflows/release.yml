@@ -93,6 +93,21 @@ jobs:
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Debug - Check icon files
+        run: |
+          echo "=== Checking current directory structure ==="
+          pwd
+          ls -la
+          echo "=== Checking src-tauri directory ==="
+          ls -la src-tauri/
+          echo "=== Checking src-tauri/icons directory ==="
+          ls -la src-tauri/icons/
+          echo "=== Checking specific icon files ==="
+          ls -la src-tauri/icons/32x32.png || echo "32x32.png not found"
+          ls -la src-tauri/icons/128x128.png || echo "128x128.png not found"
+          ls -la src-tauri/icons/icon.ico || echo "icon.ico not found"
+          ls -la src-tauri/icons/icon.icns || echo "icon.icns not found"
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
