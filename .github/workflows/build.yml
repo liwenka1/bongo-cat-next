@@ -9,6 +9,8 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
     steps:
@@ -20,14 +22,49 @@ jobs:
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Generate changelog and create release
+      - name: Create simple release
         id: create_release
-        run: npx changelogithub --draft --name "${{ steps.vars.outputs.tag }}"
+                run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # 检查是否是预发布版本
+            TAG="${{ steps.vars.outputs.tag }}"
+            PRERELEASE=""
+            if [[ "$TAG" == *"alpha"* ]] || [[ "$TAG" == *"beta"* ]] || [[ "$TAG" == *"rc"* ]]; then
+              PRERELEASE="--prerelease"
+            fi
+            
+            # 使用 gh CLI 创建简单的 release
+            gh release create "$TAG" \
+              --draft \
+              --title "BongoCat Next $TAG" \
+              --notes "🎉 **BongoCat Next $TAG**
+
+            ## ✨ 主要功能
+            - 桌面宠物显示
+            - 键盘鼠标事件响应
+            - 透明窗口支持
+            - Live2D 模型支持
+            - 设置界面
+
+            ## 📦 下载说明
+            - **Windows**: 下载 \`.msi\` 安装包
+            - **macOS**: 下载 \`.dmg\` 文件  
+            - **Linux**: 下载 \`.deb\` 或 \`.AppImage\`
+
+            > ⚠️ 这是测试版本，可能存在问题，欢迎反馈！
+
+            **完整更新日志**: https://github.com/liwenka1/bongo-cat-next/compare/c8244f07e9cd23b60f0f8c48dd9651d7c850288e...$TAG" \
+              $PRERELEASE
+          else
+            echo "Manual trigger from branch, creating development release"
+            RELEASE_TAG="v0.2.0-dev-$(date +%s)"
+            gh release create "$RELEASE_TAG" \
+              --draft \
+              --title "BongoCat Next Development Build" \
+              --notes "Development build from ${{ github.ref_name }} branch" \
+              --prerelease
+            echo "tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
