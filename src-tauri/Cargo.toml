@@ -28,6 +28,10 @@ tauri-plugin-dialog = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-single-instance = "2"
 
+# Fix for Linux dependency conflicts
+[patch.crates-io]
+rustix = { version = "0.38", features = ["process", "std"] }
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
