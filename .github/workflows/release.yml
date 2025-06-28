@@ -22,34 +22,14 @@ jobs:
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Create release
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate changelog and create release
         id: create_release
-        run: |
-          TAG="${{ steps.vars.outputs.tag }}"
-          PRERELEASE=""
-          if [[ "$TAG" == *"alpha"* ]] || [[ "$TAG" == *"beta"* ]] || [[ "$TAG" == *"rc"* ]]; then
-            PRERELEASE="--prerelease"
-          fi
-          
-          gh release create "$TAG" \
-            --draft \
-            --title "BongoCat Next $TAG" \
-            --notes "🎉 BongoCat Next $TAG
-
-          ## 主要功能
-          - 桌面宠物显示
-          - 键盘鼠标事件响应
-          - 透明窗口支持
-          - Live2D 模型支持
-          - 设置界面
-
-          ## 下载说明
-          - Windows: 下载 .msi 安装包
-          - macOS: 下载 .dmg 文件  
-          - Linux: 下载 .deb 或 .AppImage
-
-          > 这是测试版本，可能存在问题，欢迎反馈！" \
-            $PRERELEASE
+        run: npx changelogithub --draft --name "${{ steps.vars.outputs.tag }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -83,32 +63,12 @@ jobs:
           node-version: 20
       
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v3
         with:
           version: latest
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Debug - Check file structure
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Checking src-tauri structure:"
-          ls -la src-tauri/ || echo "src-tauri directory not found"
-          echo "Checking icons directory:"
-          ls -la src-tauri/icons/ || echo "icons directory not found"
-          echo "Required icon files:"
-          ls -la src-tauri/icons/32x32.png src-tauri/icons/128x128.png src-tauri/icons/icon.ico src-tauri/icons/icon.icns || echo "Some icons missing"
+      - name: Install rust target
+        run: rustup target add ${{ matrix.target }}
 
       - name: Install dependencies (ubuntu only)
         if: startsWith(matrix.platform, 'ubuntu')
@@ -118,18 +78,17 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Configure Windows ARM64 (if needed)
-        if: matrix.target == 'aarch64-pc-windows-msvc'
-        run: |
-          echo "Configuring for Windows ARM64 build"
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
 
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
