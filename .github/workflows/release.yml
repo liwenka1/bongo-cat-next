@@ -74,7 +74,7 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libxdo-dev libxcb1-dev libxrandr-dev libdbus-1-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -92,20 +92,6 @@ jobs:
 
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Verify and prepare build files
-        run: |
-          echo "=== Current working directory ==="
-          pwd
-          echo "=== Checking src-tauri directory ==="
-          ls -la src-tauri/
-          echo "=== Checking icons in src-tauri ==="
-          ls -la src-tauri/icons/
-          echo "=== Verifying specific required icons ==="
-          test -f src-tauri/icons/32x32.png && echo "✓ 32x32.png found" || echo "✗ 32x32.png missing"
-          test -f src-tauri/icons/128x128.png && echo "✓ 128x128.png found" || echo "✗ 128x128.png missing"
-          test -f src-tauri/icons/icon.ico && echo "✓ icon.ico found" || echo "✗ icon.ico missing"
-          test -f src-tauri/icons/icon.icns && echo "✓ icon.icns found" || echo "✗ icon.icns missing"
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
