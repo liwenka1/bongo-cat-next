@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useCatStore } from "@/stores/catStore";
 import { useSharedMenu } from "@/hooks/useSharedMenu";
+import { useTray } from "@/hooks/useTray";
 import dynamic from "next/dynamic";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
@@ -17,11 +18,15 @@ export default function Home() {
   // 🎯 page.tsx 只负责应用级别的状态和事件
   const { opacity, mirrorMode } = useCatStore();
   const { showContextMenu } = useSharedMenu();
+  const { createTray } = useTray();
 
-  // 客户端检查
+  // 客户端检查和托盘初始化
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    
+    // 初始化系统托盘
+    createTray().catch(console.error);
+  }, [createTray]);
 
   // 处理窗口拖拽
   const handleWindowDrag = async (e: React.MouseEvent) => {
