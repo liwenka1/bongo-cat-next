@@ -1,89 +1,79 @@
-import { getName, getVersion, defaultWindowIcon } from '@tauri-apps/api/app';
-import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu';
-import { TrayIcon } from '@tauri-apps/api/tray';
-import type { TrayIconOptions } from '@tauri-apps/api/tray';
-import { openUrl } from '@tauri-apps/plugin-opener';
-import { exit, relaunch } from '@tauri-apps/plugin-process';
-import { getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
+'use client'
 
-const TRAY_ID = 'BONGO_CAT_NEXT_TRAY';
+import type { TrayIconOptions } from '@tauri-apps/api/tray'
 
-// 辅助函数：显示窗口
-const showWindow = async (label: string = 'main') => {
-  const windows = await getAllWebviewWindows();
-  const window = windows.find(w => w.label === label);
-  if (window) {
-    await window.show();
-    await window.setFocus();
-  }
-};
+import { getName, getVersion } from '@tauri-apps/api/app'
+import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
+import { resolveResource } from '@tauri-apps/api/path'
+import { TrayIcon } from '@tauri-apps/api/tray'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { exit, relaunch } from '@tauri-apps/plugin-process'
 
-// 辅助函数：隐藏窗口
-const hideWindow = async (label: string = 'main') => {
-  const windows = await getAllWebviewWindows();
-  const window = windows.find(w => w.label === label);
-  if (window) {
-    await window.hide();
-  }
-};
+const TRAY_ID = 'BONGO_CAT_TRAY'
 
 export function useTray() {
   const createTray = async () => {
-    const tray = await getTrayById();
-
-    if (tray) return;
-
-    const appName = await getName();
-    const appVersion = await getVersion();
-
-    const menu = await getTrayMenu();
-
-    // 使用应用的默认图标作为托盘图标
-    let icon;
+    console.log('🔄 开始创建系统托盘...')
+    
     try {
-      icon = await defaultWindowIcon();
+      // 检查是否已存在托盘
+      const existingTray = await TrayIcon.getById(TRAY_ID)
+      if (existingTray) {
+        console.log('⚠️ 托盘已存在，跳过创建')
+        return existingTray
+      }
+
+      console.log('📝 获取应用信息...')
+      const appName = await getName()
+      const appVersion = await getVersion()
+
+      console.log('🍽️ 创建菜单项...')
+      const menu = await getTrayMenu()
+
+      console.log('🖼️ 获取托盘图标路径...')
+      const icon = await resolveResource('assets/tray.png')
+
+      console.log('🎯 创建托盘图标...')
+      const options: TrayIconOptions = {
+        menu,
+        icon,
+        id: TRAY_ID,
+        tooltip: `${appName} v${appVersion}`,
+        iconAsTemplate: false,
+        menuOnLeftClick: true,
+      }
+
+      const tray = await TrayIcon.new(options)
+      console.log('✅ 系统托盘创建成功')
+      return tray
     } catch (error) {
-      console.warn('Failed to get default window icon:', error);
-      // 如果获取默认图标失败，暂时不设置图标
-      icon = undefined;
+      console.error('❌ 创建系统托盘失败:', error)
+      throw error
     }
-
-    const options: TrayIconOptions = {
-      menu,
-      ...(icon && { icon }),
-      id: TRAY_ID,
-      tooltip: `${appName} v${appVersion}`,
-      iconAsTemplate: false,
-      menuOnLeftClick: true,
-    };
-
-    return TrayIcon.new(options);
-  };
-
-  const getTrayById = () => {
-    return TrayIcon.getById(TRAY_ID);
-  };
+  }
 
   const getTrayMenu = async () => {
-    const appVersion = await getVersion();
+    const appVersion = await getVersion()
 
     const items = await Promise.all([
       MenuItem.new({
-        text: '显示猫咪',
-        action: () => void showWindow('main'),
-      }),
-      MenuItem.new({
-        text: '隐藏猫咪',
-        action: () => void hideWindow('main'),
+        text: '显示/隐藏猫咪',
+        action: () => {
+          // TODO: 实现显示/隐藏猫咪功能
+          console.log('点击了显示/隐藏猫咪')
+        },
       }),
       MenuItem.new({
         text: '偏好设置',
-        action: () => void showWindow('settings'),
+        action: () => {
+          // TODO: 实现打开偏好设置功能
+          console.log('点击了偏好设置')
+        },
       }),
       PredefinedMenuItem.new({ item: 'Separator' }),
       MenuItem.new({
         text: '开源地址',
-        action: () => void openUrl('https://github.com/your-repo/bongo-cat-next'),
+        action: () => void openUrl('https://github.com/your-repo-url'),
       }),
       PredefinedMenuItem.new({ item: 'Separator' }),
       MenuItem.new({
@@ -99,23 +89,12 @@ export function useTray() {
         accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
         action: () => void exit(0),
       }),
-    ]);
+    ])
 
-    return Menu.new({ items });
-  };
-
-  const updateTrayMenu = async () => {
-    const tray = await getTrayById();
-
-    if (!tray) return;
-
-    const menu = await getTrayMenu();
-
-    await tray.setMenu(menu);
-  };
+    return Menu.new({ items })
+  }
 
   return {
     createTray,
-    updateTrayMenu,
-  };
+  }
 } 
