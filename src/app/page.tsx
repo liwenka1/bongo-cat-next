@@ -23,9 +23,9 @@ export default function Home() {
   // 客户端检查和托盘初始化
   useEffect(() => {
     setIsClient(true);
-    
-    // 初始化系统托盘
-    createTray().catch(console.error);
+
+    // 在主页面创建托盘
+    void createTray();
   }, [createTray]);
 
   // 处理窗口拖拽
