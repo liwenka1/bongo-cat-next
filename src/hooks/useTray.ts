@@ -73,7 +73,7 @@ export function useTray() {
       PredefinedMenuItem.new({ item: 'Separator' }),
       MenuItem.new({
         text: '开源地址',
-        action: () => void openUrl('https://github.com/your-repo-url'),
+        action: () => void openUrl('https://github.com/liwenka1/bongo-cat-next'),
       }),
       PredefinedMenuItem.new({ item: 'Separator' }),
       MenuItem.new({
