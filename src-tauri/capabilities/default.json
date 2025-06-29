@@ -19,13 +19,24 @@
     "core:menu:allow-popup",
     "core:path:default",
     "core:event:default",
+    "core:tray:default",
     "opener:default",
+    "process:default",
+    "os:default",
     "fs:default",
     "fs:read-all",
     {
       "identifier": "fs:scope",
       "allow": [
         "**/*"
+      ]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**/*"
+        }
       ]
     }
   ]
