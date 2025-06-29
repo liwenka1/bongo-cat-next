@@ -41,9 +41,18 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|_app_handle, _argv, _cwd| {
-            show_settings_window(_app_handle);
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            let windows = app.webview_windows();
+            
+            windows
+                .values()
+                .next()
+                .expect("Sorry, no window found")
+                .set_focus()
+                .expect("Can't focus on the main window");
         }))
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_os::init())
         .on_window_event(|window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {
                 let _ = window.hide();
