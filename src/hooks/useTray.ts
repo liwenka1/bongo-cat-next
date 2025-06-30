@@ -8,10 +8,15 @@ import { resolveResource } from '@tauri-apps/api/path'
 import { TrayIcon } from '@tauri-apps/api/tray'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { exit, relaunch } from '@tauri-apps/plugin-process'
+import { useCatStore } from '@/stores/catStore'
+import { useRouter } from 'next/navigation'
 
 const TRAY_ID = 'BONGO_CAT_TRAY'
 
 export function useTray() {
+  const catStore = useCatStore()
+  const router = useRouter()
+
   const createTray = async () => {
     console.log('🔄 开始创建系统托盘...')
     
@@ -57,19 +62,17 @@ export function useTray() {
 
     const items = await Promise.all([
       MenuItem.new({
-        text: '显示/隐藏猫咪',
+        text: catStore.visible ? '隐藏猫咪' : '显示猫咪',
         action: () => {
-          // TODO: 实现显示/隐藏猫咪功能
-          console.log('点击了显示/隐藏猫咪')
+          catStore.setVisible(!catStore.visible)
         },
       }),
-      MenuItem.new({
-        text: '偏好设置',
-        action: () => {
-          // TODO: 实现打开偏好设置功能
-          console.log('点击了偏好设置')
-        },
-      }),
+      // MenuItem.new({
+      //   text: '偏好设置',
+      //   action: () => {
+      //     router.push('/settings')
+      //   },
+      // }),
       PredefinedMenuItem.new({ item: 'Separator' }),
       MenuItem.new({
         text: '开源地址',

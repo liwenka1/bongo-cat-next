@@ -42,7 +42,7 @@ export default function CatViewer() {
     }
   }, [backgroundImage]);
 
-  // 🎯 关键修复：计算缩放后的尺寸（按照 BongoCat 的方式）
+  // 🎯 计算缩放后的尺寸
   const scaledWidth = Math.round(imageDimensions.width * (scale / 100));
   const scaledHeight = Math.round(imageDimensions.height * (scale / 100));
 

@@ -449,7 +449,7 @@ export default function SettingsPage() {
               <Image
                 fill
                 src="/logo.png"
-                alt="BongoCat"
+                alt="BongoCat-Next"
                 className="object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";

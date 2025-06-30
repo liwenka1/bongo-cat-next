@@ -15,7 +15,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  name: "BongoCat",
+  name: "BongoCat Next",
   version: "1.0.0",
   windowState: {},
 
