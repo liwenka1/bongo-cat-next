@@ -3,7 +3,6 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { Cubism4ModelSettings, Live2DModel } from "pixi-live2d-display";
 import { Application, Ticker } from "pixi.js";
 import { join } from "./path";
-import type { ModelJSON } from "@/types";
 
 // 导入全局类型定义
 import "@/types/live2d";
@@ -159,7 +158,7 @@ class Live2d {
       model.y = app.screen.height / 2;
       model.anchor.set(0.5, 0.5);
 
-      // 应用用户设置的缩放
+      // 🎯 统一缩放逻辑：应用用户设置的缩放
       this.applyUserScale();
 
       app.stage.addChild(model);
@@ -186,19 +185,18 @@ class Live2d {
 
   private applyUserScale() {
     if (this.model && this.app) {
-      // 计算基础缩放以适应窗口
-      const scaleX = this.app.screen.width / this.model.width;
-      const scaleY = this.app.screen.height / this.model.height;
-      const baseScale = Math.min(scaleX, scaleY) * 0.8; // 稍微缩小一点留出边距
-
-      // 应用用户设置的缩放
+      // 🎯 统一缩放逻辑：使用与 handleResize 相同的简单比例计算
+      // 直接按照窗口宽度与模型宽度的比例缩放，再乘以用户设置的缩放
+      const baseScale = this.app.screen.width / this.model.width;
       const finalScale = baseScale * this.userScale;
       this.model.scale.set(finalScale);
 
-      console.log("Applied user scale:", {
+      console.log("Applied unified user scale:", {
         userScale: this.userScale,
         baseScale: baseScale,
-        finalScale: finalScale
+        finalScale: finalScale,
+        screenSize: { width: this.app.screen.width, height: this.app.screen.height },
+        modelSize: { width: this.model.width, height: this.model.height }
       });
     }
   }

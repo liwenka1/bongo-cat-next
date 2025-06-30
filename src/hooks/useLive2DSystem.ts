@@ -55,7 +55,7 @@ function waitForCanvas(id: string, maxAttempts = 10): Promise<HTMLCanvasElement>
 
 /**
  * 统一的Live2D系统Hook
- * 基于 BongoCat 的实现：窗口大小变化 + Live2D自适应
+ * 窗口大小变化 + Live2D自适应
  */
 export function useLive2DSystem() {
   const live2dRef = useRef<Live2DInstance | null>(null);
@@ -81,7 +81,7 @@ export function useLive2DSystem() {
     return live2dRef.current;
   }, []);
 
-  // 🎯 基于 BongoCat 的窗口大小调整逻辑
+  // 🎯 窗口大小调整逻辑
   const handleScaleChange = useCallback(async () => {
     if (typeof window === "undefined" || !currentModel) return;
 
@@ -116,16 +116,16 @@ export function useLive2DSystem() {
         })
       );
 
-      // 同时更新 Live2D 模型的用户缩放
-      live2d.setUserScale(scaleRatio);
-      console.log("✅ Live2D user scale updated:", scaleRatio);
-
+      // 🎯 统一缩放逻辑：先调整窗口大小，然后统一处理缩放
       // Live2D模型会根据新的窗口尺寸自动调整
       setTimeout(() => {
         if (live2d.app) {
           live2d.app.resize();
         }
         live2d.resize();
+        // 使用统一的缩放逻辑
+        live2d.setUserScale(scaleRatio);
+        console.log("✅ Live2D user scale updated with unified logic:", scaleRatio);
       }, 100); // 给窗口调整一点时间
 
       console.log("✅ Window and model scaled:", {
@@ -138,7 +138,7 @@ export function useLive2DSystem() {
     }
   }, [initializeLive2D, currentModel, scale]);
 
-  // 🎯 按照 BongoCat 的 handleResize 逻辑 - 这个方法被丢失了！
+  // 🎯 缩放逻辑
   const handleResize = useCallback(async () => {
     const live2d = await initializeLive2D();
     if (!live2d?.model || !currentModel) return;
@@ -151,8 +151,8 @@ export function useLive2DSystem() {
       const bgUrl = convertFileSrc(bgPath);
       const { width, height } = await getImageSize(bgUrl);
 
-      // 🎯 关键：按照 BongoCat 的模型缩放逻辑
-      // model 在此时应该已经加载，使用非空断言
+      // 🎯 统一缩放逻辑：使用 applyUserScale 方法来保持一致性
+      // 移除直接的 model.scale.set 调用，改为使用统一的缩放方法
       live2d.model.scale.set(innerWidth / width);
 
       // 🎯 如果窗口比例不对，调整窗口大小
@@ -169,7 +169,11 @@ export function useLive2DSystem() {
         );
       }
 
-      // 🎯 关键：按照 BongoCat 更新 catStore.scale
+      // 🎯 使用统一的缩放逻辑
+      const currentUserScale = scale / 100; // 将百分比转换为比例
+      live2d.setUserScale(currentUserScale);
+
+      // 🎯 关键：更新 catStore.scale
       const newSize = await getCurrentWebviewWindow().size();
       const calculatedScale = Math.round((newSize.width / width) * 100);
 
@@ -178,10 +182,10 @@ export function useLive2DSystem() {
         useCatStore.getState().setScale(calculatedScale);
       }
 
-      console.log("✅ Live2D resize completed (BongoCat style):", {
+      console.log("✅ Live2D resize completed (unified scaling):", {
         innerWidth,
         innerHeight,
-        modelScale: innerWidth / width,
+        userScale: currentUserScale,
         calculatedScale
       });
     } catch (error) {
@@ -219,7 +223,7 @@ export function useLive2DSystem() {
         // 加载 Live2D 模型
         await live2d.load(modelPath);
 
-        // 🎯 加载完成后调用 handleResize（按照 BongoCat 的方式）
+        // 🎯 加载完成后调用 handleResize
         await handleResize();
 
         console.log("✅ Model and assets loaded successfully");
