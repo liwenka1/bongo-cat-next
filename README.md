@@ -7,7 +7,7 @@
 **一个现代化的桌面宠物应用，让可爱的猫咪陪伴你的编程时光**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.1.2-green.svg)](package.json)
 [![Tauri](https://img.shields.io/badge/Tauri-2.0-orange.svg)](https://tauri.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 
