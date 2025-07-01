@@ -32,11 +32,11 @@ import {
   PlusOutlined,
   ArrowLeftOutlined
 } from "@ant-design/icons";
-import { useCatStore } from "@/stores/catStore";
-import { useModelStore, type Model } from "@/stores/modelStore";
-import { useGeneralStore } from "@/stores/generalStore";
-import { useShortcutStore, type Shortcut } from "@/stores/shortcutStore";
-import { useAppStore } from "@/stores/appStore";
+import { useCatStore } from "@/stores/cat-store";
+import { useModelStore, type Model } from "@/stores/model-store";
+import { useGeneralStore } from "@/stores/general-store";
+import { useShortcutStore, type Shortcut } from "@/stores/shortcut-store";
+import { useAppStore } from "@/stores/app-store";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { ColumnsType } from "antd/es/table";
