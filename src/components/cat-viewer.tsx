@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLive2DSystem } from "@/hooks/useLive2DSystem";
-import { useCatStore } from "@/stores/catStore";
+import { useCatStore } from "@/stores/cat-store";
 import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
+import { useLive2DSystem } from "@/hooks/use-live2d-system";
 
 /**
  * 🎯 CatViewer - Live2D 渲染器组件

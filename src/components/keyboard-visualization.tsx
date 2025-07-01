@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { useCatStore } from "@/stores/catStore";
-import { useModelStore } from "@/stores/modelStore";
+import { useCatStore } from "@/stores/cat-store";
+import { useModelStore } from "@/stores/model-store";
 import { join } from "@/utils/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import Image from "next/image";
