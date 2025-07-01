@@ -84,26 +84,13 @@ class Live2d {
       throw new Error('Canvas element with id "live2dCanvas" not found');
     }
 
-    // 清理现有的应用
-    this.destroy();
-
     this.app = new Application({
       view,
       resizeTo: window,
       backgroundAlpha: 0,
       autoDensity: true,
-      resolution: devicePixelRatio,
-      antialias: true
+      resolution: devicePixelRatio
     });
-
-    // 确保canvas样式正确
-    view.style.position = "absolute";
-    view.style.top = "0";
-    view.style.left = "0";
-    view.style.width = "100%";
-    view.style.height = "100%";
-    view.style.pointerEvents = "none";
-    view.style.zIndex = "2";
 
     console.log("Live2D Application mounted:", this.app.screen.width, "x", this.app.screen.height);
   }
@@ -118,8 +105,8 @@ class Live2d {
       this.mount();
     }
 
-    // 重要：销毁现有模型
-    this.destroyModel();
+    // 清理现有的应用
+    this.destroy();
 
     // 🎯 直接使用固定的模型文件名，就像原始项目
     const modelPath = join(path, "cat.model3.json");
@@ -228,19 +215,8 @@ class Live2d {
     }
   }
 
-  public destroyModel() {
-    if (this.model) {
-      this.model.destroy();
-      this.model = null;
-    }
-  }
-
   public destroy() {
-    this.destroyModel();
-    if (this.app) {
-      this.app.destroy(true);
-      this.app = null;
-    }
+    this.model?.destroy();
   }
 
   public playMotion(group: string, index: number) {
