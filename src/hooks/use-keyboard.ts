@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { useCatStore } from "@/stores/catStore";
-import { useModelStore } from "@/stores/modelStore";
+import { useCatStore } from "@/stores/cat-store";
+import { useModelStore } from "@/stores/model-store";
 import { readDir, exists } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import type { SpecificDeviceEvent } from "@/types";

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Menu, CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useCatStore } from "@/stores/catStore";
-import { useModelStore } from "@/stores/modelStore";
+import { useCatStore } from "@/stores/cat-store";
+import { useModelStore } from "@/stores/model-store";
 
 export function useSharedMenu() {
   const [isClient, setIsClient] = useState(false);

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useCatStore } from "@/stores/catStore";
-import { useModelStore } from "@/stores/modelStore";
-import { useKeyboard } from "@/hooks/useKeyboard";
+import { useCatStore } from "@/stores/cat-store";
+import { useModelStore } from "@/stores/model-store";
+import { useKeyboard } from "@/hooks/use-keyboard";
 import { listen } from "@tauri-apps/api/event";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
@@ -342,6 +342,21 @@ export function useLive2DSystem() {
       };
     }
   }, [currentModel?.id, currentModel?.path]);
+
+  // 🎯 监听 visible 状态变化，当从隐藏变为显示时重新加载模型
+  useEffect(() => {
+    if (visible && currentModel) {
+      console.log("👁️ Visibility changed to true, reloading model:", currentModel.name);
+      // 添加延迟确保 Canvas 元素已经重新渲染
+      const timer = setTimeout(() => {
+        void loadModelAndAssets(currentModel.path);
+      }, 50);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [visible, currentModel?.id]);
 
   // 🎯 监听缩放变化（关键修复）
   useEffect(() => {

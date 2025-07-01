@@ -8,14 +8,14 @@ import { resolveResource } from '@tauri-apps/api/path'
 import { TrayIcon } from '@tauri-apps/api/tray'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { exit, relaunch } from '@tauri-apps/plugin-process'
-import { useCatStore } from '@/stores/catStore'
-import { useRouter } from 'next/navigation'
+import { useCatStore } from '@/stores/cat-store'
+import { useEffect, useRef } from 'react'
 
 const TRAY_ID = 'BONGO_CAT_TRAY'
 
 export function useTray() {
-  const catStore = useCatStore()
-  const router = useRouter()
+  const { visible, setVisible } = useCatStore()
+  const trayRef = useRef<TrayIcon | null>(null)
 
   const createTray = async () => {
     console.log('🔄 开始创建系统托盘...')
@@ -25,6 +25,9 @@ export function useTray() {
       const existingTray = await TrayIcon.getById(TRAY_ID)
       if (existingTray) {
         console.log('⚠️ 托盘已存在，跳过创建')
+        trayRef.current = existingTray
+        // 更新现有托盘的菜单
+        await updateTrayMenu(existingTray)
         return existingTray
       }
 
@@ -49,6 +52,7 @@ export function useTray() {
       }
 
       const tray = await TrayIcon.new(options)
+      trayRef.current = tray
       console.log('✅ 系统托盘创建成功')
       return tray
     } catch (error) {
@@ -57,14 +61,24 @@ export function useTray() {
     }
   }
 
+  const updateTrayMenu = async (tray: TrayIcon) => {
+    try {
+      const menu = await getTrayMenu()
+      await tray.setMenu(menu)
+      console.log('🔄 托盘菜单已更新')
+    } catch (error) {
+      console.error('❌ 更新托盘菜单失败:', error)
+    }
+  }
+
   const getTrayMenu = async () => {
     const appVersion = await getVersion()
 
     const items = await Promise.all([
       MenuItem.new({
-        text: catStore.visible ? '隐藏猫咪' : '显示猫咪',
+        text: visible ? '隐藏猫咪' : '显示猫咪',
         action: () => {
-          catStore.setVisible(!catStore.visible)
+          setVisible(!visible)
         },
       }),
       // MenuItem.new({
@@ -96,6 +110,17 @@ export function useTray() {
 
     return Menu.new({ items })
   }
+
+  // 🎯 监听 visible 状态变化，自动更新托盘菜单
+  useEffect(() => {
+    const updateMenu = async () => {
+      if (trayRef.current) {
+        await updateTrayMenu(trayRef.current)
+      }
+    }
+    
+    void updateMenu()
+  }, [visible]) // 依赖 visible 状态
 
   return {
     createTray,
