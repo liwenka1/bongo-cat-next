@@ -99,7 +99,7 @@ export function useLive2DSystem() {
       const bgUrl = convertFileSrc(bgPath);
 
       // 获取背景图片的原始尺寸
-      const { width, height } = await getImageSize(bgUrl);
+      const { width , height } = await getImageSize(bgUrl);
       console.log("📏 Background image size:", { width, height, scale });
 
       // 缩放计算方式 - scale 现在是百分比（如 50, 100, 150）
@@ -149,7 +149,7 @@ export function useLive2DSystem() {
       // 获取背景图片尺寸
       const bgPath = join(currentModel.path, "resources", "background.png");
       const bgUrl = convertFileSrc(bgPath);
-      const { width, height } = await getImageSize(bgUrl);
+      const { width, height} = await getImageSize(bgUrl);
 
       // 🎯 统一缩放逻辑：使用 applyUserScale 方法来保持一致性
       // 移除直接的 model.scale.set 调用，改为使用统一的缩放方法
@@ -195,7 +195,7 @@ export function useLive2DSystem() {
 
   // 加载模型和背景（修复 Canvas 查找问题）
   const loadModelAndAssets = useCallback(
-    async (modelPath: string) => {
+    async (modelPath: string, modelName: string) => {
       if (isLoadingRef.current) {
         console.log("⏳ Model loading already in progress, skipping...");
         return;
@@ -204,7 +204,7 @@ export function useLive2DSystem() {
       isLoadingRef.current = true;
 
       try {
-        console.log("🔄 Loading model and assets for:", modelPath);
+        console.log("🔄 Loading model and assets for:", modelPath, modelName);
 
         // 先设置背景图片
         const bgPath = join(modelPath, "resources", "background.png");
@@ -221,7 +221,7 @@ export function useLive2DSystem() {
         }
 
         // 加载 Live2D 模型
-        await live2d.load(modelPath);
+        await live2d.load(modelPath, modelName);
 
         // 🎯 加载完成后调用 handleResize
         await handleResize();
@@ -334,7 +334,7 @@ export function useLive2DSystem() {
       console.log("🎭 Model changed, loading:", currentModel.name, currentModel.path);
       // 添加小延迟确保 Canvas 元素已经渲染
       const timer = setTimeout(() => {
-        void loadModelAndAssets(currentModel.path);
+        void loadModelAndAssets(currentModel.path, currentModel.modelName);
       }, 50);
 
       return () => {
@@ -349,7 +349,7 @@ export function useLive2DSystem() {
       console.log("👁️ Visibility changed to true, reloading model:", currentModel.name);
       // 添加延迟确保 Canvas 元素已经重新渲染
       const timer = setTimeout(() => {
-        void loadModelAndAssets(currentModel.path);
+        void loadModelAndAssets(currentModel.path, currentModel.modelName);
       }, 50);
 
       return () => {

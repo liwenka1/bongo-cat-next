@@ -204,6 +204,19 @@ export function useKeyboard() {
 
     const updateSupportedKeys = async () => {
       console.log("📁 Starting to read key directories for model:", currentModel.path);
+      
+      // 🎯 只为交互式模型读取键盘目录
+      const isInteractiveModel = currentModel.id === "keyboard" || currentModel.id === "standard";
+      
+      if (!isInteractiveModel) {
+        console.log("🎭 Non-interactive model detected, skipping keyboard directories");
+        supportedLeftKeysRef.current = [];
+        supportedRightKeysRef.current = [];
+        setSupportedLeftKeys([]);
+        setSupportedRightKeys([]);
+        return;
+      }
+      
       try {
         // 检查左键目录
         try {
