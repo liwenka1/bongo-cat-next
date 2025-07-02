@@ -11,6 +11,7 @@ export interface Model {
   path: string;
   mode: ModelMode;
   isPreset: boolean;
+  modelName: string;
 }
 
 export interface Motion {
@@ -75,6 +76,8 @@ export const useModelStore = create<ModelState>((set, get) => ({
       // 解析 Tauri 资源路径
       const standardPath = await resolveResource("assets/models/standard");
       const keyboardPath = await resolveResource("assets/models/keyboard");
+      const destroyPath = await resolveResource("assets/models/destroy");
+      const normalPath = await resolveResource("assets/models/normal");
 
       // 初始化预设模型
       const presetModels: Model[] = [
@@ -83,14 +86,32 @@ export const useModelStore = create<ModelState>((set, get) => ({
           name: "鼠标模式",
           path: standardPath,
           mode: "standard",
-          isPreset: true
+          isPreset: true,
+          modelName: "cat.model3.json"
         },
         {
           id: "keyboard",
           name: "键盘模式",
           path: keyboardPath,
           mode: "keyboard",
-          isPreset: true
+          isPreset: true,
+          modelName: "cat.model3.json"
+        },
+        {
+          id: "destroy",
+          name: "Destroy 模型",
+          path: destroyPath,
+          mode: "standard",
+          isPreset: true,
+          modelName: "destroy.model3.json"
+        },
+        {
+          id: "normal",
+          name: "Normal 模型",
+          path: normalPath,
+          mode: "standard",
+          isPreset: true,
+          modelName: "normal.model3.json"
         }
       ];
 
@@ -108,14 +129,32 @@ export const useModelStore = create<ModelState>((set, get) => ({
           name: "鼠标模式",
           path: "assets/models/standard",
           mode: "standard",
-          isPreset: true
+          isPreset: true,
+          modelName: "cat.model3.json"
         },
         {
           id: "keyboard",
           name: "键盘模式",
           path: "assets/models/keyboard",
           mode: "keyboard",
-          isPreset: true
+          isPreset: true,
+          modelName: "cat.model3.json"
+        },
+        {
+          id: "destroy",
+          name: "Destroy 模型",
+          path: "assets/models/destroy",
+          mode: "standard",
+          isPreset: true,
+          modelName: "destroy.model3.json"
+        },
+        {
+          id: "normal",
+          name: "Normal 模型",
+          path: "assets/models/normal",
+          mode: "standard",
+          isPreset: true,
+          modelName: "normal.model3.json"
         }
       ];
 

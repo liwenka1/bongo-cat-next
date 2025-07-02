@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useCatStore } from "@/stores/cat-store";
+import { useModelStore } from "@/stores/model-store";
 import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
 import { useLive2DSystem } from "@/hooks/use-live2d-system";
@@ -19,10 +20,16 @@ export default function CatViewer() {
   // 🚀 统一的 Live2D 系统 - 所有 Live2D 逻辑在这里
   const { visible } = useLive2DSystem();
   const { backgroundImage, scale } = useCatStore();
+  const { currentModel } = useModelStore();
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,
     height: 600
   });
+
+  // 🎯 判断当前模型是否需要背景和键盘交互
+  const isInteractiveModel = currentModel?.id === "keyboard" || currentModel?.id === "standard";
+  const shouldShowBackground = isInteractiveModel && backgroundImage;
+  const shouldShowKeyboard = isInteractiveModel;
 
   // 获取图片实际尺寸
   useEffect(() => {
@@ -51,8 +58,8 @@ export default function CatViewer() {
 
   return (
     <>
-      {/* 🖼️ 背景图片层 带缩放同步 */}
-      {backgroundImage && (
+      {/* 🖼️ 背景图片层 - 仅对交互式模型显示 */}
+      {shouldShowBackground && (
         <NextImage
           src={backgroundImage}
           alt="Background"
@@ -63,11 +70,11 @@ export default function CatViewer() {
         />
       )}
 
-      {/* 🎭 Live2D Canvas - 核心渲染区域 */}
+      {/* 🎭 Live2D Canvas - 所有模型都需要 */}
       <canvas id="live2dCanvas" className="absolute size-full" />
 
-      {/* ⌨️ 键盘可视化层 同步缩放 */}
-      <KeyboardVisualization />
+      {/* ⌨️ 键盘可视化层 - 仅对交互式模型显示 */}
+      {shouldShowKeyboard && <KeyboardVisualization />}
     </>
   );
 }
