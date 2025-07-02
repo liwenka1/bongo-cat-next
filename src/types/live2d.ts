@@ -14,7 +14,7 @@ export interface Live2DApp {
 export interface Live2DInstance {
   model: Live2DModel | null;
   app: Live2DApp | null;
-  load: (path: string) => Promise<void>;
+  load: (path: string, modelName: string) => Promise<void>;
   getParameterRange: (id: string) => { min?: number; max?: number };
   setParameterValue: (id: string, value: number) => void;
   setUserScale: (scale: number) => void;

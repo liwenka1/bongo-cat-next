@@ -95,7 +95,7 @@ class Live2d {
     console.log("Live2D Application mounted:", this.app.screen.width, "x", this.app.screen.height);
   }
 
-  public async load(path: string) {
+  public async load(path: string, modelName: string = "cat.model3.json") {
     console.log("Loading Live2D model from:", path);
 
     // 确保 Live2D 运行时已初始化
@@ -109,9 +109,9 @@ class Live2d {
     this.destroy();
 
     // 🎯 直接使用固定的模型文件名，就像原始项目
-    const modelPath = join(path, "cat.model3.json");
+    const modelPath = join(path, modelName);
     const modelUrl = convertFileSrc(modelPath);
-
+    console.log("modelUrl", modelUrl);
     try {
       // 获取模型JSON配置
       const response = await fetch(modelUrl);
