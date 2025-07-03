@@ -7,7 +7,7 @@
     ],
     "Physics": null,
     "Motions": {
-      "normal": [
+      "": [
         {
           "File": "motions/daiji_idle_01.motion3.json"
         }
