@@ -78,6 +78,8 @@ export const useModelStore = create<ModelState>((set, get) => ({
       const keyboardPath = await resolveResource("assets/models/keyboard");
       const destroyPath = await resolveResource("assets/models/destroy");
       const normalPath = await resolveResource("assets/models/normal");
+      const naximofu2Path = await resolveResource("assets/models/naximofu_2");
+      const chaijun4Path = await resolveResource("assets/models/chaijun_4");
 
       // 初始化预设模型
       const presetModels: Model[] = [
@@ -112,6 +114,22 @@ export const useModelStore = create<ModelState>((set, get) => ({
           mode: "standard",
           isPreset: true,
           modelName: "normal.model3.json"
+        },
+        {
+          id: "naximofu_2",
+          name: "Naximofu 2 模型",
+          path: naximofu2Path,
+          mode: "standard",
+          isPreset: true,
+          modelName: "naximofu_2.model3.json"
+        },
+        {
+          id: "chaijun_4",
+          name: "Chaijun 4 模型",
+          path: chaijun4Path,
+          mode: "standard",
+          isPreset: true,
+          modelName: "chaijun_4.model3.json"
         }
       ];
 
@@ -155,6 +173,22 @@ export const useModelStore = create<ModelState>((set, get) => ({
           mode: "standard",
           isPreset: true,
           modelName: "normal.model3.json"
+        },
+        {
+          id: "naximofu_2",
+          name: "Naximofu 2 模型",
+          path: "assets/models/naximofu_2",
+          mode: "standard",
+          isPreset: true,
+          modelName: "naximofu_2.model3.json"
+        },
+        {
+          id: "chaijun_4",
+          name: "Chaijun 4 模型",
+          path: "assets/models/chaijun_4",
+          mode: "standard",
+          isPreset: true,
+          modelName: "chaijun_4.model3.json"
         }
       ];
 
