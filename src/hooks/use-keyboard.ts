@@ -219,8 +219,8 @@ export function useKeyboard() {
       
       try {
         // 检查左键目录
-        try {
-          const leftPath = join(currentModel.path, "resources", "left-keys");
+        const leftPath = join(currentModel.path, "resources", "left-keys");
+        if (await exists(leftPath)) {
           console.log("📂 Reading left keys from:", leftPath);
           const leftFiles = await readDir(leftPath);
           console.log(
@@ -233,15 +233,15 @@ export function useKeyboard() {
           console.log("👈 Processed left keys:", leftKeys);
           supportedLeftKeysRef.current = leftKeys;
           setSupportedLeftKeys(leftKeys);
-        } catch (error) {
-          console.warn("❌ Failed to read left keys directory:", error);
+        } else {
+          console.log("🤷‍♂️ Left keys directory not found, skipping:", leftPath);
           supportedLeftKeysRef.current = [];
           setSupportedLeftKeys([]);
         }
 
         // 检查右键目录
-        try {
-          const rightPath = join(currentModel.path, "resources", "right-keys");
+        const rightPath = join(currentModel.path, "resources", "right-keys");
+        if (await exists(rightPath)) {
           console.log("📂 Reading right keys from:", rightPath);
           const rightFiles = await readDir(rightPath);
           console.log(
@@ -254,8 +254,8 @@ export function useKeyboard() {
           console.log("👉 Processed right keys:", rightKeys);
           supportedRightKeysRef.current = rightKeys;
           setSupportedRightKeys(rightKeys);
-        } catch (error) {
-          console.warn("❌ Failed to read right keys directory:", error);
+        } else {
+          console.log("🤷‍♂️ Right keys directory not found, skipping:", rightPath);
           supportedRightKeysRef.current = [];
           setSupportedRightKeys([]);
         }
@@ -285,7 +285,11 @@ export function useKeyboard() {
         setSupportedRightKeys([...supportedRightKeysRef.current]);
 
       } catch (error) {
-        console.error("Failed to read key directories:", error);
+        console.error("❌ Failed to process key directories:", error);
+        supportedLeftKeysRef.current = [];
+        setSupportedLeftKeys([]);
+        supportedRightKeysRef.current = [];
+        setSupportedRightKeys([]);
       }
     };
 
