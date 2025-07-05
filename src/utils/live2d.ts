@@ -77,13 +77,7 @@ class Live2d {
     }
   }
 
-  private mount() {
-    const view = document.getElementById("live2dCanvas");
-
-    if (!(view instanceof HTMLCanvasElement)) {
-      throw new Error('Canvas element with id "live2dCanvas" not found');
-    }
-
+  private mount(view: HTMLCanvasElement) {
     this.app = new Application({
       view,
       resizeTo: window,
@@ -95,14 +89,14 @@ class Live2d {
     console.log("Live2D Application mounted:", this.app.screen.width, "x", this.app.screen.height);
   }
 
-  public async load(path: string, modelName: string = "cat.model3.json") {
+  public async load(path: string, modelName: string = "cat.model3.json", canvas: HTMLCanvasElement) {
     console.log("Loading Live2D model from:", path);
 
     // 确保 Live2D 运行时已初始化
     await this.ensureInitialized();
 
     if (!this.app) {
-      this.mount();
+      this.mount(canvas);
     }
 
     // 清理现有的应用
@@ -219,7 +213,7 @@ class Live2d {
     this.model?.destroy();
   }
 
-  public playMotion(group: string, index: number) {
+  public playMotion(group: string, index?: number) {
     return this.model?.motion(group, index);
   }
 
