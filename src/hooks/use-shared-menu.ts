@@ -83,13 +83,13 @@ export function useSharedMenu() {
     if (!isClient) return [];
 
     return await Promise.all(
-      models.map(async (model) => {
+      Object.values(models).map(async (model) => {
         return await CheckMenuItem.new({
           text: model.name,
           checked: currentModel?.id === model.id,
           action: () => {
             console.log(`🎭 Switching to model: ${model.name}`);
-            setCurrentModel(model);
+            setCurrentModel(model.id);
           }
         });
       })

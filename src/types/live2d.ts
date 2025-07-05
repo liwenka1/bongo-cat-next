@@ -1,3 +1,12 @@
+import type { Live2DModel as BaseLive2DModel } from "pixi-live2d-display";
+
+declare module "pixi-live2d-display" {
+  interface Live2DModel {
+    motions: Record<string, any>;
+    motion(group: string, index?: number): Promise<void>;
+  }
+}
+
 // Live2D 模型类型定义
 export interface Live2DModel {
   scale: {
@@ -12,15 +21,16 @@ export interface Live2DApp {
 
 // Live2D 实例类型定义
 export interface Live2DInstance {
-  model: Live2DModel | null;
-  app: Live2DApp | null;
-  load: (path: string, modelName: string) => Promise<void>;
+  model: BaseLive2DModel | null;
+  app: any;
+  load: (path: string, modelName: string, canvas: HTMLCanvasElement) => Promise<any>;
   getParameterRange: (id: string) => { min?: number; max?: number };
   setParameterValue: (id: string, value: number) => void;
   setUserScale: (scale: number) => void;
   resize: () => void;
-  playMotion?: (group: string, index: number) => Promise<void>;
-  playExpression?: (index: number) => Promise<void>;
+  destroy: () => void;
+  playMotion: (group: string, index?: number) => Promise<void>;
+  playExpression: (index: number) => Promise<void>;
 }
 
 // 模型JSON类型定义
@@ -32,7 +42,7 @@ export interface ModelJSON {
     Physics?: string;
     Pose?: string;
     Expressions?: Array<{ Name: string; File: string }>;
-    Motions?: Record<string, Array<{ File: string; Sound?: string }>>;
+    Motions: Record<string, { File: string }[]>;
   };
   Groups?: Array<{
     Target: string;
@@ -48,4 +58,9 @@ declare global {
     Live2DFramework?: unknown;
     LIVE2DCUBISMFRAMEWORK?: unknown;
   }
+}
+
+export interface DeviceEvent {
+  kind: "MouseMove" | "MousePress" | "MouseRelease";
+  value: { x: number; y: number } | string;
 }

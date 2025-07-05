@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { resolveResource } from "@tauri-apps/api/path";
 import { join } from "@/utils/path";
 
@@ -31,171 +31,55 @@ export interface Expression {
   Description?: string;
 }
 
-interface ModelState {
-  // State
-  models: Model[];
-  currentModel: Model | null;
-  motions: MotionGroup;
-  expressions: Expression[];
-
-  // Actions
-  setModels: (models: Model[]) => void;
-  setCurrentModel: (model: Model | null) => void;
-  setMotions: (motions: MotionGroup) => void;
-  setExpressions: (expressions: Expression[]) => void;
-  initializeModels: () => Promise<void>;
+export interface ModelConfig {
+  id: string;
+  name: string;
+  path: string;
+  mode: ModelMode;
+  isPreset: boolean;
+  modelName: string;
 }
 
-export const useModelStore = create<ModelState>((set, get) => ({
-  models: [],
-  currentModel: null,
-  motions: {},
-  expressions: [],
+export interface ModelStoreState {
+  models: Record<string, Model>;
+  currentModel: Model | null;
+  initializeModels: () => Promise<void>;
+  setCurrentModel: (id: string) => void;
+}
 
-  setModels: (models) => {
-    set({ models });
-  },
-  setCurrentModel: (currentModel) => {
-    set({ currentModel });
-  },
-  setMotions: (motions) => {
-    set({ motions });
-  },
-  setExpressions: (expressions) => {
-    set({ expressions });
-  },
+export const useModelStore = create<ModelStoreState>()(
+  persist(
+    (set, get) => ({
+      models: {},
+      currentModel: null,
+      initializeModels: async () => {
+        const presetModels: Model[] = [
+          { id: "standard", name: "鼠标模式", path: "assets/models/standard", mode: "standard", isPreset: true, modelName: "cat.model3.json" },
+          { id: "keyboard", name: "键盘模式", path: "assets/models/keyboard", mode: "keyboard", isPreset: true, modelName: "cat.model3.json" },
+          { id: "destroy", name: "Destroy 模型", path: "assets/models/destroy", mode: "standard", isPreset: true, modelName: "destroy.model3.json" },
+          { id: "normal", name: "Normal 模型", path: "assets/models/normal", mode: "standard", isPreset: true, modelName: "normal.model3.json" },
+          { id: "naximofu_2", name: "Naximofu 2 模型", path: "assets/models/naximofu_2", mode: "standard", isPreset: true, modelName: "naximofu_2.model3.json" },
+          { id: "chaijun_4", name: "Chaijun 4 模型", path: "assets/models/chaijun_4", mode: "standard", isPreset: true, modelName: "chaijun_4.model3.json" }
+        ];
 
-  initializeModels: async () => {
-    const state = get();
+        const initialModels = presetModels.reduce<Record<string, Model>>((acc, model) => {
+          acc[model.id] = model;
+          return acc;
+        }, {});
 
-    if (state.models.length > 0) {
-      return;
+        set({
+          models: initialModels,
+          currentModel: Object.values(initialModels)[0],
+        });
+      },
+      setCurrentModel: (id: string) => {
+        const model = get().models[id];
+        set({ currentModel: model });
+      },
+    }),
+    {
+      name: "model-storage",
+      storage: createJSONStorage(() => localStorage),
     }
-
-    try {
-      // 解析 Tauri 资源路径
-      const standardPath = await resolveResource("assets/models/standard");
-      const keyboardPath = await resolveResource("assets/models/keyboard");
-      const destroyPath = await resolveResource("assets/models/destroy");
-      const normalPath = await resolveResource("assets/models/normal");
-      const naximofu2Path = await resolveResource("assets/models/naximofu_2");
-      const chaijun4Path = await resolveResource("assets/models/chaijun_4");
-
-      // 初始化预设模型
-      const presetModels: Model[] = [
-        {
-          id: "standard",
-          name: "鼠标模式",
-          path: standardPath,
-          mode: "standard",
-          isPreset: true,
-          modelName: "cat.model3.json"
-        },
-        {
-          id: "keyboard",
-          name: "键盘模式",
-          path: keyboardPath,
-          mode: "keyboard",
-          isPreset: true,
-          modelName: "cat.model3.json"
-        },
-        {
-          id: "destroy",
-          name: "Destroy 模型",
-          path: destroyPath,
-          mode: "standard",
-          isPreset: true,
-          modelName: "destroy.model3.json"
-        },
-        {
-          id: "normal",
-          name: "Normal 模型",
-          path: normalPath,
-          mode: "standard",
-          isPreset: true,
-          modelName: "normal.model3.json"
-        },
-        {
-          id: "naximofu_2",
-          name: "Naximofu 2 模型",
-          path: naximofu2Path,
-          mode: "standard",
-          isPreset: true,
-          modelName: "naximofu_2.model3.json"
-        },
-        {
-          id: "chaijun_4",
-          name: "Chaijun 4 模型",
-          path: chaijun4Path,
-          mode: "standard",
-          isPreset: true,
-          modelName: "chaijun_4.model3.json"
-        }
-      ];
-
-      set({
-        models: presetModels,
-        currentModel: presetModels.find((m) => m.mode === "keyboard") ?? presetModels[0]
-      });
-    } catch (error) {
-      console.error("Failed to resolve model paths:", error);
-
-      // 降级到直接使用路径（开发环境或者路径解析失败时）
-      const presetModels: Model[] = [
-        {
-          id: "standard",
-          name: "鼠标模式",
-          path: "assets/models/standard",
-          mode: "standard",
-          isPreset: true,
-          modelName: "cat.model3.json"
-        },
-        {
-          id: "keyboard",
-          name: "键盘模式",
-          path: "assets/models/keyboard",
-          mode: "keyboard",
-          isPreset: true,
-          modelName: "cat.model3.json"
-        },
-        {
-          id: "destroy",
-          name: "Destroy 模型",
-          path: "assets/models/destroy",
-          mode: "standard",
-          isPreset: true,
-          modelName: "destroy.model3.json"
-        },
-        {
-          id: "normal",
-          name: "Normal 模型",
-          path: "assets/models/normal",
-          mode: "standard",
-          isPreset: true,
-          modelName: "normal.model3.json"
-        },
-        {
-          id: "naximofu_2",
-          name: "Naximofu 2 模型",
-          path: "assets/models/naximofu_2",
-          mode: "standard",
-          isPreset: true,
-          modelName: "naximofu_2.model3.json"
-        },
-        {
-          id: "chaijun_4",
-          name: "Chaijun 4 模型",
-          path: "assets/models/chaijun_4",
-          mode: "standard",
-          isPreset: true,
-          modelName: "chaijun_4.model3.json"
-        }
-      ];
-
-      set({
-        models: presetModels,
-        currentModel: presetModels.find((m) => m.mode === "keyboard") ?? presetModels[0]
-      });
-    }
-  }
-}));
+  )
+);
