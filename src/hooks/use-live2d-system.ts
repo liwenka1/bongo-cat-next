@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { useKeyboard } from "@/hooks/use-keyboard";
@@ -9,7 +9,8 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
-import type { DeviceEvent, Live2DInstance } from "@/types";
+import type { DeviceEvent, Live2DInstance, ModelJSON } from "@/types";
+import type { Cubism4InternalModel } from "pixi-live2d-display";
 
 // 获取图片尺寸的工具函数
 function getImageSize(src: string): Promise<{ width: number; height: number }> {
@@ -26,44 +27,27 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
   });
 }
 
-// 等待 Canvas 元素可用
-function waitForCanvas(id: string, maxAttempts = 10): Promise<HTMLCanvasElement> {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-
-    const checkCanvas = () => {
-      const canvas = document.getElementById(id);
-      if (canvas instanceof HTMLCanvasElement) {
-        console.log("✅ Canvas element found:", id);
-        resolve(canvas);
-        return;
-      }
-
-      attempts++;
-      if (attempts >= maxAttempts) {
-        reject(new Error(`Canvas element with id "${id}" not found after ${maxAttempts} attempts`));
-        return;
-      }
-
-      console.log(`⏳ Waiting for canvas element... (${attempts}/${maxAttempts})`);
-      setTimeout(checkCanvas, 100);
-    };
-
-    checkCanvas();
-  });
-}
-
 /**
  * 统一的Live2D系统Hook
  * 窗口大小变化 + Live2D自适应
  */
-export function useLive2DSystem() {
+export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const live2dRef = useRef<Live2DInstance | null>(null);
   const unlistenRef = useRef<(() => void) | null>(null);
   const isLoadingRef = useRef(false);
 
   const { currentModel, initializeModels } = useModelStore();
-  const { visible, opacity, scale, mirrorMode, pressedLeftKeys, pressedRightKeys, setBackgroundImage } = useCatStore();
+  const {
+    visible,
+    opacity,
+    scale,
+    mirrorMode,
+    pressedLeftKeys,
+    pressedRightKeys,
+    setBackgroundImage,
+    selectedMotion,
+    setAvailableMotions
+  } = useCatStore();
 
   // 🎯 使用新的键盘处理逻辑
   useKeyboard();
@@ -119,9 +103,6 @@ export function useLive2DSystem() {
       // 🎯 统一缩放逻辑：先调整窗口大小，然后统一处理缩放
       // Live2D模型会根据新的窗口尺寸自动调整
       setTimeout(() => {
-        if (live2d.app) {
-          live2d.app.resize();
-        }
         live2d.resize();
         // 使用统一的缩放逻辑
         live2d.setUserScale(scaleRatio);
@@ -155,7 +136,12 @@ export function useLive2DSystem() {
       // 移除直接的 model.scale.set 调用，改为使用统一的缩放方法
       live2d.model.scale.set(innerWidth / width);
 
-      // 🎯 如果窗口比例不对，调整窗口大小
+      // 🎯 使用统一的缩放逻辑
+      const currentUserScale = scale / 100;
+      live2d.setUserScale(currentUserScale);
+
+      // 🎯 关键修复：移除这里的 setSize 调用，这是导致无限循环的根本原因
+      /*
       const currentRatio = Math.round((innerWidth / innerHeight) * 10) / 10;
       const targetRatio = Math.round((width / height) * 10) / 10;
 
@@ -168,34 +154,21 @@ export function useLive2DSystem() {
           })
         );
       }
-
-      // 🎯 使用统一的缩放逻辑
-      const currentUserScale = scale / 100; // 将百分比转换为比例
-      live2d.setUserScale(currentUserScale);
-
-      // 🎯 关键：更新 catStore.scale
-      const newSize = await getCurrentWebviewWindow().size();
-      const calculatedScale = Math.round((newSize.width / width) * 100);
-
-      // 只有当计算出的缩放与当前不同时才更新，避免循环
-      if (Math.abs(calculatedScale - scale) > 1) {
-        useCatStore.getState().setScale(calculatedScale);
-      }
+      */
 
       console.log("✅ Live2D resize completed (unified scaling):", {
         innerWidth,
         innerHeight,
-        userScale: currentUserScale,
-        calculatedScale
+        userScale: currentUserScale
       });
     } catch (error) {
       console.error("❌ Failed to resize:", error);
     }
   }, [initializeLive2D, currentModel, scale]);
 
-  // 加载模型和背景（修复 Canvas 查找问题）
+  // 加载模型和背景
   const loadModelAndAssets = useCallback(
-    async (modelPath: string, modelName: string) => {
+    async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement) => {
       if (isLoadingRef.current) {
         console.log("⏳ Model loading already in progress, skipping...");
         return;
@@ -204,15 +177,15 @@ export function useLive2DSystem() {
       isLoadingRef.current = true;
 
       try {
-        console.log("🔄 Loading model and assets for:", modelPath, modelName);
+        console.log("🔄 Loading model and assets for:", modelPath, modelFileName);
+
+        // 优先清空旧的动作列表
+        setAvailableMotions([]);
 
         // 先设置背景图片
         const bgPath = join(modelPath, "resources", "background.png");
         const bgUrl = convertFileSrc(bgPath);
         setBackgroundImage(bgUrl);
-
-        // 🎯 关键修复：等待 Canvas 元素可用
-        await waitForCanvas("live2dCanvas");
 
         // 然后初始化 Live2D 并加载模型
         const live2d = await initializeLive2D();
@@ -221,13 +194,27 @@ export function useLive2DSystem() {
         }
 
         // 加载 Live2D 模型
-        await live2d.load(modelPath, modelName);
+        await live2d.load(modelPath, modelFileName, canvas);
+        
+        // 🎯 解析并设置动作列表
+        const modelJsonPath = join(modelPath, modelFileName);
+        const modelJsonUrl = convertFileSrc(modelJsonPath);
+        const response = await fetch(modelJsonUrl);
+        const modelJson = (await response.json()) as ModelJSON;
+        const motions = modelJson.FileReferences.Motions;
+        const availableMotions: { group: string; name: string }[] = [];
+        for (const group in motions) {
+          motions[group].forEach((motion) => {
+            // 从 "motions/idle.motion3.json" 中提取 "idle"
+            const name = motion.File.split("/").pop()?.replace(".motion3.json", "") ?? "unknown";
+            availableMotions.push({ group, name });
+          });
+        }
+        setAvailableMotions(availableMotions);
+        console.log("✅ Motions loaded:", availableMotions);
 
-        // 🎯 加载完成后调用 handleResize
-        await handleResize();
-
+        // 🎯 不要在这里调用 handleResize
         console.log("✅ Model and assets loaded successfully");
-        return { backgroundImage: bgUrl, live2d };
       } catch (error) {
         console.error("❌ Failed to load model and assets:", error);
         throw error;
@@ -235,18 +222,13 @@ export function useLive2DSystem() {
         isLoadingRef.current = false;
       }
     },
-    [initializeLive2D, setBackgroundImage, handleResize]
+    [initializeLive2D, setBackgroundImage, setAvailableMotions]
   );
 
   // 重新调整模型（简化版，主要用于Live2D Canvas的resize）
   const resizeModel = useCallback(async () => {
     const live2d = await initializeLive2D();
-    if (live2d?.app) {
-      live2d.app.resize();
-    }
-    if (live2d?.resize) {
-      live2d.resize();
-    }
+    live2d?.resize();
   }, [initializeLive2D]);
 
   // 鼠标事件处理
@@ -328,51 +310,47 @@ export function useLive2DSystem() {
     void initializeModels();
   }, [initializeModels]);
 
-  // 当模型改变时，加载新模型和资源（添加延迟确保 DOM 已渲染）
+  // 初始化模型
   useEffect(() => {
-    if (currentModel) {
-      console.log("🎭 Model changed, loading:", currentModel.name, currentModel.path);
-      // 添加小延迟确保 Canvas 元素已经渲染
-      const timer = setTimeout(() => {
-        void loadModelAndAssets(currentModel.path, currentModel.modelName);
-      }, 50);
-
-      return () => {
-        clearTimeout(timer);
+    const canvas = canvasRef.current;
+    if (currentModel && canvas) {
+      const loadAndResize = async () => {
+        await loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
+        // 在这里调用 handleResize
+        await handleResize();
       };
+      void loadAndResize();
     }
-  }, [currentModel?.id, currentModel?.path]);
+  }, [currentModel, canvasRef, loadModelAndAssets, handleResize]);
 
   // 🎯 监听 visible 状态变化，当从隐藏变为显示时重新加载模型
   useEffect(() => {
-    if (visible && currentModel) {
-      console.log("👁️ Visibility changed to true, reloading model:", currentModel.name);
-      // 添加延迟确保 Canvas 元素已经重新渲染
-      const timer = setTimeout(() => {
-        void loadModelAndAssets(currentModel.path, currentModel.modelName);
-      }, 50);
-
-      return () => {
-        clearTimeout(timer);
+    const canvas = canvasRef.current;
+    if (visible && currentModel && canvas) {
+      console.log("👁️ Visibility changed to true, reloading model:", currentModel.modelName);
+      const loadAndResize = async () => {
+        await loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
+        await handleResize();
       };
+      void loadAndResize();
     }
-  }, [visible, currentModel?.id]);
+  }, [visible, currentModel, canvasRef, loadModelAndAssets, handleResize]);
 
   // 🎯 监听缩放变化（关键修复）
   useEffect(() => {
-    if (currentModel && scale > 0) {
-      console.log("📏 Scale changed to:", scale, "for model:", currentModel.name);
+    if (currentModel && scale > 0 && canvasRef.current) {
+      console.log("📏 Scale changed to:", scale, "for model:", currentModel.modelName);
       void handleScaleChange();
     }
-  }, [scale, handleScaleChange, currentModel?.id]);
+  }, [scale, handleScaleChange, currentModel?.id, canvasRef]);
 
   // 监听镜像模式变化，重新调整模型
   useEffect(() => {
-    if (currentModel) {
+    if (currentModel && canvasRef.current) {
       console.log("🪞 Mirror mode changed to:", mirrorMode);
       void handleResize();
     }
-  }, [mirrorMode, handleResize, currentModel?.id]);
+  }, [mirrorMode, handleResize, currentModel?.id, canvasRef]);
 
   // 🎯 监听键盘状态变化，控制手部动画
   useEffect(() => {
@@ -423,41 +401,79 @@ export function useLive2DSystem() {
     };
   }, [handleResize]);
 
-  // 暴露Live2D实例和控制方法
+  const playMotion = useCallback(
+    (group: string, index?: number) => {
+      if (live2dRef.current) {
+        void live2dRef.current.playMotion(group, index);
+      }
+    },
+    []
+  );
+
+  const playExpression = useCallback(
+    (index: number) => {
+      if (live2dRef.current) {
+        void live2dRef.current.playExpression(index);
+      }
+    },
+    []
+  );  
+
+  const setParameterValue = useCallback(
+    (id: string, value: number) => {
+      live2dRef.current?.setParameterValue(id, value);
+    },
+    []
+  );
+
+  // 🎯 当选中的动作变化时，播放它
+  useEffect(() => {
+    if (selectedMotion && live2dRef.current?.model?.internalModel) {
+      const { group, name } = selectedMotion;
+      console.log(`▶️ Playing motion: ${group} - ${name}`);
+
+      // 从模型配置中找到对应动作的索引
+      const internalModel = live2dRef.current.model.internalModel as Cubism4InternalModel;
+      const motionGroup = internalModel.settings.motions?.[group];
+
+      if (motionGroup) {
+        const index = motionGroup.findIndex((motion: { File: string }) =>
+          motion.File.endsWith(`${name}.motion3.json`)
+        );
+        if (index !== -1) {
+          void live2dRef.current.playMotion(group, index);
+        } else {
+          console.error(`Motion "${name}" not found in group "${group}"`);
+        }
+      }
+    }
+  }, [selectedMotion]);
+
+  // 处理 Tauri 事件
+  useEffect(() => {
+    const setupTauriListener = async () => {
+      if (unlistenRef.current) {
+        unlistenRef.current();
+      }
+      unlistenRef.current = await listen<DeviceEvent>("device_event", (event) => {
+        const { payload } = event;
+        // console.log("Received device event:", payload);
+        // ... update pressed keys based on payload
+      });
+    };
+
+    void setupTauriListener();
+
+    return () => {
+      if (unlistenRef.current) {
+        unlistenRef.current();
+      }
+    };
+  }, []);
+
+  // 返回暴露给组件的接口
   return {
-    live2d: live2dRef.current,
     visible,
-    opacity,
-    scale,
-    mirrorMode,
-    handleScaleChange,
-    handleResize,
-    resizeModel,
-    // 直接暴露Live2D方法
-    playMotion: useCallback(
-      async (group: string, index: number) => {
-        const live2d = await initializeLive2D();
-
-        return live2d?.playMotion?.(group, index);
-      },
-      [initializeLive2D]
-    ),
-
-    playExpression: useCallback(
-      async (index: number) => {
-        const live2d = await initializeLive2D();
-
-        return live2d?.playExpression?.(index);
-      },
-      [initializeLive2D]
-    ),
-
-    setParameterValue: useCallback(
-      async (id: string, value: number) => {
-        const live2d = await initializeLive2D();
-        live2d?.setParameterValue(id, value);
-      },
-      [initializeLive2D]
-    )
+    live2dInstance: live2dRef.current
   };
 }

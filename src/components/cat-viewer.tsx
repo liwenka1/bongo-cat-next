@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
 import { useLive2DSystem } from "@/hooks/use-live2d-system";
+import { MotionSelector } from "@/components/motion-selector";
 
 /**
  * 🎯 CatViewer - Live2D 渲染器组件
@@ -17,16 +18,21 @@ import { useLive2DSystem } from "@/hooks/use-live2d-system";
  * - 设备事件处理
  */
 export default function CatViewer() {
-  // 🚀 统一的 Live2D 系统 - 所有 Live2D 逻辑在这里
-  const { visible } = useLive2DSystem();
-  const { backgroundImage, scale } = useCatStore();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { visible } = useLive2DSystem(canvasRef);
   const { currentModel } = useModelStore();
+
+  // 响应式地从 store 中获取状态
+  const backgroundImage = useCatStore((state) => state.backgroundImage);
+  const scale = useCatStore((state) => state.scale);
+  const availableMotions = useCatStore((state) => state.availableMotions);
+
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,
     height: 600
   });
 
-  // 🎯 判断当前模型是否需要背景和键盘交互
+  // 🎯 判断当前模型是否是高级交互模型
   const isInteractiveModel = currentModel?.id === "keyboard" || currentModel?.id === "standard";
   const shouldShowBackground = isInteractiveModel && backgroundImage;
   const shouldShowKeyboard = isInteractiveModel;
@@ -71,10 +77,15 @@ export default function CatViewer() {
       )}
 
       {/* 🎭 Live2D Canvas - 所有模型都需要 */}
-      <canvas id="live2dCanvas" className="absolute size-full" />
+      <canvas ref={canvasRef} id="live2dCanvas" className="absolute size-full" />
 
       {/* ⌨️ 键盘可视化层 - 仅对交互式模型显示 */}
       {shouldShowKeyboard && <KeyboardVisualization />}
+
+      {/* 🎮 动作选择器 - 对所有有动作的模型显示 */}
+      <div className="absolute top-4 right-4 z-50">
+        <MotionSelector availableMotions={availableMotions} />
+      </div>
     </>
   );
 }

@@ -29,6 +29,8 @@ interface CatState {
   // 模型相关
   currentModelPath: string;
   backgroundImage: string;
+  selectedMotion: { group: string; name: string } | null;
+  availableMotions: { group: string; name: string }[]; // 可用动作列表
 
   // Actions
   setVisible: (visible: boolean) => void;
@@ -54,6 +56,8 @@ interface CatState {
   setMousePosition: (x: number, y: number) => void;
   setCurrentModelPath: (path: string) => void;
   setBackgroundImage: (image: string) => void;
+  setSelectedMotion: (motion: { group: string; name: string } | null) => void;
+  setAvailableMotions: (motions: { group: string; name: string }[]) => void; // 设置可用动作
 
   // 精细化控制方法
   addPressedKey: (key: string) => void;
@@ -90,6 +94,8 @@ export const useCatStore = create<CatState>((set, get) => ({
 
   currentModelPath: "standard",
   backgroundImage: "",
+  selectedMotion: null,
+  availableMotions: [], // 可用动作列表
 
   // Actions
   setVisible: (visible) => {
@@ -159,6 +165,12 @@ export const useCatStore = create<CatState>((set, get) => ({
   setBackgroundImage: (backgroundImage) => {
     set({ backgroundImage });
   },
+  setSelectedMotion: (selectedMotion) => {
+    set({ selectedMotion });
+  },
+  setAvailableMotions: (motions) => {
+    set({ availableMotions: motions });
+  }, // 设置可用动作
 
   // 🎯 精细化键盘控制
   addPressedKey: (key) => {
