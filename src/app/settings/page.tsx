@@ -63,7 +63,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     // Initialize models if empty
-    if (modelStore.models.length === 0) {
+    if (Object.keys(modelStore.models).length === 0) {
       // 通过 modelStore 的 initializeModels 方法自动加载模型
       void modelStore.initializeModels();
     }
@@ -282,7 +282,7 @@ export default function SettingsPage() {
         </div>
 
         <Table<Model>
-          dataSource={modelStore.models}
+          dataSource={Object.values(modelStore.models)}
           rowKey="id"
           size="small"
           columns={[
@@ -318,7 +318,7 @@ export default function SettingsPage() {
                     size="small"
                     type={modelStore.currentModel?.id === record.id ? "primary" : "default"}
                     onClick={() => {
-                      modelStore.setCurrentModel(record);
+                      modelStore.setCurrentModel(record.id);
                     }}
                   >
                     {modelStore.currentModel?.id === record.id ? "当前" : "使用"}
