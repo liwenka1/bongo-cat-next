@@ -54,12 +54,30 @@ export const useModelStore = create<ModelStoreState>()(
       currentModel: null,
       initializeModels: async () => {
         const presetModels: Model[] = [
-          { id: "standard", name: "鼠标模式", path: "assets/models/standard", mode: "standard", isPreset: true, modelName: "cat.model3.json" },
-          { id: "keyboard", name: "键盘模式", path: "assets/models/keyboard", mode: "keyboard", isPreset: true, modelName: "cat.model3.json" },
-          { id: "destroy", name: "Destroy 模型", path: "assets/models/destroy", mode: "standard", isPreset: true, modelName: "destroy.model3.json" },
-          { id: "normal", name: "Normal 模型", path: "assets/models/normal", mode: "standard", isPreset: true, modelName: "normal.model3.json" },
-          { id: "naximofu_2", name: "Naximofu 2 模型", path: "assets/models/naximofu_2", mode: "standard", isPreset: true, modelName: "naximofu_2.model3.json" },
-          { id: "chaijun_4", name: "Chaijun 4 模型", path: "assets/models/chaijun_4", mode: "standard", isPreset: true, modelName: "chaijun_4.model3.json" }
+          {
+            id: "standard",
+            name: "鼠标模式",
+            path: "assets/models/standard",
+            mode: "standard",
+            isPreset: true,
+            modelName: "cat.model3.json"
+          },
+          {
+            id: "keyboard",
+            name: "键盘模式",
+            path: "assets/models/keyboard",
+            mode: "keyboard",
+            isPreset: true,
+            modelName: "cat.model3.json"
+          },
+          {
+            id: "naximofu_2",
+            name: "Naximofu 2 模型",
+            path: "assets/models/naximofu_2",
+            mode: "standard",
+            isPreset: true,
+            modelName: "naximofu_2.model3.json"
+          }
         ];
 
         const initialModels = presetModels.reduce<Record<string, Model>>((acc, model) => {
@@ -69,17 +87,17 @@ export const useModelStore = create<ModelStoreState>()(
 
         set({
           models: initialModels,
-          currentModel: Object.values(initialModels)[0],
+          currentModel: Object.values(initialModels)[0]
         });
       },
       setCurrentModel: (id: string) => {
         const model = get().models[id];
         set({ currentModel: model });
-      },
+      }
     }),
     {
       name: "model-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => localStorage)
     }
   )
 );
