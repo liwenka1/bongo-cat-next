@@ -204,10 +204,10 @@ export function useKeyboard() {
 
     const updateSupportedKeys = async () => {
       console.log("📁 Starting to read key directories for model:", currentModel.path);
-      
+
       // 🎯 只为交互式模型读取键盘目录
       const isInteractiveModel = currentModel.id === "keyboard" || currentModel.id === "standard";
-      
+
       if (!isInteractiveModel) {
         console.log("🎭 Non-interactive model detected, skipping keyboard directories");
         supportedLeftKeysRef.current = [];
@@ -216,7 +216,7 @@ export function useKeyboard() {
         setSupportedRightKeys([]);
         return;
       }
-      
+
       try {
         // 检查左键目录
         const leftPath = join(currentModel.path, "resources", "left-keys");
@@ -274,7 +274,10 @@ export function useKeyboard() {
           }
 
           // 检查右变体是否在右键目录中存在
-          if (supportedRightKeysRef.current.includes(rightVariant) && !supportedRightKeysRef.current.includes(modifier)) {
+          if (
+            supportedRightKeysRef.current.includes(rightVariant) &&
+            !supportedRightKeysRef.current.includes(modifier)
+          ) {
             console.log(`⚙️ Adding generic ${modifier} to right keys based on ${rightVariant}`);
             supportedRightKeysRef.current.push(modifier);
           }
@@ -283,7 +286,6 @@ export function useKeyboard() {
         // 更新 store 中的支持按键列表
         setSupportedLeftKeys([...supportedLeftKeysRef.current]);
         setSupportedRightKeys([...supportedRightKeysRef.current]);
-
       } catch (error) {
         console.error("❌ Failed to process key directories:", error);
         supportedLeftKeysRef.current = [];
@@ -316,22 +318,28 @@ export function useKeyboard() {
       if (supportedLeftKeysRef.current.includes(mappedKey) || supportedRightKeysRef.current.includes(mappedKey)) {
         return mappedKey;
       }
-      
+
       // 如果没有精确的左右修饰键，尝试使用通用版本
       const genericKey = key.replace("Left", "").replace("Right", "");
       const genericMapped = keyMapping[genericKey] || genericKey;
-      
-      if (supportedLeftKeysRef.current.includes(genericMapped) || supportedRightKeysRef.current.includes(genericMapped)) {
+
+      if (
+        supportedLeftKeysRef.current.includes(genericMapped) ||
+        supportedRightKeysRef.current.includes(genericMapped)
+      ) {
         return genericMapped;
       }
     }
-    
+
     // 尝试使用通用版本的修饰键
-    if (["Shift", "Control", "Alt", "Meta"].some(modifier => key.includes(modifier))) {
+    if (["Shift", "Control", "Alt", "Meta"].some((modifier) => key.includes(modifier))) {
       const genericKey = key.replace("Left", "").replace("Right", "");
       const genericMapped = keyMapping[genericKey] || genericKey;
-      
-      if (supportedLeftKeysRef.current.includes(genericMapped) || supportedRightKeysRef.current.includes(genericMapped)) {
+
+      if (
+        supportedLeftKeysRef.current.includes(genericMapped) ||
+        supportedRightKeysRef.current.includes(genericMapped)
+      ) {
         return genericMapped;
       }
     }
@@ -488,16 +496,13 @@ export function useKeyboard() {
   // 检查键位在左右目录中的可用性
   const checkKeyAvailability = async (key: string): Promise<{ left: boolean; right: boolean }> => {
     if (!currentModel) return { left: false, right: false };
-    
+
     try {
       const leftPath = join(currentModel.path, "resources", "left-keys", `${key}.png`);
       const rightPath = join(currentModel.path, "resources", "right-keys", `${key}.png`);
-      
-      const [leftExists, rightExists] = await Promise.all([
-        exists(leftPath),
-        exists(rightPath)
-      ]);
-      
+
+      const [leftExists, rightExists] = await Promise.all([exists(leftPath), exists(rightPath)]);
+
       return { left: leftExists, right: rightExists };
     } catch (error) {
       console.error(`Error checking key availability for ${key}:`, error);

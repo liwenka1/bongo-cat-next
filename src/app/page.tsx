@@ -27,7 +27,7 @@ export default function Home() {
 
     // 在主页面创建托盘
     void createTray();
-  }, []); 
+  }, []);
 
   // 处理窗口拖拽
   const handleWindowDrag = async (e: React.MouseEvent) => {

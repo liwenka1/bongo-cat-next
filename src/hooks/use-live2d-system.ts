@@ -83,7 +83,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       const bgUrl = convertFileSrc(bgPath);
 
       // 获取背景图片的原始尺寸
-      const { width , height } = await getImageSize(bgUrl);
+      const { width, height } = await getImageSize(bgUrl);
       console.log("📏 Background image size:", { width, height, scale });
 
       // 缩放计算方式 - scale 现在是百分比（如 50, 100, 150）
@@ -130,7 +130,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       // 获取背景图片尺寸
       const bgPath = join(currentModel.path, "resources", "background.png");
       const bgUrl = convertFileSrc(bgPath);
-      const { width, height} = await getImageSize(bgUrl);
+      const { width, height } = await getImageSize(bgUrl);
 
       // 🎯 统一缩放逻辑：使用 applyUserScale 方法来保持一致性
       // 移除直接的 model.scale.set 调用，改为使用统一的缩放方法
@@ -195,7 +195,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
         // 加载 Live2D 模型
         await live2d.load(modelPath, modelFileName, canvas);
-        
+
         // 🎯 解析并设置动作列表
         const modelJsonPath = join(modelPath, modelFileName);
         const modelJsonUrl = convertFileSrc(modelJsonPath);
@@ -401,30 +401,21 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
     };
   }, [handleResize]);
 
-  const playMotion = useCallback(
-    (group: string, index?: number) => {
-      if (live2dRef.current) {
-        void live2dRef.current.playMotion(group, index);
-      }
-    },
-    []
-  );
+  const playMotion = useCallback((group: string, index?: number) => {
+    if (live2dRef.current) {
+      void live2dRef.current.playMotion(group, index);
+    }
+  }, []);
 
-  const playExpression = useCallback(
-    (index: number) => {
-      if (live2dRef.current) {
-        void live2dRef.current.playExpression(index);
-      }
-    },
-    []
-  );  
+  const playExpression = useCallback((index: number) => {
+    if (live2dRef.current) {
+      void live2dRef.current.playExpression(index);
+    }
+  }, []);
 
-  const setParameterValue = useCallback(
-    (id: string, value: number) => {
-      live2dRef.current?.setParameterValue(id, value);
-    },
-    []
-  );
+  const setParameterValue = useCallback((id: string, value: number) => {
+    live2dRef.current?.setParameterValue(id, value);
+  }, []);
 
   // 🎯 当选中的动作变化时，播放它
   useEffect(() => {
@@ -437,9 +428,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       const motionGroup = internalModel.settings.motions?.[group];
 
       if (motionGroup) {
-        const index = motionGroup.findIndex((motion: { File: string }) =>
-          motion.File.endsWith(`${name}.motion3.json`)
-        );
+        const index = motionGroup.findIndex((motion: { File: string }) => motion.File.endsWith(`${name}.motion3.json`));
         if (index !== -1) {
           void live2dRef.current.playMotion(group, index);
         } else {

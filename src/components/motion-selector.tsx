@@ -54,4 +54,4 @@ export function MotionSelector({ availableMotions }: MotionSelectorProps) {
       />
     </div>
   );
-} 
+}
