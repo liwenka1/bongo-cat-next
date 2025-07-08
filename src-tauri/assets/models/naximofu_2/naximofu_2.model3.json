@@ -11,256 +11,307 @@
     "Motions": {
       "complete": [
         {
+          "Name": "任务完成",
           "File": "motions/complete.motion3.json"
         }
       ],
       "effect": [
         {
+          "Name": "魔法效果",
           "File": "motions/effect.motion3.json"
         }
       ],
       "home": [
         {
+          "Name": "回到主页",
           "File": "motions/home.motion3.json"
         }
       ],
       "idle": [
         {
+          "Name": "空闲",
           "File": "motions/idle.motion3.json"
         }
       ],
       "idle1": [
         {
+          "Name": "空闲姿势 1",
           "File": "motions/idle1.motion3.json"
         }
       ],
       "idle10": [
         {
+          "Name": "空闲姿势 10",
           "File": "motions/idle10.motion3.json"
         }
       ],
       "idle2": [
         {
+          "Name": "空闲姿势 2",
           "File": "motions/idle2.motion3.json"
         }
       ],
       "idle3": [
         {
+          "Name": "空闲姿势 3",
           "File": "motions/idle3.motion3.json"
         }
       ],
       "idle4": [
         {
+          "Name": "空闲姿势 4",
           "File": "motions/idle4.motion3.json"
         }
       ],
       "idle5": [
         {
+          "Name": "空闲姿势 5",
           "File": "motions/idle5.motion3.json"
         }
       ],
       "idle6": [
         {
+          "Name": "空闲姿势 6",
           "File": "motions/idle6.motion3.json"
         }
       ],
       "idle7": [
         {
+          "Name": "空闲姿势 7",
           "File": "motions/idle7.motion3.json"
         }
       ],
       "idle8": [
         {
+          "Name": "空闲姿势 8",
           "File": "motions/idle8.motion3.json"
         }
       ],
       "idle9": [
         {
+          "Name": "空闲姿势 9",
           "File": "motions/idle9.motion3.json"
         }
       ],
       "login": [
         {
+          "Name": "登录问候",
           "File": "motions/login.motion3.json"
         }
       ],
       "mail": [
         {
+          "Name": "收到邮件",
           "File": "motions/mail.motion3.json"
         }
       ],
       "main_1": [
         {
+          "Name": "常规互动 1",
           "File": "motions/main_1.motion3.json"
         }
       ],
       "main_2": [
         {
+          "Name": "常规互动 2",
           "File": "motions/main_2.motion3.json"
         }
       ],
       "main_3": [
         {
+          "Name": "常规互动 3",
           "File": "motions/main_3.motion3.json"
         }
       ],
       "main_4": [
         {
+          "Name": "常规互动 4",
           "File": "motions/main_4.motion3.json"
         }
       ],
       "mission": [
         {
+          "Name": "任务开始",
           "File": "motions/mission.motion3.json"
         }
       ],
       "mission_complete": [
         {
+          "Name": "任务成功",
           "File": "motions/mission_complete.motion3.json"
         }
       ],
       "touch_body": [
         {
+          "Name": "戳身体",
           "File": "motions/touch_body.motion3.json"
         }
       ],
       "touch_drag1": [
         {
+          "Name": "拖拽反应 1",
           "File": "motions/touch_drag1.motion3.json"
         }
       ],
       "touch_drag11": [
         {
+          "Name": "拖拽反应 11",
           "File": "motions/touch_drag11.motion3.json"
         }
       ],
       "touch_drag12": [
         {
+          "Name": "拖拽反应 12",
           "File": "motions/touch_drag12.motion3.json"
         }
       ],
       "touch_drag13": [
         {
+          "Name": "拖拽反应 13",
           "File": "motions/touch_drag13.motion3.json"
         }
       ],
       "touch_drag14": [
         {
+          "Name": "拖拽反应 14",
           "File": "motions/touch_drag14.motion3.json"
         }
       ],
       "touch_drag15": [
         {
+          "Name": "拖拽反应 15",
           "File": "motions/touch_drag15.motion3.json"
         }
       ],
       "touch_drag16": [
         {
+          "Name": "拖拽反应 16",
           "File": "motions/touch_drag16.motion3.json"
         }
       ],
       "touch_drag17": [
         {
+          "Name": "拖拽反应 17",
           "File": "motions/touch_drag17.motion3.json"
         }
       ],
       "touch_drag18": [
         {
+          "Name": "拖拽反应 18",
           "File": "motions/touch_drag18.motion3.json"
         }
       ],
       "touch_head": [
         {
+          "Name": "摸摸头",
           "File": "motions/touch_head.motion3.json"
         }
       ],
       "touch_idle1": [
         {
+          "Name": "触摸等待 1",
           "File": "motions/touch_idle1.motion3.json"
         }
       ],
       "touch_idle10": [
         {
+          "Name": "触摸等待 10",
           "File": "motions/touch_idle10.motion3.json"
         }
       ],
       "touch_idle11": [
         {
+          "Name": "触摸等待 11",
           "File": "motions/touch_idle11.motion3.json"
         }
       ],
       "touch_idle12": [
         {
+          "Name": "触摸等待 12",
           "File": "motions/touch_idle12.motion3.json"
         }
       ],
       "touch_idle13": [
         {
+          "Name": "触摸等待 13",
           "File": "motions/touch_idle13.motion3.json"
         }
       ],
       "touch_idle14": [
         {
+          "Name": "触摸等待 14",
           "File": "motions/touch_idle14.motion3.json"
         }
       ],
       "touch_idle15": [
         {
+          "Name": "触摸等待 15",
           "File": "motions/touch_idle15.motion3.json"
         }
       ],
       "touch_idle16": [
         {
+          "Name": "触摸等待 16",
           "File": "motions/touch_idle16.motion3.json"
         }
       ],
       "touch_idle2": [
         {
+          "Name": "触摸等待 2",
           "File": "motions/touch_idle2.motion3.json"
         }
       ],
       "touch_idle3": [
         {
+          "Name": "触摸等待 3",
           "File": "motions/touch_idle3.motion3.json"
         }
       ],
       "touch_idle4": [
         {
+          "Name": "触摸等待 4",
           "File": "motions/touch_idle4.motion3.json"
         }
       ],
       "touch_idle5": [
         {
+          "Name": "触摸等待 5",
           "File": "motions/touch_idle5.motion3.json"
         }
       ],
       "touch_idle6": [
         {
+          "Name": "触摸等待 6",
           "File": "motions/touch_idle6.motion3.json"
         }
       ],
       "touch_idle7": [
         {
+          "Name": "触摸等待 7",
           "File": "motions/touch_idle7.motion3.json"
         }
       ],
       "touch_idle8": [
         {
+          "Name": "触摸等待 8",
           "File": "motions/touch_idle8.motion3.json"
         }
       ],
       "touch_idle9": [
         {
+          "Name": "触摸等待 9",
           "File": "motions/touch_idle9.motion3.json"
         }
       ],
       "touch_special": [
         {
+          "Name": "特殊互动",
           "File": "motions/touch_special.motion3.json"
         }
       ],
       "wedding": [
         {
+          "Name": "纯白誓约",
           "File": "motions/wedding.motion3.json"
         }
       ]
