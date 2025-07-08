@@ -30,7 +30,7 @@ interface CatState {
   currentModelPath: string;
   backgroundImage: string;
   selectedMotion: { group: string; name: string } | null;
-  availableMotions: { group: string; name: string }[]; // 可用动作列表
+  availableMotions: { group: string; name: string; displayName: string }[]; // 可用动作列表
 
   // Actions
   setVisible: (visible: boolean) => void;
@@ -57,7 +57,7 @@ interface CatState {
   setCurrentModelPath: (path: string) => void;
   setBackgroundImage: (image: string) => void;
   setSelectedMotion: (motion: { group: string; name: string } | null) => void;
-  setAvailableMotions: (motions: { group: string; name: string }[]) => void; // 设置可用动作
+  setAvailableMotions: (motions: { group: string; name: string; displayName: string }[]) => void; // 设置可用动作
 
   // 精细化控制方法
   addPressedKey: (key: string) => void;

@@ -202,12 +202,19 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
         const response = await fetch(modelJsonUrl);
         const modelJson = (await response.json()) as ModelJSON;
         const motions = modelJson.FileReferences.Motions;
-        const availableMotions: { group: string; name: string }[] = [];
+        // 为从JSON读取的动作文件定义接口
+        interface MotionFile {
+          File: string;
+          Name?: string;
+        }
+        const availableMotions: { group: string; name: string; displayName: string }[] = [];
         for (const group in motions) {
-          motions[group].forEach((motion) => {
-            // 从 "motions/idle.motion3.json" 中提取 "idle"
+          (motions[group] as MotionFile[]).forEach((motion) => {
+            // 'name' 是内部名称，保持不变，用于播放
             const name = motion.File.split("/").pop()?.replace(".motion3.json", "") ?? "unknown";
-            availableMotions.push({ group, name });
+            // 'displayName' 是显示名称，从 JSON 的 Name 字段读取
+            const displayName = motion.Name ?? name; // 如果Name不存在，则回退到内部名称
+            availableMotions.push({ group, name, displayName });
           });
         }
         setAvailableMotions(availableMotions);

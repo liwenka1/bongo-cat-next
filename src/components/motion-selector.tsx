@@ -5,7 +5,7 @@ import { Select } from "antd";
 import type React from "react";
 
 interface MotionSelectorProps {
-  availableMotions: { group: string; name: string }[];
+  availableMotions: { group: string; name: string; displayName: string }[];
 }
 
 export function MotionSelector({ availableMotions }: MotionSelectorProps) {
@@ -27,9 +27,9 @@ export function MotionSelector({ availableMotions }: MotionSelectorProps) {
   }
 
   // 将动作列表转换为 Select 组件需要的格式
-  const options = availableMotions.map(({ group, name }) => ({
-    value: `${group}:${name}`,
-    label: name
+  const options = availableMotions.map(({ group, name, displayName }) => ({
+    value: `${group}:${name}`, // 值使用内部name
+    label: displayName // 显示使用displayName
   }));
 
   // 方便地将 selectedMotion 转换为字符串以便与 Select 的 value 属性匹配
