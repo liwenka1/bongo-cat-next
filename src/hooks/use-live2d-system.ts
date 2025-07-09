@@ -121,10 +121,22 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // 🎯 缩放逻辑
   const handleResize = useCallback(async () => {
-    const live2d = await initializeLive2D();
-    if (!live2d?.model || !currentModel) return;
+    // 关键修复：如果模型正在加载，则直接跳过，防止竞态条件
+    if (isLoadingRef.current) {
+      console.log("⏳ Model is loading, skipping resize for now.");
+      return;
+    }
 
     try {
+      const live2d = await initializeLive2D();
+
+      // 关键修复：添加卫兵，确保模型已加载
+      if (!live2d || !live2d.model || !currentModel) {
+        console.warn("⚠️ handleResize skipped, model not ready yet.");
+        return;
+      }
+
+      // 获取当前窗口尺寸
       const { innerWidth, innerHeight } = window;
 
       // 获取背景图片尺寸
@@ -139,22 +151,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       // 🎯 使用统一的缩放逻辑
       const currentUserScale = scale / 100;
       live2d.setUserScale(currentUserScale);
-
-      // 🎯 关键修复：移除这里的 setSize 调用，这是导致无限循环的根本原因
-      /*
-      const currentRatio = Math.round((innerWidth / innerHeight) * 10) / 10;
-      const targetRatio = Math.round((width / height) * 10) / 10;
-
-      if (currentRatio !== targetRatio) {
-        const appWindow = getCurrentWebviewWindow();
-        await appWindow.setSize(
-          new PhysicalSize({
-            width: innerWidth,
-            height: Math.ceil(innerWidth * (height / width))
-          })
-        );
-      }
-      */
 
       console.log("✅ Live2D resize completed (unified scaling):", {
         innerWidth,

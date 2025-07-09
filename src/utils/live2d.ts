@@ -188,29 +188,36 @@ class Live2d {
   }
 
   public resize() {
-    if (this.app && this.model) {
-      console.log("Resizing Live2D model:", this.app.screen.width, "x", this.app.screen.height);
-
-      // 重新计算模型位置
-      this.model.x = this.app.screen.width / 2;
-      this.model.y = this.app.screen.height / 2;
-
-      // 重新应用缩放
-      this.applyUserScale();
-
-      // 确保应用程序调整大小
-      this.app.resize();
-
-      console.log("Live2D model resized:", {
-        x: this.model.x,
-        y: this.model.y,
-        scale: this.model.scale.x
-      });
+    // 关键修复：强化卫兵检查，防止在销毁的模型上操作
+    if (!this.app || !this.model) {
+      console.warn("⚠️ resize skipped, app or model not initialized.");
+      return;
     }
+
+    console.log("Resizing Live2D model:", this.app.screen.width, "x", this.app.screen.height);
+
+    // 重新计算模型位置
+    this.model.x = this.app.screen.width / 2;
+    this.model.y = this.app.screen.height / 2;
+
+    // 重新应用缩放
+    this.applyUserScale();
+
+    // 确保应用程序调整大小
+    this.app.resize();
+
+    console.log("Live2D model resized:", {
+      x: this.model.x,
+      y: this.model.y,
+      scale: this.model.scale.x
+    });
   }
 
   public destroy() {
-    this.model?.destroy();
+    if (this.model) {
+      this.model.destroy();
+      this.model = null;
+    }
   }
 
   public playMotion(group: string, index?: number) {
