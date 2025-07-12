@@ -81,12 +81,6 @@ export function useTray() {
           setVisible(!visible);
         }
       }),
-      // MenuItem.new({
-      //   text: '偏好设置',
-      //   action: () => {
-      //     router.push('/settings')
-      //   },
-      // }),
       PredefinedMenuItem.new({ item: "Separator" }),
       MenuItem.new({
         text: "开源地址",
