@@ -166,17 +166,6 @@ export function useSharedMenu() {
       // 分隔符
       await PredefinedMenuItem.new({ item: "Separator" }),
 
-      // 设置页面
-      await MenuItem.new({
-        text: "设置",
-        action: () => {
-          void (async () => {
-            const appWindow = getCurrentWebviewWindow();
-            await appWindow.emit("navigate-to-settings");
-          })();
-        }
-      }),
-
       // 退出
       await MenuItem.new({
         text: "退出",
