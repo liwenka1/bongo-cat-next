@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { Menu, CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
+import { exit } from "@tauri-apps/plugin-process";
 
 export function useSharedMenu() {
   const catStore = useCatStore();
@@ -155,12 +155,7 @@ export function useSharedMenu() {
       // 退出
       await MenuItem.new({
         text: "退出",
-        action: () => {
-          void (async () => {
-            const appWindow = getCurrentWebviewWindow();
-            await appWindow.close();
-          })();
-        }
+        action: () => void exit(0)
       })
     ]);
   }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems]);

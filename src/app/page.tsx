@@ -6,6 +6,7 @@ import { useSharedMenu } from "@/hooks/use-shared-menu";
 import { useTray } from "@/hooks/use-tray";
 import dynamic from "next/dynamic";
 import { useWindow } from "@/hooks/use-window";
+import { message } from "antd";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
 const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
@@ -34,7 +35,7 @@ export default function Home() {
         const appWindow = getCurrentWebviewWindow();
         await appWindow.startDragging();
       } catch (error) {
-        console.error("Failed to start window dragging:", error);
+        message.error(String(error));
       }
     }
   };
@@ -42,7 +43,7 @@ export default function Home() {
   // 右键菜单处理
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log("Context menu requested at:", { x: e.clientX, y: e.clientY });
+
     void showContextMenu();
   };
 

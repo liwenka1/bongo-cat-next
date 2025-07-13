@@ -46,10 +46,6 @@ export default function CatViewer() {
           width: img.naturalWidth,
           height: img.naturalHeight
         });
-        console.log("📏 Background image dimensions:", {
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        });
       };
       img.src = backgroundImage;
     }
