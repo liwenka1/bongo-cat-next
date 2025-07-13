@@ -1,22 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Menu, CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 
 export function useSharedMenu() {
-  const [isClient, setIsClient] = useState(false);
   const catStore = useCatStore();
   const { models, currentModel, setCurrentModel } = useModelStore();
 
-  // 确保只在客户端运行
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const getScaleMenuItems = useCallback(async () => {
-    if (!isClient) return [];
-
     // 缩放选项（50-150，每25一个档位）
     const scaleOptions = [50, 75, 100, 125, 150];
     const currentScale = catStore.scale;
@@ -46,11 +38,9 @@ export function useSharedMenu() {
     }
 
     return items;
-  }, [catStore.scale, isClient]);
+  }, [catStore.scale]);
 
   const getOpacityMenuItems = useCallback(async () => {
-    if (!isClient) return [];
-
     // 透明度选项
     const opacityOptions = [25, 50, 75, 100];
 
@@ -77,11 +67,9 @@ export function useSharedMenu() {
     }
 
     return items;
-  }, [catStore.opacity, isClient]);
+  }, [catStore.opacity]);
 
   const getModeMenuItems = useCallback(async () => {
-    if (!isClient) return [];
-
     return await Promise.all(
       Object.values(models).map(async (model) => {
         return await CheckMenuItem.new({
@@ -94,12 +82,10 @@ export function useSharedMenu() {
         });
       })
     );
-  }, [models, currentModel, setCurrentModel, isClient]);
+  }, [models, currentModel, setCurrentModel]);
 
   // 完整菜单结构
   const getSharedMenu = useCallback(async () => {
-    if (!isClient) return [];
-
     return await Promise.all([
       // 显示/隐藏猫咪
       await MenuItem.new({
@@ -177,12 +163,10 @@ export function useSharedMenu() {
         }
       })
     ]);
-  }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems, isClient]);
+  }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems]);
 
   // 显示上下文菜单的方法
   const showContextMenu = useCallback(async () => {
-    if (!isClient) return;
-
     try {
       const menu = await Menu.new({
         items: await getSharedMenu()
@@ -192,14 +176,13 @@ export function useSharedMenu() {
     } catch (error) {
       console.error("Failed to show context menu:", error);
     }
-  }, [getSharedMenu, isClient]);
+  }, [getSharedMenu]);
 
   return {
     getSharedMenu,
     showContextMenu,
     getModeMenuItems,
     getScaleMenuItems,
-    getOpacityMenuItems,
-    isClient
+    getOpacityMenuItems
   };
 }
