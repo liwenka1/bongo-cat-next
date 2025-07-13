@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { useKeyboard } from "@/hooks/use-keyboard";
@@ -39,7 +39,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   const { currentModel, initializeModels } = useModelStore();
   const {
     visible,
-    opacity,
     scale,
     mirrorMode,
     pressedLeftKeys,
