@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useSharedMenu } from "@/hooks/use-shared-menu";
 import { useTray } from "@/hooks/use-tray";
@@ -14,17 +14,14 @@ const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
 });
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-
   // 🎯 page.tsx 只负责应用级别的状态和事件
   const { opacity, mirrorMode, visible } = useCatStore();
   const { showContextMenu } = useSharedMenu();
   const { createTray } = useTray();
   const { showWindow, hideWindow } = useWindow();
-  // 客户端检查和托盘初始化
-  useEffect(() => {
-    setIsClient(true);
 
+  // 托盘初始化
+  useEffect(() => {
     // 在主页面创建托盘
     void createTray();
   }, []);
@@ -57,10 +54,6 @@ export default function Home() {
       void hideWindow();
     }
   }, [visible]);
-
-  if (!isClient) {
-    return <div className="h-screen w-screen bg-black" />;
-  }
 
   return (
     <div
