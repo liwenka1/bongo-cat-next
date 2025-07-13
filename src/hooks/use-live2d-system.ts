@@ -6,11 +6,12 @@ import { useModelStore } from "@/stores/model-store";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { listen } from "@tauri-apps/api/event";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
-import type { DeviceEvent, Live2DInstance, ModelJSON } from "@/types";
-import type { Cubism4InternalModel } from "pixi-live2d-display";
+import type { DeviceEvent, Live2DInstance } from "@/types";
+import type { Cubism4InternalModel, CubismSpec } from "pixi-live2d-display";
 
 // 获取图片尺寸的工具函数
 function getImageSize(src: string): Promise<{ width: number; height: number }> {
@@ -193,9 +194,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
         // 🎯 解析并设置动作列表
         const modelJsonPath = join(modelPath, modelFileName);
-        const modelJsonUrl = convertFileSrc(modelJsonPath);
-        const response = await fetch(modelJsonUrl);
-        const modelJson = (await response.json()) as ModelJSON;
+        const modelJson = JSON.parse(await readTextFile(modelJsonPath)) as CubismSpec.ModelJSON;
         const motions = modelJson.FileReferences.Motions;
         // 为从JSON读取的动作文件定义接口
         interface MotionFile {
