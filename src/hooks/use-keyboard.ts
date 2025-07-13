@@ -7,9 +7,7 @@ import { useModelStore } from "@/stores/model-store";
 import { readDir, exists } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import type { SpecificDeviceEvent } from "@/types";
-
-// 导入键盘映射常量
-import { browserKeyMapping, rdevKeyMapping } from "@/constants";
+import { message } from "antd";
 
 export function useKeyboard() {
   const { setPressedLeftKeys, setPressedRightKeys, setSupportedLeftKeys, setSupportedRightKeys, singleMode } =
@@ -22,20 +20,15 @@ export function useKeyboard() {
 
   // 更新支持的按键列表
   useEffect(() => {
-    console.log("🔄 updateSupportedKeys useEffect triggered, currentModel:", currentModel);
     if (!currentModel) {
-      console.log("❌ No current model, skipping key directory scan");
       return;
     }
 
     const updateSupportedKeys = async () => {
-      console.log("📁 Starting to read key directories for model:", currentModel.path);
-
       // 🎯 只为交互式模型读取键盘目录
       const isInteractiveModel = currentModel.id === "keyboard" || currentModel.id === "standard";
 
       if (!isInteractiveModel) {
-        console.log("🎭 Non-interactive model detected, skipping keyboard directories");
         supportedLeftKeysRef.current = [];
         supportedRightKeysRef.current = [];
         setSupportedLeftKeys([]);
@@ -44,76 +37,44 @@ export function useKeyboard() {
       }
 
       try {
-        // 检查左键目录
-        const leftPath = join(currentModel.path, "resources", "left-keys");
-        if (await exists(leftPath)) {
-          console.log("📂 Reading left keys from:", leftPath);
-          const leftFiles = await readDir(leftPath);
-          console.log(
-            "📄 Left files found:",
-            leftFiles.map((f) => f.name)
-          );
-          const leftKeys = leftFiles
-            .filter((file) => file.name.endsWith(".png"))
-            .map((file) => file.name.replace(".png", ""));
-          console.log("👈 Processed left keys:", leftKeys);
-          supportedLeftKeysRef.current = leftKeys;
-          setSupportedLeftKeys(leftKeys);
-        } else {
-          console.log("🤷‍♂️ Left keys directory not found, skipping:", leftPath);
-          supportedLeftKeysRef.current = [];
-          setSupportedLeftKeys([]);
-        }
-
-        // 检查右键目录
-        const rightPath = join(currentModel.path, "resources", "right-keys");
-        if (await exists(rightPath)) {
-          console.log("📂 Reading right keys from:", rightPath);
-          const rightFiles = await readDir(rightPath);
-          console.log(
-            "📄 Right files found:",
-            rightFiles.map((f) => f.name)
-          );
-          const rightKeys = rightFiles
-            .filter((file) => file.name.endsWith(".png"))
-            .map((file) => file.name.replace(".png", ""));
-          console.log("👉 Processed right keys:", rightKeys);
-          supportedRightKeysRef.current = rightKeys;
-          setSupportedRightKeys(rightKeys);
-        } else {
-          console.log("🤷‍♂️ Right keys directory not found, skipping:", rightPath);
-          supportedRightKeysRef.current = [];
-          setSupportedRightKeys([]);
-        }
-
-        // 特殊处理左右修饰键
-        const modifierKeys = ["Shift", "Control", "Alt", "Meta"];
-        for (const modifier of modifierKeys) {
-          // 检查是否有 Left/Right 变体
-          const leftVariant = `${modifier}Left`;
-          const rightVariant = `${modifier}Right`;
-
-          // 检查左变体是否在左键目录中存在
-          if (supportedLeftKeysRef.current.includes(leftVariant) && !supportedLeftKeysRef.current.includes(modifier)) {
-            console.log(`⚙️ Adding generic ${modifier} to left keys based on ${leftVariant}`);
-            supportedLeftKeysRef.current.push(modifier);
+        // 统一的文件扫描函数
+        const scanKeyDirectory = async (side: "left" | "right") => {
+          const path = join(currentModel.path, "resources", `${side}-keys`);
+          if (await exists(path)) {
+            const files = await readDir(path);
+            return files.filter((file) => file.name.endsWith(".png")).map((file) => file.name.replace(".png", ""));
           }
+          return [];
+        };
 
-          // 检查右变体是否在右键目录中存在
-          if (
-            supportedRightKeysRef.current.includes(rightVariant) &&
-            !supportedRightKeysRef.current.includes(modifier)
-          ) {
-            console.log(`⚙️ Adding generic ${modifier} to right keys based on ${rightVariant}`);
-            supportedRightKeysRef.current.push(modifier);
-          }
-        }
+        // 并行扫描左右键目录
+        const [leftKeys, rightKeys] = await Promise.all([scanKeyDirectory("left"), scanKeyDirectory("right")]);
 
-        // 更新 store 中的支持按键列表
-        setSupportedLeftKeys([...supportedLeftKeysRef.current]);
-        setSupportedRightKeys([...supportedRightKeysRef.current]);
+        // 处理修饰键的通用版本
+        const addGenericModifiers = (keys: string[], side: "left" | "right") => {
+          const modifierKeys = ["Shift", "Control", "Alt", "Meta"];
+          const suffix = side === "left" ? "Left" : "Right";
+
+          modifierKeys.forEach((modifier) => {
+            const specificKey = `${modifier}${suffix}`;
+            if (keys.includes(specificKey) && !keys.includes(modifier)) {
+              keys.push(modifier);
+            }
+          });
+        };
+
+        // 添加通用修饰键
+        addGenericModifiers(leftKeys, "left");
+        addGenericModifiers(rightKeys, "right");
+
+        // 更新状态
+        supportedLeftKeysRef.current = leftKeys;
+        supportedRightKeysRef.current = rightKeys;
+        setSupportedLeftKeys(leftKeys);
+        setSupportedRightKeys(rightKeys);
       } catch (error) {
-        console.error("❌ Failed to process key directories:", error);
+        message.error(String(error));
+
         supportedLeftKeysRef.current = [];
         setSupportedLeftKeys([]);
         supportedRightKeysRef.current = [];
@@ -125,34 +86,32 @@ export function useKeyboard() {
   }, [currentModel, setSupportedLeftKeys, setSupportedRightKeys]);
 
   // 获取支持的按键名称
-  const getSupportedKey = (key: string, isFromTauri = false): string | null => {
-    const keyMapping = isFromTauri ? rdevKeyMapping : browserKeyMapping;
-    let mappedKey = keyMapping[key] || key;
+  const getSupportedKey = (key: string): string | null => {
+    for (const side of ["left", "right"] as const) {
+      let nextKey = key;
+      const supportKeys = side === "left" ? supportedLeftKeysRef.current : supportedRightKeysRef.current;
 
-    // 处理功能键映射
-    if (
-      key.startsWith("F") &&
-      !supportedLeftKeysRef.current.includes(mappedKey) &&
-      !supportedRightKeysRef.current.includes(mappedKey)
-    ) {
-      mappedKey = "Fn";
-    }
+      // 检查是否直接支持
+      if (supportKeys.includes(key)) {
+        return key;
+      }
 
-    // 检查按键是否被支持
-    if (supportedLeftKeysRef.current.includes(mappedKey) || supportedRightKeysRef.current.includes(mappedKey)) {
-      return mappedKey;
-    }
+      // 处理功能键
+      if (key.startsWith("F")) {
+        nextKey = "Fn";
+      }
 
-    // 处理修饰键的通用版本映射
-    if (["Shift", "Control", "Alt", "Meta"].some((modifier) => key.includes(modifier))) {
-      const genericKey = key.replace("Left", "").replace("Right", "");
-      const genericMapped = keyMapping[genericKey] || genericKey;
+      // 处理修饰键
+      for (const modifier of ["Meta", "Shift", "Alt", "Control"]) {
+        if (key.startsWith(modifier)) {
+          nextKey = key.replace(new RegExp(`^(${modifier}).*`), "$1");
+          break;
+        }
+      }
 
-      if (
-        supportedLeftKeysRef.current.includes(genericMapped) ||
-        supportedRightKeysRef.current.includes(genericMapped)
-      ) {
-        return genericMapped;
+      // 检查映射后的键名是否支持
+      if (supportKeys.includes(nextKey)) {
+        return nextKey;
       }
     }
 
@@ -161,69 +120,35 @@ export function useKeyboard() {
 
   // 更新按键状态
   const updatePressedKeys = () => {
-    console.log("🔄 updatePressedKeys called");
-    console.log("📂 supportedLeftKeys:", supportedLeftKeysRef.current);
-    console.log("📂 supportedRightKeys:", supportedRightKeysRef.current);
-
     const leftKeys: string[] = [];
     const rightKeys: string[] = [];
 
     pressedKeysRef.current.forEach((key) => {
-      // 尝试两种映射方式
-      const browserMapped = getSupportedKey(key, false);
-      const tauriMapped = getSupportedKey(key, true);
-      const mappedKey = browserMapped ?? tauriMapped;
+      const mappedKey = getSupportedKey(key);
+      if (!mappedKey) return;
 
-      console.log(`🔍 Key mapping: ${key} -> browser: ${browserMapped}, tauri: ${tauriMapped}, final: ${mappedKey}`);
-
-      if (!mappedKey) {
-        console.log(`❌ No mapping found for key: ${key}`);
-        return;
-      }
-
-      // 简化的左右手判断逻辑
-      const isLeftModifier = key.includes("Left");
-      const isRightModifier = key.includes("Right");
-
-      // 优先根据键名直接判断左右手
-      if (isLeftModifier && supportedLeftKeysRef.current.includes(mappedKey)) {
-        leftKeys.push(mappedKey);
-        console.log(`👈 Added ${mappedKey} to left keys (by name)`);
-      } else if (isRightModifier && supportedRightKeysRef.current.includes(mappedKey)) {
-        rightKeys.push(mappedKey);
-        console.log(`👉 Added ${mappedKey} to right keys (by name)`);
-      } else if (supportedLeftKeysRef.current.includes(mappedKey)) {
-        leftKeys.push(mappedKey);
-        console.log(`👈 Added ${mappedKey} to left keys`);
-      } else if (supportedRightKeysRef.current.includes(mappedKey)) {
-        rightKeys.push(mappedKey);
-        console.log(`👉 Added ${mappedKey} to right keys`);
-      } else {
-        console.log(`⚠️ Mapped key ${mappedKey} not found in supported lists`);
-      }
+      // 根据映射后的键名判断左右手
+      const isLeftSide = supportedLeftKeysRef.current.includes(mappedKey);
+      const pressedKeys = isLeftSide ? leftKeys : rightKeys;
+      pressedKeys.push(mappedKey);
     });
 
-    console.log("🔄 Final result - Left:", leftKeys, "Right:", rightKeys);
     setPressedLeftKeys(leftKeys);
     setPressedRightKeys(rightKeys);
   };
 
   // 处理按键按下
   const handleKeyPress = (keyName: string) => {
-    console.log("🔵 handleKeyPress:", keyName);
     if (singleMode) {
       pressedKeysRef.current.clear();
     }
     pressedKeysRef.current.add(keyName);
-    console.log("📝 pressedKeysRef after add:", Array.from(pressedKeysRef.current));
     updatePressedKeys();
   };
 
   // 处理按键松开
   const handleKeyRelease = (keyName: string) => {
-    console.log("🔴 handleKeyRelease:", keyName);
     pressedKeysRef.current.delete(keyName);
-    console.log("📝 pressedKeysRef after delete:", Array.from(pressedKeysRef.current));
     updatePressedKeys();
   };
 
@@ -250,28 +175,21 @@ export function useKeyboard() {
   // Tauri 全局设备事件监听（应用外）
   useEffect(() => {
     const setupTauriListener = async () => {
-      try {
-        const unlisten = await listen<SpecificDeviceEvent>("device-changed", ({ payload }) => {
-          const { kind, value } = payload;
+      const unlisten = await listen<SpecificDeviceEvent>("device-changed", ({ payload }) => {
+        const { kind, value } = payload;
 
-          if (kind === "KeyboardPress" || kind === "KeyboardRelease") {
-            if (typeof value === "string") {
-              // 添加调试日志以了解实际的键名格式
-              console.log("Tauri key event:", kind, value);
-
-              if (kind === "KeyboardPress") {
-                handleKeyPress(value);
-              } else {
-                handleKeyRelease(value);
-              }
+        if (kind === "KeyboardPress" || kind === "KeyboardRelease") {
+          if (typeof value === "string") {
+            if (kind === "KeyboardPress") {
+              handleKeyPress(value);
+            } else {
+              handleKeyRelease(value);
             }
           }
-        });
+        }
+      });
 
-        unlistenRef.current = unlisten;
-      } catch (error) {
-        console.error("Failed to setup Tauri device listener:", error);
-      }
+      unlistenRef.current = unlisten;
     };
 
     void setupTauriListener();
@@ -283,18 +201,4 @@ export function useKeyboard() {
       }
     };
   }, []);
-
-  // 窗口失焦时清空按键状态
-  useEffect(() => {
-    const handleBlur = () => {
-      pressedKeysRef.current.clear();
-      setPressedLeftKeys([]);
-      setPressedRightKeys([]);
-    };
-
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, [setPressedLeftKeys, setPressedRightKeys]);
 }
