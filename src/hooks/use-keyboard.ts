@@ -101,6 +101,17 @@ export function useKeyboard() {
         nextKey = "Fn";
       }
 
+      // 处理方向键
+      const arrowKeyMap: Record<string, string> = {
+        ArrowUp: "UpArrow",
+        ArrowDown: "DownArrow",
+        ArrowLeft: "LeftArrow",
+        ArrowRight: "RightArrow"
+      };
+      if (arrowKeyMap[key]) {
+        nextKey = arrowKeyMap[key];
+      }
+
       // 处理修饰键
       for (const modifier of ["Meta", "Shift", "Alt", "Control"]) {
         if (key.startsWith(modifier)) {
