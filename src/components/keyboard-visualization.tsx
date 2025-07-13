@@ -16,7 +16,7 @@ export function KeyboardVisualization() {
 
     const cacheKeyImages = async () => {
       const cache: Record<string, string> = {};
-      
+
       // 缓存所有支持的按键图片路径
       const allSupportedKeys = [...new Set([...supportedLeftKeys, ...supportedRightKeys])];
 
@@ -44,41 +44,51 @@ export function KeyboardVisualization() {
   const leftKeyImages = useMemo(() => {
     if (!pressedLeftKeys.length) return [];
 
-    return pressedLeftKeys.map((key) => {
-      const imagePath = getKeyImagePath(key, "left");
-      if (!imagePath) return null;
+    // 去重，确保每个按键只渲染一次
+    const uniqueKeys = [...new Set(pressedLeftKeys)];
 
-      return (
-        <Image
-          key={`left-${key}`}
-          width={100}
-          height={100}
-          src={imagePath}
-          alt={`${key} key`}
-          className="absolute z-10 size-full"
-        />
-      );
-    }).filter(Boolean);
+    return uniqueKeys
+      .map((key) => {
+        const imagePath = getKeyImagePath(key, "left");
+        if (!imagePath) return null;
+
+        return (
+          <Image
+            key={`left-${key}`}
+            width={100}
+            height={100}
+            src={imagePath}
+            alt={`${key} key`}
+            className="absolute z-10 size-full"
+          />
+        );
+      })
+      .filter(Boolean);
   }, [pressedLeftKeys, keyImageCache]);
 
   const rightKeyImages = useMemo(() => {
     if (!pressedRightKeys.length) return [];
 
-    return pressedRightKeys.map((key) => {
-      const imagePath = getKeyImagePath(key, "right");
-      if (!imagePath) return null;
+    // 去重，确保每个按键只渲染一次
+    const uniqueKeys = [...new Set(pressedRightKeys)];
 
-      return (
-        <Image
-          key={`right-${key}`}
-          width={100}
-          height={100}
-          src={imagePath}
-          alt={`${key} key`}
-          className="absolute z-10 size-full"
-        />
-      );
-    }).filter(Boolean);
+    return uniqueKeys
+      .map((key) => {
+        const imagePath = getKeyImagePath(key, "right");
+        if (!imagePath) return null;
+
+        return (
+          <Image
+            key={`right-${key}`}
+            width={100}
+            height={100}
+            src={imagePath}
+            alt={`${key} key`}
+            className="absolute z-10 size-full"
+          />
+        );
+      })
+      .filter(Boolean);
   }, [pressedRightKeys, keyImageCache]);
 
   return (
