@@ -138,26 +138,12 @@ export function useKeyboard() {
       mappedKey = "Fn";
     }
 
-    // 处理修饰键的精确映射
-    if (key.includes("Left") || key.includes("Right")) {
-      // 优先使用精确的左右修饰键
-      if (supportedLeftKeysRef.current.includes(mappedKey) || supportedRightKeysRef.current.includes(mappedKey)) {
-        return mappedKey;
-      }
-
-      // 如果没有精确的左右修饰键，尝试使用通用版本
-      const genericKey = key.replace("Left", "").replace("Right", "");
-      const genericMapped = keyMapping[genericKey] || genericKey;
-
-      if (
-        supportedLeftKeysRef.current.includes(genericMapped) ||
-        supportedRightKeysRef.current.includes(genericMapped)
-      ) {
-        return genericMapped;
-      }
+    // 检查按键是否被支持
+    if (supportedLeftKeysRef.current.includes(mappedKey) || supportedRightKeysRef.current.includes(mappedKey)) {
+      return mappedKey;
     }
 
-    // 尝试使用通用版本的修饰键
+    // 处理修饰键的通用版本映射
     if (["Shift", "Control", "Alt", "Meta"].some((modifier) => key.includes(modifier))) {
       const genericKey = key.replace("Left", "").replace("Right", "");
       const genericMapped = keyMapping[genericKey] || genericKey;
@@ -168,11 +154,6 @@ export function useKeyboard() {
       ) {
         return genericMapped;
       }
-    }
-
-    // 检查按键是否被支持
-    if (supportedLeftKeysRef.current.includes(mappedKey) || supportedRightKeysRef.current.includes(mappedKey)) {
-      return mappedKey;
     }
 
     return null;
@@ -200,20 +181,18 @@ export function useKeyboard() {
         return;
       }
 
-      // 检查是否是左右修饰键
+      // 简化的左右手判断逻辑
       const isLeftModifier = key.includes("Left");
       const isRightModifier = key.includes("Right");
 
-      // 优先根据键名判断左右
+      // 优先根据键名直接判断左右手
       if (isLeftModifier && supportedLeftKeysRef.current.includes(mappedKey)) {
         leftKeys.push(mappedKey);
         console.log(`👈 Added ${mappedKey} to left keys (by name)`);
       } else if (isRightModifier && supportedRightKeysRef.current.includes(mappedKey)) {
         rightKeys.push(mappedKey);
         console.log(`👉 Added ${mappedKey} to right keys (by name)`);
-      }
-      // 然后根据支持的键位列表判断
-      else if (supportedLeftKeysRef.current.includes(mappedKey)) {
+      } else if (supportedLeftKeysRef.current.includes(mappedKey)) {
         leftKeys.push(mappedKey);
         console.log(`👈 Added ${mappedKey} to left keys`);
       } else if (supportedRightKeysRef.current.includes(mappedKey)) {
@@ -318,21 +297,4 @@ export function useKeyboard() {
       window.removeEventListener("blur", handleBlur);
     };
   }, [setPressedLeftKeys, setPressedRightKeys]);
-
-  // 检查键位在左右目录中的可用性
-  const checkKeyAvailability = async (key: string): Promise<{ left: boolean; right: boolean }> => {
-    if (!currentModel) return { left: false, right: false };
-
-    try {
-      const leftPath = join(currentModel.path, "resources", "left-keys", `${key}.png`);
-      const rightPath = join(currentModel.path, "resources", "right-keys", `${key}.png`);
-
-      const [leftExists, rightExists] = await Promise.all([exists(leftPath), exists(rightPath)]);
-
-      return { left: leftExists, right: rightExists };
-    } catch (error) {
-      console.error(`Error checking key availability for ${key}:`, error);
-      return { left: false, right: false };
-    }
-  };
 }
