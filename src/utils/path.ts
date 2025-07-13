@@ -1,5 +1,5 @@
 /**
- * Join path segments
+ * 连接路径片段
  */
 export function join(...segments: string[]): string {
   return segments
@@ -9,7 +9,7 @@ export function join(...segments: string[]): string {
 }
 
 /**
- * Get file extension
+ * 获取文件扩展名
  */
 export function getExtension(filename: string): string {
   const lastDot = filename.lastIndexOf(".");
@@ -17,7 +17,7 @@ export function getExtension(filename: string): string {
 }
 
 /**
- * Get filename without extension
+ * 获取不带扩展名的文件名
  */
 export function getBasename(filename: string): string {
   const lastDot = filename.lastIndexOf(".");
@@ -31,14 +31,14 @@ export function getBasename(filename: string): string {
 }
 
 /**
- * Check if path is absolute
+ * 检查路径是否为绝对路径
  */
 export function isAbsolute(path: string): boolean {
   return /^([a-zA-Z]:)?[/\\]/.test(path);
 }
 
 /**
- * Normalize path separators
+ * 标准化路径分隔符
  */
 export function normalize(path: string): string {
   return path.replace(/[/\\]+/g, "/");

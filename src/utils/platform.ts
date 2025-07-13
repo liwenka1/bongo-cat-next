@@ -1,20 +1,20 @@
 /**
- * Check if running on macOS
+ * 检查是否运行在 macOS 上
  */
 export const isMac = typeof window !== "undefined" && navigator.userAgent.toLowerCase().includes("mac");
 
 /**
- * Check if running on Windows
+ * 检查是否运行在 Windows 上
  */
 export const isWindows = typeof window !== "undefined" && navigator.userAgent.toLowerCase().includes("win");
 
 /**
- * Check if running on Linux
+ * 检查是否运行在 Linux 上
  */
 export const isLinux = typeof window !== "undefined" && navigator.userAgent.toLowerCase().includes("linux");
 
 /**
- * Get platform name
+ * 获取平台名称
  */
 export function getPlatform(): "mac" | "windows" | "linux" | "unknown" {
   if (isMac) return "mac";
