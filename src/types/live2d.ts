@@ -33,24 +33,6 @@ export interface Live2DInstance {
   playExpression: (index: number) => Promise<void>;
 }
 
-// 模型JSON类型定义
-export interface ModelJSON {
-  Version: number;
-  FileReferences: {
-    Moc?: string;
-    Textures?: string[];
-    Physics?: string;
-    Pose?: string;
-    Expressions?: Array<{ Name: string; File: string }>;
-    Motions: Record<string, { File: string }[]>;
-  };
-  Groups?: Array<{
-    Target: string;
-    Name: string;
-    Ids: string[];
-  }>;
-}
-
 // Live2D 全局窗口类型定义
 declare global {
   interface Window {
