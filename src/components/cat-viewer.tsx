@@ -22,10 +22,8 @@ export default function CatViewer() {
   const { visible } = useLive2DSystem(canvasRef);
   const { currentModel } = useModelStore();
 
-  // 响应式地从 store 中获取状态
-  const backgroundImage = useCatStore((state) => state.backgroundImage);
-  const scale = useCatStore((state) => state.scale);
-  const availableMotions = useCatStore((state) => state.availableMotions);
+  // 从 store 中获取状态
+  const { backgroundImage, scale, availableMotions } = useCatStore();
 
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,

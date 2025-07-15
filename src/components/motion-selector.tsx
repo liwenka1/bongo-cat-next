@@ -9,8 +9,7 @@ interface MotionSelectorProps {
 }
 
 export function MotionSelector({ availableMotions }: MotionSelectorProps) {
-  const selectedMotion = useCatStore((state) => state.selectedMotion);
-  const setSelectedMotion = useCatStore((state) => state.setSelectedMotion);
+  const { selectedMotion, setSelectedMotion } = useCatStore();
 
   const handleChange = (value: string | null) => {
     if (value) {
