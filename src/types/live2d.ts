@@ -41,8 +41,3 @@ declare global {
     LIVE2DCUBISMFRAMEWORK?: unknown;
   }
 }
-
-export interface DeviceEvent {
-  kind: "MouseMove" | "MousePress" | "MouseRelease";
-  value: { x: number; y: number } | string;
-}
