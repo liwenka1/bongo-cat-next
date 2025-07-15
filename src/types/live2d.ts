@@ -7,18 +7,6 @@ declare module "pixi-live2d-display" {
   }
 }
 
-// Live2D 模型类型定义
-export interface Live2DModel {
-  scale: {
-    set: (value: number) => void;
-  };
-}
-
-// Live2D 应用类型定义
-export interface Live2DApp {
-  resize: () => void;
-}
-
 // Live2D 实例类型定义
 export interface Live2DInstance {
   model: BaseLive2DModel | null;
