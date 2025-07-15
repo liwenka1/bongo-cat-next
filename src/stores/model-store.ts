@@ -69,7 +69,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       },
       {
         id: "naximofu_2",
-        name: "Naximofu 2 模型",
+        name: "猫娘模式",
         path: "assets/models/naximofu_2",
         mode: "standard",
         isPreset: true,
