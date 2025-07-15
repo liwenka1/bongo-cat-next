@@ -5,13 +5,26 @@ import { useModelStore } from "@/stores/model-store";
 import { exit } from "@tauri-apps/plugin-process";
 
 export function useSharedMenu() {
-  const catStore = useCatStore();
+  const {
+    visible,
+    setVisible,
+    scale,
+    setScale,
+    opacity,
+    setOpacity,
+    penetrable,
+    setPenetrable,
+    alwaysOnTop,
+    setAlwaysOnTop,
+    mirrorMode,
+    setMirrorMode
+  } = useCatStore();
   const { models, currentModel, setCurrentModel } = useModelStore();
 
   const getScaleMenuItems = useCallback(async () => {
     // 缩放选项（50-150，每25一个档位）
     const scaleOptions = [50, 75, 100, 125, 150];
-    const currentScale = catStore.scale;
+    const currentScale = scale;
 
     const items = await Promise.all(
       scaleOptions.map(async (scaleValue) => {
@@ -21,7 +34,7 @@ export function useSharedMenu() {
           action: () => {
             console.log(`🎚️ Setting scale to ${scaleValue}%`);
             // 直接设置百分比值
-            catStore.setScale(scaleValue);
+            setScale(scaleValue);
           }
         });
       })
@@ -38,7 +51,7 @@ export function useSharedMenu() {
     }
 
     return items;
-  }, [catStore.scale]);
+  }, [scale, setScale]);
 
   const getOpacityMenuItems = useCallback(async () => {
     // 透明度选项
@@ -48,18 +61,18 @@ export function useSharedMenu() {
       opacityOptions.map(async (opacityValue) => {
         return await CheckMenuItem.new({
           text: `${opacityValue}%`,
-          checked: catStore.opacity === opacityValue,
+          checked: opacity === opacityValue,
           action: () => {
-            catStore.setOpacity(opacityValue);
+            setOpacity(opacityValue);
           }
         });
       })
     );
 
     // 如果当前透明度不在预设选项中，添加自定义选项
-    if (!opacityOptions.includes(catStore.opacity)) {
+    if (!opacityOptions.includes(opacity)) {
       const customItem = await CheckMenuItem.new({
-        text: `${catStore.opacity}%`,
+        text: `${opacity}%`,
         checked: true,
         enabled: false
       });
@@ -67,7 +80,7 @@ export function useSharedMenu() {
     }
 
     return items;
-  }, [catStore.opacity]);
+  }, [opacity, setOpacity]);
 
   const getModeMenuItems = useCallback(async () => {
     return await Promise.all(
@@ -89,9 +102,9 @@ export function useSharedMenu() {
     return await Promise.all([
       // 显示/隐藏猫咪
       await MenuItem.new({
-        text: catStore.visible ? "隐藏猫咪" : "显示猫咪",
+        text: visible ? "隐藏猫咪" : "显示猫咪",
         action: () => {
-          catStore.setVisible(!catStore.visible);
+          setVisible(!visible);
         }
       }),
 
@@ -110,27 +123,27 @@ export function useSharedMenu() {
       // 窗口穿透
       await CheckMenuItem.new({
         text: "窗口穿透",
-        checked: catStore.penetrable,
+        checked: penetrable,
         action: () => {
-          catStore.setPenetrable(!catStore.penetrable);
+          setPenetrable(!penetrable);
         }
       }),
 
       // 始终置顶
       await CheckMenuItem.new({
         text: "始终置顶",
-        checked: catStore.alwaysOnTop,
+        checked: alwaysOnTop,
         action: () => {
-          catStore.setAlwaysOnTop(!catStore.alwaysOnTop);
+          setAlwaysOnTop(!alwaysOnTop);
         }
       }),
 
       // 镜像模式
       await CheckMenuItem.new({
         text: "镜像模式",
-        checked: catStore.mirrorMode,
+        checked: mirrorMode,
         action: () => {
-          catStore.setMirrorMode(!catStore.mirrorMode);
+          setMirrorMode(!mirrorMode);
         }
       }),
 
@@ -158,7 +171,19 @@ export function useSharedMenu() {
         action: () => void exit(0)
       })
     ]);
-  }, [catStore, getModeMenuItems, getScaleMenuItems, getOpacityMenuItems]);
+  }, [
+    visible,
+    setVisible,
+    getModeMenuItems,
+    penetrable,
+    setPenetrable,
+    alwaysOnTop,
+    setAlwaysOnTop,
+    mirrorMode,
+    setMirrorMode,
+    getScaleMenuItems,
+    getOpacityMenuItems
+  ]);
 
   // 显示上下文菜单的方法
   const showContextMenu = useCallback(async () => {
