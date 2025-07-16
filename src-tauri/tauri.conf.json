@@ -22,16 +22,6 @@
         "decorations": false,
         "acceptFirstMouse": true,
         "skipTaskbar": true
-      },
-      {
-        "label": "settings",
-        "title": "偏好设置",
-        "url": "/settings",
-        "visible": false,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
-        "minWidth": 800,
-        "minHeight": 600
       }
     ],
     "security": {
