@@ -23,18 +23,21 @@
 ![Standard Mode](public/img/standard.gif)
 
 *Interactive animations with motions and expressions*
+
 ![Standard Mode with Motions](public/img/standard-motions.gif)
 
 ### Keyboard Mode
 ![Keyboard Mode](public/img/keyboard.gif)
 
 *The cat responds to your keyboard input with adorable animations!*
+
 ![Keyboard Mode with Motions](public/img/keyboard-motions.gif)
 
 ### Cat Girl Mode (Naximofu)
 ![Cat Girl Mode](public/img/naximofu_2.gif)
 
 *Advanced Live2D model with rich animations*
+
 ![Cat Girl Mode with Motions](public/img/naximofu_2-motions.gif)
 
 </div>

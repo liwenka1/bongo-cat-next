@@ -23,18 +23,21 @@
 ![标准模式](public/img/standard.gif)
 
 *支持动作和表情的互动动画*
+
 ![标准模式带动作](public/img/standard-motions.gif)
 
 ### 键盘模式
 ![键盘模式](public/img/keyboard.gif)
 
 *猫咪会根据你的键盘操作做出可爱的反应！*
+
 ![键盘模式带动作](public/img/keyboard-motions.gif)
 
 ### 猫娘模式（Naximofu）
 ![猫娘模式](public/img/naximofu_2.gif)
 
 *高级Live2D模型，丰富的动画效果*
+
 ![猫娘模式带动作](public/img/naximofu_2-motions.gif)
 
 </div>
