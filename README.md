@@ -2,9 +2,11 @@
 
 <div align="center">
 
+**[English](README.md)** | **[简体中文](README_zh.md)**
+
 ![BongoCat Next Logo](public/logo.png)
 
-**一个现代化的桌面宠物应用，让可爱的猫咪陪伴你的编程时光**
+**A modern desktop pet application featuring cute Live2D cats to accompany your coding journey**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.2-green.svg)](package.json)
@@ -13,246 +15,234 @@
 
 </div>
 
-## 📸 应用预览
+## 📸 Preview
 
 <div align="center">
 
-### 鼠标模式
-![鼠标演示](public/img/standard.gif)
+### Standard Mode (Mouse Interaction)
+![Standard Mode](public/img/standard.gif)
 
-### 键盘模式
-![键盘演示](public/img/keyboard.gif)
+*Interactive animations with motions and expressions*
+![Standard Mode with Motions](public/img/standard-motions.gif)
 
-*猫咪会根据你的键盘操作做出可爱的反应！*
+### Keyboard Mode
+![Keyboard Mode](public/img/keyboard.gif)
+
+*The cat responds to your keyboard input with adorable animations!*
+![Keyboard Mode with Motions](public/img/keyboard-motions.gif)
+
+### Cat Girl Mode (Naximofu)
+![Cat Girl Mode](public/img/naximofu_2.gif)
+
+*Advanced Live2D model with rich animations*
+![Cat Girl Mode with Motions](public/img/naximofu_2-motions.gif)
 
 </div>
 
-## ✨ 功能特性
+## ✨ Features
 
-### 🎯 核心功能
-- 🐱 **桌面宠物显示** - 可爱的Live2D猫咪模型
-- ⌨️ **键盘响应** - 实时响应键盘按键，猫咪会做出对应动作
-- 🖱️ **鼠标响应** - 鼠标点击时的动画反馈
-- 🎨 **Live2D模型** - 支持自定义Live2D模型文件
-- 🖼️ **透明窗口** - 完全透明的窗口背景，无缝融入桌面
+### 🎯 Core Features
+- 🐱 **Desktop Pet Display** - Adorable Live2D cat models
+- ⌨️ **Keyboard Response** - Real-time keyboard input detection with corresponding animations
+- 🖱️ **Mouse Interaction** - Click animations and mouse tracking
+- 🎭 **Motion System** - Interactive motion selector with various animations
+- 😃 **Expression System** - Dynamic facial expressions control
+- 🎨 **Live2D Models** - Support for custom Live2D model files
+- 🖼️ **Transparent Window** - Seamless desktop integration with full transparency
 
-### ⚙️ 个性化设置
-- 🎛️ **透明度调节** - 自由调整猫咪透明度 (0-100%)
-- 🔄 **镜像模式** - 左右镜像显示，适应不同使用习惯
-- 📌 **置顶显示** - 总在最前端显示，不会被其他窗口遮挡
-- 👻 **点击穿透** - 可选择是否穿透鼠标点击
-- 🗂️ **模型切换** - 支持多种Live2D模型，随时切换
+### ⚙️ Customization
+- 🎛️ **Opacity Control** - Adjust cat transparency (0-100%)
+- 🔄 **Mirror Mode** - Horizontal flip for different usage preferences
+- 📌 **Always on Top** - Stay above all other windows
+- 👻 **Click Through** - Optional mouse click penetration
+- 🗂️ **Model Switching** - Switch between multiple Live2D models
+- 🎮 **Selector Visibility** - Toggle motion and expression selectors
 
-### 🛠️ 系统集成
-- 🎪 **系统托盘** - 便捷的托盘菜单，快速访问功能
-- 🔧 **热键支持** - 全局快捷键控制
-- 📱 **多窗口管理** - 主窗口和设置窗口独立管理
-- 🌐 **跨平台** - 支持 Windows、macOS、Linux
+### 🛠️ System Integration
+- 🎪 **System Tray** - Convenient tray menu for quick access
+- 🔧 **Global Hotkeys** - System-wide keyboard shortcuts
+- 📱 **Multi-window** - Independent main and settings windows
+- 🌐 **Cross-platform** - Windows, macOS, and Linux support
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-### 前端技术
-- **[Next.js 15](https://nextjs.org/)** - 现代React框架，支持SSG静态导出
-- **[TypeScript](https://www.typescriptlang.org/)** - 类型安全的JavaScript
-- **[Tailwind CSS](https://tailwindcss.com/)** - 实用优先的CSS框架
-- **[Ant Design](https://ant.design/)** - 企业级UI组件库
-- **[Zustand](https://github.com/pmndrs/zustand)** - 轻量级状态管理
-- **[PIXI.js v6](https://pixijs.com/)** - 高性能2D渲染引擎
-- **[pixi-live2d-display](https://github.com/guansss/pixi-live2d-display)** - Live2D模型显示
+### Frontend
+- **[Next.js 15](https://nextjs.org/)** - Modern React framework with SSG support
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Ant Design](https://ant.design/)** - Enterprise UI components
+- **[Zustand](https://github.com/pmndrs/zustand)** - Lightweight state management
+- **[PIXI.js v6](https://pixijs.com/)** - High-performance 2D rendering
+- **[pixi-live2d-display](https://github.com/guansss/pixi-live2d-display)** - Live2D model rendering
 
-### 后端技术
-- **[Tauri 2](https://tauri.app/)** - 轻量级跨平台桌面应用框架
-- **[Rust](https://www.rust-lang.org/)** - 系统级编程语言
-- **[rdev](https://github.com/Narsil/rdev)** - 跨平台设备事件监听
-- **[tauri-plugin-*](https://github.com/tauri-apps/plugins-workspace)** - 丰富的Tauri插件生态
+### Backend
+- **[Tauri 2](https://tauri.app/)** - Lightweight cross-platform desktop framework
+- **[Rust](https://www.rust-lang.org/)** - Systems programming language
+- **[rdev](https://github.com/Narsil/rdev)** - Cross-platform device event listening
+- **[tauri-plugin-*](https://github.com/tauri-apps/plugins-workspace)** - Rich Tauri plugin ecosystem
 
-## 📦 安装使用
+## 📦 Installation
 
-### 预编译版本
-从 [Releases](https://github.com/liwenka1/bongo-cat-next/releases) 页面下载对应平台的安装包：
+### Pre-built Releases
+Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) page:
 
-- **Windows**: `.msi` 安装包
-- **macOS**: `.dmg` 磁盘镜像 (支持Intel和Apple Silicon)
+- **Windows**: `.msi` installer
+- **macOS**: `.dmg` disk image (Intel & Apple Silicon)
 - **Linux**: `.deb` / `.rpm` / `.AppImage`
 
-### 开发环境
+### Development Setup
 
-#### 环境要求
-- **Node.js** 18.0.0 或更高版本
-- **Rust** 1.70.0 或更高版本
-- **pnpm** 8.0.0 或更高版本
+#### Requirements
+- **Node.js** 18.0.0 or higher
+- **Rust** 1.70.0 or higher
+- **pnpm** 8.0.0 or higher
 
-#### 快速开始
+#### Quick Start
 
 ```bash
-# 克隆项目
+# Clone the repository
 git clone https://github.com/liwenka1/bongo-cat-next.git
 cd bongo-cat-next
 
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start development server
 pnpm dev
 
-# 在另一个终端中启动Tauri开发模式
+# In another terminal, start Tauri dev mode
 pnpm tauri dev
 ```
 
-#### 构建打包
+#### Build
 
 ```bash
-# 构建前端静态文件
+# Build frontend static files
 pnpm build
 
-# 构建Tauri应用
+# Build Tauri application
 pnpm tauri build
 ```
 
-## 🏗️ 项目结构
+## 🏗️ Project Structure
 
 ```
 bongo-cat-next/
-├── 📁 src/                     # Next.js 前端源码
-│   ├── 📁 app/                # App Router 页面
-│   │   ├── 📄 page.tsx        # 主窗口页面
-│   │   ├── 📄 layout.tsx      # 根布局
-│   │   └── 📁 settings/       # 设置页面
-│   │       └── 📄 page.tsx
-│   ├── 📁 components/         # React 组件
-│   │   ├── 📄 cat-viewer.tsx  # 猫咪渲染组件
+├── 📁 src/                     # Next.js frontend source
+│   ├── 📁 app/                # App Router pages
+│   │   ├── 📄 page.tsx        # Main window page
+│   │   └── 📄 layout.tsx      # Root layout
+│   ├── 📁 components/         # React components
+│   │   ├── 📄 cat-viewer.tsx          # Cat rendering component
+│   │   ├── 📄 motion-selector.tsx     # Motion selection UI
+│   │   ├── 📄 expression-selector.tsx # Expression selection UI
 │   │   └── 📄 keyboard-visualization.tsx
-│   ├── 📁 hooks/              # 自定义 Hooks
-│   │   ├── 📄 useLive2DSystem.ts  # Live2D 系统
-│   │   ├── 📄 useKeyboard.ts      # 键盘事件
-│   │   ├── 📄 useTray.ts          # 系统托盘
-│   │   └── 📄 useSharedMenu.ts    # 共享菜单
-│   ├── 📁 stores/             # Zustand 状态管理
-│   │   ├── 📄 appStore.ts         # 应用状态
-│   │   ├── 📄 catStore.ts         # 猫咪状态
-│   │   ├── 📄 modelStore.ts       # 模型状态
-│   │   └── 📄 shortcutStore.ts    # 快捷键状态
-│   ├── 📁 types/              # TypeScript 类型定义
-│   ├── 📁 utils/              # 工具函数
-│   └── 📁 styles/             # 样式文件
-├── 📁 src-tauri/              # Tauri Rust 后端
+│   ├── 📁 hooks/              # Custom hooks
+│   │   ├── 📁 live2d/         # Live2D system hooks
+│   │   │   ├── 📄 _useCore.ts         # Core Live2D management
+│   │   │   ├── 📄 _useModelLoader.ts  # Model loading
+│   │   │   ├── 📄 _useMotionPlayer.ts # Motion & expression control
+│   │   │   └── 📄 _useMouseEvents.ts  # Mouse interaction
+│   │   ├── 📄 use-live2d-system.ts    # Main Live2D system
+│   │   ├── 📄 use-keyboard.ts         # Keyboard events
+│   │   ├── 📄 use-tray.ts             # System tray
+│   │   └── 📄 use-shared-menu.ts      # Context menu
+│   ├── 📁 stores/             # Zustand state management
+│   │   ├── 📄 cat-store.ts            # Cat state & settings
+│   │   └── 📄 model-store.ts          # Model management
+│   ├── 📁 types/              # TypeScript definitions
+│   │   ├── 📄 live2d.ts              # Live2D types
+│   │   └── 📄 device.ts              # Device event types
+│   └── 📁 utils/              # Utility functions
+│       └── 📄 live2d.ts              # Live2D implementation
+├── 📁 src-tauri/              # Tauri Rust backend
 │   ├── 📁 src/
-│   │   ├── 📄 main.rs         # 主入口
-│   │   ├── 📄 lib.rs          # 库入口
-│   │   ├── 📁 core/           # 核心功能
-│   │   │   ├── 📄 device.rs   # 设备监听
-│   │   │   └── 📁 setup/      # 平台特定设置
-│   │   └── 📁 utils/          # 工具模块
-│   ├── 📁 assets/             # 静态资源
-│   │   ├── 📁 models/         # Live2D 模型文件
-│   │   └── 📄 tray.png        # 托盘图标
-│   ├── 📄 Cargo.toml          # Rust 依赖配置
-│   └── 📄 tauri.conf.json     # Tauri 应用配置
-├── 📁 public/                 # 公共静态文件
-├── 📁 .github/                # GitHub Actions 工作流
-│   └── 📁 workflows/
-│       └── 📄 release.yml     # 自动发布流程
-├── 📄 package.json            # Node.js 项目配置
-├── 📄 next.config.ts          # Next.js 配置
-├── 📄 tailwind.config.ts      # Tailwind CSS 配置
-└── 📄 tsconfig.json           # TypeScript 配置
+│   │   ├── 📄 main.rs         # Main entry
+│   │   ├── 📄 lib.rs          # Library entry
+│   │   └── 📁 core/           # Core functionality
+│   │       └── 📄 device.rs   # Device monitoring
+│   ├── 📁 assets/             # Static assets
+│   │   ├── 📁 models/         # Live2D model files
+│   │   │   ├── 📁 standard/   # Standard cat model
+│   │   │   ├── 📁 keyboard/   # Keyboard responsive model
+│   │   │   └── 📁 naximofu_2/ # Advanced cat girl model
+│   │   └── 📄 tray.png        # Tray icon
+│   └── 📄 tauri.conf.json     # Tauri configuration
+├── 📁 public/                 # Static files
+│   └── 📁 img/                # Demo GIFs
+└── 📄 package.json            # Node.js configuration
 ```
 
-## 🔧 开发状态
+## ⚡ Performance
 
-### ✅ 已完成功能
-- [x] **基础架构** - Next.js + Tauri 2 完整集成
-- [x] **状态管理** - Zustand 全局状态管理
-- [x] **设备监听** - 键盘/鼠标事件全局监听
-- [x] **窗口管理** - 多窗口系统，支持透明/置顶/拖拽
-- [x] **系统托盘** - 完整的托盘菜单功能
-- [x] **用户界面** - 设置页面完整UI实现
-- [x] **Live2D基础** - Live2D模型加载和基础渲染
-- [x] **构建系统** - 跨平台自动构建和发布
-- [x] **类型安全** - 完整的TypeScript类型定义
+- **Lightweight** - Based on Tauri 2, installer size < 20MB
+- **Low Resource Usage** - Memory usage < 50MB, CPU usage < 1%
+- **Native Performance** - Rust backend provides native-level performance
+- **Fast Startup** - Application startup time < 2 seconds
+- **Responsive** - Input event response latency < 10ms
 
-### 🚧 进行中
-- [ ] **Live2D集成** - 完整的动画和交互系统
-- [ ] **键盘可视化** - 实时按键显示效果
-- [ ] **模型管理** - 自定义模型导入和切换
-- [ ] **性能优化** - 渲染性能和内存使用优化
+## 📋 Usage
 
-## ⚡ 性能特点
+### Basic Operations
+1. **Launch** - Double-click to run, cat appears on desktop
+2. **Drag** - Left-click and drag to move the cat anywhere
+3. **Right-click Menu** - Right-click on cat for feature menu
+4. **System Tray** - Click tray icon for quick access
+5. **Motion Control** - Use the motion selector to play animations
+6. **Expression Control** - Use the expression selector to change facial expressions
 
-- **轻量级** - 基于Tauri 2，安装包大小 < 20MB
-- **低资源占用** - 内存使用 < 50MB，CPU占用 < 1%
-- **原生性能** - Rust后端提供原生级别的性能
-- **快速启动** - 应用启动时间 < 2秒
-- **响应迅速** - 键鼠事件响应延迟 < 10ms
+### Keyboard Shortcuts
+- `Ctrl + Alt + H` - Show/Hide cat
+- `Ctrl + Alt + S` - Open settings
+- `Ctrl + Alt + Q` - Quit application
 
-## 📋 使用说明
-
-### 基本操作
-1. **启动应用** - 双击运行，猫咪出现在桌面
-2. **拖拽移动** - 鼠标左键拖拽猫咪到任意位置
-3. **右键菜单** - 右键点击猫咪打开功能菜单
-4. **系统托盘** - 点击托盘图标快速访问功能
-5. **设置调整** - 通过菜单打开设置页面进行个性化配置
-
-### 快捷键
-- `Ctrl + Alt + H` - 显示/隐藏猫咪
-- `Ctrl + Alt + S` - 打开设置页面
-- `Ctrl + Alt + Q` - 退出应用
-
-### 配置文件
-应用设置保存在以下位置：
+### Configuration
+Settings are saved in:
 - **Windows**: `%APPDATA%/BongoCat Next/`
 - **macOS**: `~/Library/Application Support/BongoCat Next/`
 - **Linux**: `~/.config/BongoCat Next/`
 
-## 🤝 贡献指南
+## 🤝 Contributing
 
-我们欢迎所有形式的贡献！
+We welcome all forms of contributions!
 
-### 开发贡献
-1. **Fork** 本仓库
-2. **创建** 功能分支: `git checkout -b feature/AmazingFeature`
-3. **提交** 更改: `git commit -m 'Add some AmazingFeature'`
-4. **推送** 到分支: `git push origin feature/AmazingFeature`
-5. **创建** Pull Request
+### Development
+1. **Fork** this repository
+2. **Create** feature branch: `git checkout -b feature/AmazingFeature`
+3. **Commit** changes: `git commit -m 'Add some AmazingFeature'`
+4. **Push** to branch: `git push origin feature/AmazingFeature`
+5. **Create** Pull Request
 
-### 提交规范
-遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
-- `feat:` 新功能
-- `fix:` 修复bug
-- `docs:` 文档更新
-- `style:` 代码格式调整
-- `refactor:` 代码重构
-- `test:` 测试相关
-- `chore:` 构建过程或辅助工具的变动
+### Commit Convention
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation updates
+- `style:` Code formatting
+- `refactor:` Code refactoring
+- `test:` Testing related
+- `chore:` Build process or auxiliary tools
 
-### 其他贡献方式
-- 🐛 **报告Bug** - 通过Issues报告问题
-- 💡 **提出建议** - 分享你的想法和建议
-- 📖 **改进文档** - 帮助完善文档
-- 🎨 **设计资源** - 提供图标、模型等资源
-- 🌍 **国际化** - 帮助翻译应用
+## 📄 License
 
-## 📄 许可证
+This project is licensed under [MIT License](LICENSE).
 
-本项目采用 [MIT License](LICENSE) 许可证。
+## 🙏 Acknowledgments
 
-## 🙏 致谢
+- Thanks to [ayangweb](https://github.com/ayangweb) for the original [BongoCat](https://github.com/ayangweb/BongoCat) project inspiration
+- Thanks to [Tauri](https://tauri.app/) team for the excellent framework
+- Thanks to [Live2D](https://www.live2d.com/) Inc. for technical support
+- Thanks to all developers contributing to the open source community
 
-- 感谢 [ayangweb](https://github.com/ayangweb) 的原版 [BongoCat](https://github.com/ayangweb/BongoCat) 项目提供的灵感
-- 感谢 [Tauri](https://tauri.app/) 团队提供的优秀框架
-- 感谢 [Live2D](https://www.live2d.com/) 公司的技术支持
-- 感谢所有为开源社区做出贡献的开发者们
+## 📞 Contact
 
-## 📞 联系我
-
-- **GitHub Issues**: [提交问题](https://github.com/liwenka1/bongo-cat-next/issues)
-- **Discussions**: [参与讨论](https://github.com/liwenka1/bongo-cat-next/discussions)
+- **GitHub Issues**: [Submit Issues](https://github.com/liwenka1/bongo-cat-next/issues)
+- **Discussions**: [Join Discussions](https://github.com/liwenka1/bongo-cat-next/discussions)
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请给我一个 ⭐ Star！**
+**If this project helps you, please give it a ⭐ Star!**
 
 </div>
