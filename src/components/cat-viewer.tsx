@@ -7,6 +7,7 @@ import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
 import { useLive2DSystem } from "@/hooks/use-live2d-system";
 import { MotionSelector } from "@/components/motion-selector";
+import { ExpressionSelector } from "@/components/expression-selector";
 
 /**
  * 🎯 CatViewer - Live2D 渲染器组件
@@ -23,7 +24,7 @@ export default function CatViewer() {
   const { currentModel } = useModelStore();
 
   // 从 store 中获取状态
-  const { backgroundImage, scale, availableMotions } = useCatStore();
+  const { backgroundImage, scale, availableMotions, availableExpressions } = useCatStore();
 
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,
@@ -77,8 +78,13 @@ export default function CatViewer() {
       {shouldShowKeyboard && <KeyboardVisualization />}
 
       {/* 🎮 动作选择器 - 对所有有动作的模型显示 */}
-      <div className="absolute top-4 right-4 z-50">
+      <div className="absolute top-0 right-0 z-50">
         <MotionSelector availableMotions={availableMotions} />
+      </div>
+
+      {/* 😃 表情选择器 - 对所有有表情的模型显示 */}
+      <div className="absolute top-0 left-0 z-50">
+        <ExpressionSelector availableExpressions={availableExpressions} />
       </div>
     </>
   );

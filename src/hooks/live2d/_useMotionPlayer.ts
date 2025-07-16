@@ -62,10 +62,37 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
     [getInstance]
   );
 
+  // 播放指定的表情（根据名称）
+  const playExpressionByName = useCallback(
+    (name: string) => {
+      const live2d = getInstance();
+      if (!live2d?.model?.internalModel) return;
+
+      console.log(`▶️ Playing expression: ${name}`);
+
+      // 从模型配置中找到对应表情的索引
+      const internalModel = live2d.model.internalModel as Cubism4InternalModel;
+      const expressions = internalModel.settings.expressions;
+
+      if (expressions) {
+        const index = expressions.findIndex((expression: { File: string }) =>
+          expression.File.endsWith(`${name}.exp3.json`)
+        );
+        if (index !== -1) {
+          void live2d.playExpression(index);
+        } else {
+          console.error(`Expression "${name}" not found`);
+        }
+      }
+    },
+    [getInstance]
+  );
+
   return {
     playMotion,
     playExpression,
     setParameterValue,
-    playMotionByName
+    playMotionByName,
+    playExpressionByName
   };
 }

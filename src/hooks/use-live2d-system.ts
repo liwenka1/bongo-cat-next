@@ -22,7 +22,8 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // Store 状态
   const { currentModel, initializeModels } = useModelStore();
-  const { visible, scale, mirrorMode, pressedLeftKeys, pressedRightKeys, selectedMotion } = useCatStore();
+  const { visible, scale, mirrorMode, pressedLeftKeys, pressedRightKeys, selectedMotion, selectedExpression } =
+    useCatStore();
 
   // 🔧 Live2D 核心管理
   const { initializeLive2D, getInstance, setLoading, isLoading } = _useCore();
@@ -40,7 +41,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   const { updateHandState } = _useKeyboardSync(initializeLive2D);
 
   // 🔧 动作播放控制
-  const { playMotionByName } = _useMotionPlayer(getInstance);
+  const { playMotionByName, playExpressionByName } = _useMotionPlayer(getInstance);
 
   // 🔧 窗口大小调整监听
   _useWindowResize(() => {
@@ -111,6 +112,14 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       playMotionByName(group, name);
     }
   }, [selectedMotion, playMotionByName]);
+
+  // 🎭 当选中的表情变化时，播放它
+  useEffect(() => {
+    if (selectedExpression) {
+      const { name } = selectedExpression;
+      playExpressionByName(name);
+    }
+  }, [selectedExpression, playExpressionByName]);
 
   // 返回暴露给组件的接口
   return {

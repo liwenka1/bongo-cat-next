@@ -15,7 +15,7 @@ export function _useModelLoader(
   setLoading: (loading: boolean) => void,
   isLoading: () => boolean
 ) {
-  const { setBackgroundImage, setAvailableMotions } = useCatStore();
+  const { setBackgroundImage, setAvailableMotions, setAvailableExpressions } = useCatStore();
 
   // 加载模型和背景
   const loadModelAndAssets = useCallback(
@@ -32,6 +32,8 @@ export function _useModelLoader(
 
         // 优先清空旧的动作列表
         setAvailableMotions([]);
+        // 优先清空旧的表情列表
+        setAvailableExpressions([]);
 
         // 先设置背景图片
         const bgPath = join(modelPath, "resources", "background.png");
@@ -51,6 +53,7 @@ export function _useModelLoader(
         const modelJsonPath = join(modelPath, modelFileName);
         const modelJson = JSON.parse(await readTextFile(modelJsonPath)) as CubismSpec.ModelJSON;
         const motions = modelJson.FileReferences.Motions;
+        const expressions = modelJson.FileReferences.Expressions;
 
         // 为从JSON读取的动作文件定义接口
         interface MotionFile {
@@ -71,6 +74,20 @@ export function _useModelLoader(
         setAvailableMotions(availableMotions);
         console.log("✅ Motions loaded:", availableMotions);
 
+        // 解析并设置表情列表
+        const availableExpressions: { name: string; displayName: string }[] = [];
+        if (expressions) {
+          (expressions as MotionFile[]).forEach((expression, index) => {
+            // 'name' 是内部名称，通常可以使用文件名前缀或索引
+            const name = expression.File.split("/").pop()?.replace(".exp3.json", "") ?? `expression_${index}`;
+            // 'displayName' 是显示名称，从 JSON 的 Name 字段读取
+            const displayName = expression.Name ?? name;
+            availableExpressions.push({ name, displayName });
+          });
+        }
+        setAvailableExpressions(availableExpressions);
+        console.log("✅ Expressions loaded:", availableExpressions);
+
         console.log("✅ Model and assets loaded successfully");
       } catch (error) {
         console.error("❌ Failed to load model and assets:", error);
@@ -79,7 +96,7 @@ export function _useModelLoader(
         setLoading(false);
       }
     },
-    [initializeLive2D, setBackgroundImage, setAvailableMotions, setLoading, isLoading]
+    [initializeLive2D, setBackgroundImage, setAvailableMotions, setAvailableExpressions, setLoading, isLoading]
   );
 
   return {
