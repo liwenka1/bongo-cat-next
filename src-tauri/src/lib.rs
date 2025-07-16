@@ -5,7 +5,6 @@ use core::{device, setup};
 use tauri::{Manager, WindowEvent, generate_handler};
 
 const MAIN_WINDOW_LABEL: &str = "main";
-const SETTINGS_WINDOW_LABEL: &str = "settings";
 
 #[tauri::command]
 fn get_app_version() -> String {
@@ -13,10 +12,7 @@ fn get_app_version() -> String {
 }
 
 pub fn show_settings_window(_app_handle: &tauri::AppHandle) {
-    if let Some(settings_window) = _app_handle.get_webview_window(SETTINGS_WINDOW_LABEL) {
-        let _ = settings_window.show();
-        let _ = settings_window.set_focus();
-    }
+    println!("Settings window functionality has been removed");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,9 +22,8 @@ pub fn run() {
             let _app_handle = app.handle();
 
             let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
-            let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
 
-            setup::default(&_app_handle, main_window.clone(), settings_window.clone());
+            setup::default(&_app_handle, main_window.clone());
 
             device::start_listening(_app_handle.clone());
 
