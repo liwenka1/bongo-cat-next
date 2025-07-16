@@ -20,7 +20,7 @@ import { ExpressionSelector } from "@/components/expression-selector";
  */
 export default function CatViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { visible } = useLive2DSystem(canvasRef);
+  useLive2DSystem(canvasRef);
   const { currentModel } = useModelStore();
 
   // 从 store 中获取状态
@@ -53,9 +53,6 @@ export default function CatViewer() {
   // 🎯 计算缩放后的尺寸
   const scaledWidth = Math.round(imageDimensions.width * (scale / 100));
   const scaledHeight = Math.round(imageDimensions.height * (scale / 100));
-
-  // 如果不可见，不渲染任何内容
-  if (!visible) return null;
 
   return (
     <>

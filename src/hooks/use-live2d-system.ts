@@ -22,8 +22,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // Store 状态
   const { currentModel, initializeModels } = useModelStore();
-  const { visible, scale, mirrorMode, pressedLeftKeys, pressedRightKeys, selectedMotion, selectedExpression } =
-    useCatStore();
+  const { scale, mirrorMode, pressedLeftKeys, pressedRightKeys, selectedMotion, selectedExpression } = useCatStore();
 
   // 🔧 Live2D 核心管理
   const { initializeLive2D, getInstance, setLoading, isLoading } = _useCore();
@@ -64,19 +63,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       void loadAndResize();
     }
   }, [currentModel, canvasRef, loadModelAndAssets, handleResize, scale]);
-
-  // 👁️ 监听 visible 状态变化，当从隐藏变为显示时重新加载模型
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (visible && currentModel && canvas) {
-      console.log("👁️ Visibility changed to true, reloading model:", currentModel.modelName);
-      const loadAndResize = async () => {
-        await loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
-        void handleResize(scale, currentModel);
-      };
-      void loadAndResize();
-    }
-  }, [visible, currentModel, canvasRef, loadModelAndAssets, handleResize, scale]);
 
   // 📏 监听缩放变化
   useEffect(() => {
@@ -123,7 +109,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // 返回暴露给组件的接口
   return {
-    visible,
     live2dInstance: getInstance()
   };
 }
