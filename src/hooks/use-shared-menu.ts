@@ -17,7 +17,9 @@ export function useSharedMenu() {
     alwaysOnTop,
     setAlwaysOnTop,
     mirrorMode,
-    setMirrorMode
+    setMirrorMode,
+    selectorsVisible,
+    setSelectorsVisible
   } = useCatStore();
   const { models, currentModel, setCurrentModel } = useModelStore();
 
@@ -165,6 +167,18 @@ export function useSharedMenu() {
       // 分隔符
       await PredefinedMenuItem.new({ item: "Separator" }),
 
+      // 显示/隐藏选择器
+      await CheckMenuItem.new({
+        text: selectorsVisible ? "隐藏选择器" : "显示选择器",
+        checked: selectorsVisible,
+        action: () => {
+          setSelectorsVisible(!selectorsVisible);
+        }
+      }),
+
+      // 分隔符
+      await PredefinedMenuItem.new({ item: "Separator" }),
+
       // 退出
       await MenuItem.new({
         text: "退出",
@@ -182,7 +196,9 @@ export function useSharedMenu() {
     mirrorMode,
     setMirrorMode,
     getScaleMenuItems,
-    getOpacityMenuItems
+    getOpacityMenuItems,
+    selectorsVisible,
+    setSelectorsVisible
   ]);
 
   // 显示上下文菜单的方法

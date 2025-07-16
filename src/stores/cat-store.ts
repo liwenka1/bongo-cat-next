@@ -9,6 +9,7 @@ interface CatState {
   mirrorMode: boolean;
   singleMode: boolean;
   mouseMirror: boolean;
+  selectorsVisible: boolean;
 
   // 位置和大小
   x: number;
@@ -39,6 +40,7 @@ interface CatState {
   setMirrorMode: (mirrorMode: boolean) => void;
   setSingleMode: (singleMode: boolean) => void;
   setMouseMirror: (mouseMirror: boolean) => void;
+  setSelectorsVisible: (visible: boolean) => void;
   setPosition: (x: number, y: number) => void;
   setScale: (scale: number) => void;
 
@@ -67,6 +69,7 @@ export const useCatStore = create<CatState>((set, get) => ({
   mirrorMode: false,
   singleMode: false,
   mouseMirror: false,
+  selectorsVisible: true,
 
   x: 0,
   y: 0,
@@ -109,6 +112,9 @@ export const useCatStore = create<CatState>((set, get) => ({
   },
   setMouseMirror: (mouseMirror) => {
     set({ mouseMirror });
+  },
+  setSelectorsVisible: (visible) => {
+    set({ selectorsVisible: visible });
   },
   setPosition: (x, y) => {
     set({ x, y });
