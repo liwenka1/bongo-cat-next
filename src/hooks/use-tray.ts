@@ -3,18 +3,15 @@
 import type { TrayIconOptions } from "@tauri-apps/api/tray";
 
 import { getName, getVersion } from "@tauri-apps/api/app";
-import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
 import { resolveResource } from "@tauri-apps/api/path";
 import { TrayIcon } from "@tauri-apps/api/tray";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { exit, relaunch } from "@tauri-apps/plugin-process";
-import { useCatStore } from "@/stores/cat-store";
+import { useMenuFactory } from "@/hooks/use-menu-factory";
 import { useEffect, useRef } from "react";
 
 const TRAY_ID = "BONGO_CAT_TRAY";
 
 export function useTray() {
-  const { visible, setVisible } = useCatStore();
+  const { createMenu, menuStates } = useMenuFactory();
   const trayRef = useRef<TrayIcon | null>(null);
 
   const createTray = async () => {
@@ -36,7 +33,7 @@ export function useTray() {
       const appVersion = await getVersion();
 
       console.log("🍽️ 创建菜单项...");
-      const menu = await getTrayMenu();
+      const menu = await createMenu({ type: "tray" });
 
       console.log("🖼️ 获取托盘图标路径...");
       const icon = await resolveResource("assets/tray.png");
@@ -63,7 +60,7 @@ export function useTray() {
 
   const updateTrayMenu = async (tray: TrayIcon) => {
     try {
-      const menu = await getTrayMenu();
+      const menu = await createMenu({ type: "tray" });
       await tray.setMenu(menu);
       console.log("🔄 托盘菜单已更新");
     } catch (error) {
@@ -71,41 +68,7 @@ export function useTray() {
     }
   };
 
-  const getTrayMenu = async () => {
-    const appVersion = await getVersion();
-
-    const items = await Promise.all([
-      MenuItem.new({
-        text: visible ? "隐藏猫咪" : "显示猫咪",
-        action: () => {
-          setVisible(!visible);
-        }
-      }),
-      PredefinedMenuItem.new({ item: "Separator" }),
-      MenuItem.new({
-        text: "开源地址",
-        action: () => void openUrl("https://github.com/liwenka1/bongo-cat-next")
-      }),
-      PredefinedMenuItem.new({ item: "Separator" }),
-      MenuItem.new({
-        text: `版本 ${appVersion}`,
-        enabled: false
-      }),
-      MenuItem.new({
-        text: "重启应用",
-        action: () => void relaunch()
-      }),
-      MenuItem.new({
-        text: "退出应用",
-        accelerator: process.platform === "darwin" ? "Cmd+Q" : "Ctrl+Q",
-        action: () => void exit(0)
-      })
-    ]);
-
-    return Menu.new({ items });
-  };
-
-  // 🎯 监听 visible 状态变化，自动更新托盘菜单
+  // 🎯 监听所有状态变化，自动更新托盘菜单
   useEffect(() => {
     const updateMenu = async () => {
       if (trayRef.current) {
@@ -114,7 +77,7 @@ export function useTray() {
     };
 
     void updateMenu();
-  }, [visible]); // 依赖 visible 状态
+  }, [menuStates]); // 依赖菜单状态
 
   return {
     createTray
