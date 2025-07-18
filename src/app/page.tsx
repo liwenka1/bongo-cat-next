@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useSharedMenu } from "@/hooks/use-shared-menu";
 import { useTray } from "@/hooks/use-tray";
+import { useWindowEffects } from "@/hooks/use-window-effects";
 import dynamic from "next/dynamic";
-import { useWindow } from "@/hooks/use-window";
 import { message } from "antd";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
@@ -19,7 +19,9 @@ export default function Home() {
   const { opacity, mirrorMode, visible } = useCatStore();
   const { showContextMenu } = useSharedMenu();
   const { createTray } = useTray();
-  const { showWindow, hideWindow } = useWindow();
+
+  // 🎯 启用窗口效果管理
+  useWindowEffects();
 
   // 托盘初始化
   useEffect(() => {
@@ -47,19 +49,9 @@ export default function Home() {
     void showContextMenu();
   };
 
-  // 窗口显示/隐藏
-  useEffect(() => {
-    if (visible) {
-      void showWindow();
-    } else {
-      void hideWindow();
-    }
-  }, [visible]);
-
   return (
     <div
       className={`relative h-screen w-screen overflow-hidden ${mirrorMode ? "-scale-x-100" : "scale-x-100"}`}
-      style={{ opacity: opacity / 100 }}
       onContextMenu={handleContextMenu}
       onMouseDown={(e) => void handleWindowDrag(e)}
     >

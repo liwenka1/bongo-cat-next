@@ -5,6 +5,12 @@
   --font-mono: "Courier New", monospace;
 }
 
+/* 🎯 窗口效果 CSS 变量 */
+:root {
+  --window-opacity: 1;
+  --window-scale: 1;
+}
+
 /* Reset and base styles */
 * {
   box-sizing: border-box;
@@ -16,6 +22,16 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+/* 🎯 应用窗口效果 */
+html {
+  opacity: var(--window-opacity);
+  transform: scale(var(--window-scale));
+  transform-origin: top left;
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
 }
 
 body {

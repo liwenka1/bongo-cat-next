@@ -17,7 +17,7 @@
         "title": "BongoCat Next",
         "url": "/",
         "shadow": false,
-        "alwaysOnTop": true,
+        "alwaysOnTop": false,
         "transparent": true,
         "decorations": false,
         "acceptFirstMouse": true,
