@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { _useCore } from "@/hooks/live2d/_useCore";
-import { _useModelLoader } from "@/hooks/live2d/_useModelLoader";
-import { _useScaling } from "@/hooks/live2d/_useScaling";
-import { _useMouseEvents } from "@/hooks/live2d/_useMouseEvents";
-import { _useKeyboardSync } from "@/hooks/live2d/_useKeyboardSync";
-import { _useMotionPlayer } from "@/hooks/live2d/_useMotionPlayer";
-import { _useWindowResize } from "@/hooks/live2d/_useWindowResize";
+import { _useCore } from "@/hooks/live2d/_use-core";
+import { _useModelLoader } from "@/hooks/live2d/_use-model-loader";
+import { _useScaling } from "@/hooks/live2d/_use-scaling";
+import { _useMouseEvents } from "@/hooks/live2d/_use-mouse-events";
+import { _useKeyboardSync } from "@/hooks/live2d/_use-keyboard-sync";
+import { _useMotionPlayer } from "@/hooks/live2d/_use-motion-player";
+import { _useWindowResize } from "@/hooks/live2d/_use-window-resize";
 
 /**
  * 统一的Live2D系统Hook
