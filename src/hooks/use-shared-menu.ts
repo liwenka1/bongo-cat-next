@@ -1,7 +1,7 @@
-import { useMenuFactory } from "@/hooks/use-menu-factory";
+import { _useMenuFactory } from "@/hooks/menu/_use-menu-factory";
 
 export function useSharedMenu() {
-  const { showMenu } = useMenuFactory();
+  const { showMenu } = _useMenuFactory();
 
   // 显示右键菜单
   const showContextMenu = async () => {

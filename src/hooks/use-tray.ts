@@ -5,13 +5,13 @@ import type { TrayIconOptions } from "@tauri-apps/api/tray";
 import { getName, getVersion } from "@tauri-apps/api/app";
 import { resolveResource } from "@tauri-apps/api/path";
 import { TrayIcon } from "@tauri-apps/api/tray";
-import { useMenuFactory } from "@/hooks/use-menu-factory";
+import { _useMenuFactory } from "@/hooks/menu/_use-menu-factory";
 import { useEffect, useRef } from "react";
 
 const TRAY_ID = "BONGO_CAT_TRAY";
 
 export function useTray() {
-  const { createMenu, menuStates } = useMenuFactory();
+  const { createMenu, menuStates } = _useMenuFactory();
   const trayRef = useRef<TrayIcon | null>(null);
 
   const createTray = async () => {
