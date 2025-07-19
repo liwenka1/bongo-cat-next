@@ -28,16 +28,10 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   const { initializeLive2D, getInstance, setLoading, isLoading } = _useCore();
 
   // 🔧 模型加载
-  const {
-    loadModelAndAssets,
-    isLoading: isModelLoading,
-    backgroundImage,
-    availableMotions,
-    availableExpressions
-  } = _useModelLoader(initializeLive2D);
+  const { loadModelAndAssets } = _useModelLoader(initializeLive2D, setLoading, isLoading);
 
   // 🔧 缩放处理
-  const { handleScaleChange, handleResize } = _useScaling(initializeLive2D, isModelLoading);
+  const { handleScaleChange, handleResize } = _useScaling(initializeLive2D, isLoading);
 
   // 🔧 鼠标事件处理
   const { setupMouseEvents, cleanup: cleanupMouseEvents } = _useMouseEvents(initializeLive2D);
@@ -113,10 +107,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // 返回暴露给组件的接口
   return {
-    live2dInstance: getInstance(),
-    backgroundImage,
-    availableMotions,
-    availableExpressions,
-    isLoading: isModelLoading
+    live2dInstance: getInstance()
   };
 }

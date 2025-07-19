@@ -20,11 +20,11 @@ import { ExpressionSelector } from "@/components/expression-selector";
  */
 export default function CatViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { backgroundImage, availableMotions, availableExpressions } = useLive2DSystem(canvasRef);
+  useLive2DSystem(canvasRef);
   const { currentModel } = useModelStore();
 
   // 从 store 中获取状态
-  const { scale, selectorsVisible } = useCatStore();
+  const { backgroundImage, scale, availableMotions, availableExpressions, selectorsVisible } = useCatStore();
 
   const [imageDimensions, setImageDimensions] = useState({
     width: 800,

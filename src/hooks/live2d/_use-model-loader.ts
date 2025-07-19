@@ -1,21 +1,21 @@
-import { useCallback, useState } from "react";
-import { join } from "@/utils/path";
+import { useCallback } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { message } from "antd";
-import type { CubismSpec } from "pixi-live2d-display";
+import { join } from "@/utils/path";
+import { useCatStore } from "@/stores/cat-store";
 import type { Live2DInstance } from "@/types";
+import type { CubismSpec } from "pixi-live2d-display";
 
 /**
- * 模型加载器 Hook
+ * 模型和资源加载
+ * 处理 Live2D 模型、动作、背景图片的加载
  */
-export function _useModelLoader(initializeLive2D: () => Promise<Live2DInstance | null>) {
-  const [isModelLoading, setLoading] = useState(false);
-  const [backgroundImage, setBackgroundImage] = useState<string>("");
-  const [availableMotions, setAvailableMotions] = useState<{ group: string; name: string; displayName: string }[]>([]);
-  const [availableExpressions, setAvailableExpressions] = useState<{ name: string; displayName: string }[]>([]);
-
-  const isLoading = () => isModelLoading;
+export function _useModelLoader(
+  initializeLive2D: () => Promise<Live2DInstance | null>,
+  setLoading: (loading: boolean) => void,
+  isLoading: () => boolean
+) {
+  const { setBackgroundImage, setAvailableMotions, setAvailableExpressions } = useCatStore();
 
   // 加载模型和背景
   const loadModelAndAssets = useCallback(
@@ -83,20 +83,16 @@ export function _useModelLoader(initializeLive2D: () => Promise<Live2DInstance |
         }
         setAvailableExpressions(availableExpressions);
       } catch (error) {
-        message.error(`Failed to load model: ${String(error)}`);
+        console.error("Failed to load model:", error);
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [initializeLive2D]
+    [initializeLive2D, setLoading, isLoading, setBackgroundImage, setAvailableMotions, setAvailableExpressions]
   );
 
   return {
-    loadModelAndAssets,
-    isLoading,
-    backgroundImage,
-    availableMotions,
-    availableExpressions
+    loadModelAndAssets
   };
 }
