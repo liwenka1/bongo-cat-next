@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { message } from "antd";
 import { useCatStore } from "@/stores/cat-store";
 
 /**
@@ -34,9 +35,8 @@ export function useWindowEffects() {
         try {
           const window = getWindow();
           await window.setAlwaysOnTop(alwaysOnTop);
-          console.log(`🔝 Initial window always on top set to: ${alwaysOnTop}`);
         } catch (error) {
-          console.error("Failed to set initial always on top:", error);
+          message.error(`Failed to set window always on top: ${String(error)}`);
         }
       };
 
@@ -50,9 +50,8 @@ export function useWindowEffects() {
       try {
         const window = getWindow();
         await window.setIgnoreCursorEvents(penetrable);
-        console.log(`🎯 Window penetrable set to: ${penetrable}`);
       } catch (error) {
-        console.error("Failed to set window penetrable:", error);
+        message.error(`Failed to set window click-through: ${String(error)}`);
       }
     };
 
@@ -67,9 +66,8 @@ export function useWindowEffects() {
       try {
         const window = getWindow();
         await window.setAlwaysOnTop(alwaysOnTop);
-        console.log(`🔝 Window always on top updated to: ${alwaysOnTop}`);
       } catch (error) {
-        console.error("Failed to update window always on top:", error);
+        message.error(`Failed to update window always on top: ${String(error)}`);
       }
     };
 
@@ -87,9 +85,8 @@ export function useWindowEffects() {
         } else {
           await window.hide();
         }
-        console.log(`👁️ Window visibility set to: ${visible}`);
       } catch (error) {
-        console.error("Failed to set window visibility:", error);
+        message.error(`Failed to set window visibility: ${String(error)}`);
       }
     };
 
@@ -99,13 +96,11 @@ export function useWindowEffects() {
   // 🎯 处理窗口透明度（通过 CSS 变量实现）
   useEffect(() => {
     document.documentElement.style.setProperty("--window-opacity", (opacity / 100).toString());
-    console.log(`🌫️ Window opacity set to: ${opacity}%`);
   }, [opacity]);
 
   // 🎯 处理窗口缩放（通过 CSS 变换实现）
   useEffect(() => {
     document.documentElement.style.setProperty("--window-scale", (scale / 100).toString());
-    console.log(`📏 Window scale set to: ${scale}%`);
   }, [scale]);
 
   return {

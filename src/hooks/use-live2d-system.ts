@@ -28,10 +28,16 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   const { initializeLive2D, getInstance, setLoading, isLoading } = _useCore();
 
   // 🔧 模型加载
-  const { loadModelAndAssets } = _useModelLoader(initializeLive2D, setLoading, isLoading);
+  const {
+    loadModelAndAssets,
+    isLoading: isModelLoading,
+    backgroundImage,
+    availableMotions,
+    availableExpressions
+  } = _useModelLoader(initializeLive2D);
 
   // 🔧 缩放处理
-  const { handleScaleChange, handleResize } = _useScaling(initializeLive2D, isLoading);
+  const { handleScaleChange, handleResize } = _useScaling(initializeLive2D, isModelLoading);
 
   // 🔧 鼠标事件处理
   const { setupMouseEvents, cleanup: cleanupMouseEvents } = _useMouseEvents(initializeLive2D);
@@ -67,7 +73,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   // 📏 监听缩放变化
   useEffect(() => {
     if (currentModel && scale > 0 && canvasRef.current) {
-      console.log("📏 Scale changed to:", scale, "for model:", currentModel.modelName);
       void handleScaleChange(scale, currentModel);
     }
   }, [scale, handleScaleChange, currentModel?.id, canvasRef]);
@@ -75,7 +80,6 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   // 🪞 监听镜像模式变化，重新调整模型
   useEffect(() => {
     if (currentModel && canvasRef.current) {
-      console.log("🪞 Mirror mode changed to:", mirrorMode);
       void handleResize(scale, currentModel);
     }
   }, [mirrorMode, handleResize, currentModel?.id, canvasRef, scale]);
@@ -109,6 +113,10 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   // 返回暴露给组件的接口
   return {
-    live2dInstance: getInstance()
+    live2dInstance: getInstance(),
+    backgroundImage,
+    availableMotions,
+    availableExpressions,
+    isLoading: isModelLoading
   };
 }

@@ -1,35 +1,32 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { join } from "@/utils/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { join } from "@/utils/path";
-import { useCatStore } from "@/stores/cat-store";
-import type { Live2DInstance } from "@/types";
+import { message } from "antd";
 import type { CubismSpec } from "pixi-live2d-display";
+import type { Live2DInstance } from "@/types";
 
 /**
- * 模型和资源加载
- * 处理 Live2D 模型、动作、背景图片的加载
+ * 模型加载器 Hook
  */
-export function _useModelLoader(
-  initializeLive2D: () => Promise<Live2DInstance | null>,
-  setLoading: (loading: boolean) => void,
-  isLoading: () => boolean
-) {
-  const { setBackgroundImage, setAvailableMotions, setAvailableExpressions } = useCatStore();
+export function _useModelLoader(initializeLive2D: () => Promise<Live2DInstance | null>) {
+  const [isModelLoading, setLoading] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
+  const [availableMotions, setAvailableMotions] = useState<{ group: string; name: string; displayName: string }[]>([]);
+  const [availableExpressions, setAvailableExpressions] = useState<{ name: string; displayName: string }[]>([]);
+
+  const isLoading = () => isModelLoading;
 
   // 加载模型和背景
   const loadModelAndAssets = useCallback(
     async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement) => {
       if (isLoading()) {
-        console.log("⏳ Model loading already in progress, skipping...");
         return;
       }
 
       setLoading(true);
 
       try {
-        console.log("🔄 Loading model and assets for:", modelPath, modelFileName);
-
         // 优先清空旧的动作列表
         setAvailableMotions([]);
         // 优先清空旧的表情列表
@@ -72,7 +69,6 @@ export function _useModelLoader(
           });
         }
         setAvailableMotions(availableMotions);
-        console.log("✅ Motions loaded:", availableMotions);
 
         // 解析并设置表情列表
         const availableExpressions: { name: string; displayName: string }[] = [];
@@ -86,20 +82,21 @@ export function _useModelLoader(
           });
         }
         setAvailableExpressions(availableExpressions);
-        console.log("✅ Expressions loaded:", availableExpressions);
-
-        console.log("✅ Model and assets loaded successfully");
       } catch (error) {
-        console.error("❌ Failed to load model and assets:", error);
+        message.error(`Failed to load model: ${String(error)}`);
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [initializeLive2D, setBackgroundImage, setAvailableMotions, setAvailableExpressions, setLoading, isLoading]
+    [initializeLive2D]
   );
 
   return {
-    loadModelAndAssets
+    loadModelAndAssets,
+    isLoading,
+    backgroundImage,
+    availableMotions,
+    availableExpressions
   };
 }

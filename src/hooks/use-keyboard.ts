@@ -73,7 +73,7 @@ export function useKeyboard() {
         setSupportedLeftKeys(leftKeys);
         setSupportedRightKeys(rightKeys);
       } catch (error) {
-        message.error(String(error));
+        message.error(`Failed to update supported keys: ${String(error)}`);
 
         supportedLeftKeysRef.current = [];
         setSupportedLeftKeys([]);

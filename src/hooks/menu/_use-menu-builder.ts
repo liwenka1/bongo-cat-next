@@ -39,7 +39,6 @@ export function _useMenuBuilder() {
           text: scaleValue === 100 ? "默认" : `${scaleValue}%`,
           checked: currentScale === scaleValue,
           action: () => {
-            console.log(`🎚️ Setting scale to ${scaleValue}%`);
             setScale(scaleValue);
           }
         });
@@ -96,7 +95,6 @@ export function _useMenuBuilder() {
           text: model.name,
           checked: currentModel?.id === model.id,
           action: () => {
-            console.log(`🎭 Switching to model: ${model.name}`);
             setCurrentModel(model.id);
           }
         });

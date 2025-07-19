@@ -1,5 +1,6 @@
 import { useRef, useCallback } from "react";
 import type { Live2DInstance } from "@/types";
+import { message } from "antd";
 
 /**
  * Live2D 核心实例管理
@@ -16,7 +17,7 @@ export function _useCore() {
         const { default: live2d } = await import("@/utils/live2d");
         live2dRef.current = live2d as unknown as Live2DInstance;
       } catch (error) {
-        console.error("Failed to load Live2D module:", error);
+        message.error(`Failed to load Live2D module: ${String(error)}`);
       }
     }
     return live2dRef.current;

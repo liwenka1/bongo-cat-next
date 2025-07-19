@@ -1,50 +1,53 @@
 import { useCallback } from "react";
-import type { Live2DInstance } from "@/types";
 import type { Cubism4InternalModel } from "pixi-live2d-display";
+import type { Live2DInstance } from "@/types";
+import { message } from "antd";
 
 /**
- * 动作播放控制
- * 处理 Live2D 动作和表情的播放
+ * 动作和表情播放器
+ * 管理 Live2D 模型的动作和表情播放
  */
 export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
-  // 播放动作
-  const playMotion = useCallback(
-    (group: string, index?: number) => {
-      const live2d = getInstance();
-      if (live2d) {
-        void live2d.playMotion(group, index);
-      }
-    },
-    [getInstance]
-  );
+  // 播放随机动作
+  const playRandomMotion = useCallback(() => {
+    const live2d = getInstance();
+    if (!live2d?.model?.internalModel) return;
 
-  // 播放表情
-  const playExpression = useCallback(
-    (index: number) => {
-      const live2d = getInstance();
-      if (live2d) {
-        void live2d.playExpression(index);
-      }
-    },
-    [getInstance]
-  );
+    const internalModel = live2d.model.internalModel as Cubism4InternalModel;
+    const motionGroups = internalModel.settings.motions;
 
-  // 设置参数值
-  const setParameterValue = useCallback(
-    (id: string, value: number) => {
-      const live2d = getInstance();
-      live2d?.setParameterValue(id, value);
-    },
-    [getInstance]
-  );
+    if (motionGroups) {
+      const groupNames = Object.keys(motionGroups);
+      if (groupNames.length > 0) {
+        const randomGroup = groupNames[Math.floor(Math.random() * groupNames.length)];
+        const motionsInGroup = motionGroups[randomGroup];
+        if (motionsInGroup.length > 0) {
+          const randomIndex = Math.floor(Math.random() * motionsInGroup.length);
+          void live2d.playMotion(randomGroup, randomIndex);
+        }
+      }
+    }
+  }, [getInstance]);
+
+  // 播放随机表情
+  const playRandomExpression = useCallback(() => {
+    const live2d = getInstance();
+    if (!live2d?.model?.internalModel) return;
+
+    const internalModel = live2d.model.internalModel as Cubism4InternalModel;
+    const expressions = internalModel.settings.expressions;
+
+    if (expressions && expressions.length > 0) {
+      const randomIndex = Math.floor(Math.random() * expressions.length);
+      void live2d.playExpression(randomIndex);
+    }
+  }, [getInstance]);
 
   // 播放指定的动作（根据名称）
   const playMotionByName = useCallback(
     (group: string, name: string) => {
       const live2d = getInstance();
       if (!live2d?.model?.internalModel) return;
-
-      console.log(`▶️ Playing motion: ${group} - ${name}`);
 
       // 从模型配置中找到对应动作的索引
       const internalModel = live2d.model.internalModel as Cubism4InternalModel;
@@ -55,7 +58,7 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
         if (index !== -1) {
           void live2d.playMotion(group, index);
         } else {
-          console.error(`Motion "${name}" not found in group "${group}"`);
+          message.error(`Motion "${name}" not found in group "${group}"`);
         }
       }
     },
@@ -68,8 +71,6 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
       const live2d = getInstance();
       if (!live2d?.model?.internalModel) return;
 
-      console.log(`▶️ Playing expression: ${name}`);
-
       // 从模型配置中找到对应表情的索引
       const internalModel = live2d.model.internalModel as Cubism4InternalModel;
       const expressions = internalModel.settings.expressions;
@@ -81,7 +82,7 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
         if (index !== -1) {
           void live2d.playExpression(index);
         } else {
-          console.error(`Expression "${name}" not found`);
+          message.error(`Expression "${name}" not found`);
         }
       }
     },
@@ -89,9 +90,8 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
   );
 
   return {
-    playMotion,
-    playExpression,
-    setParameterValue,
+    playRandomMotion,
+    playRandomExpression,
     playMotionByName,
     playExpressionByName
   };

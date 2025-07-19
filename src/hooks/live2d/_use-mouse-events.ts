@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import type { DeviceEvent, Live2DInstance } from "@/types";
+import { message } from "antd";
 
 /**
  * 鼠标事件处理
@@ -77,9 +78,8 @@ export function _useMouseEvents(initializeLive2D: () => Promise<Live2DInstance |
       });
 
       unlistenRef.current = unlisten;
-      console.log("✅ Mouse event listener established");
     } catch (error) {
-      console.error("❌ Failed to setup mouse listener:", error);
+      message.error(`Failed to setup mouse listener: ${String(error)}`);
     }
   }, [initializeLive2D]);
 

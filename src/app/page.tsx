@@ -37,7 +37,7 @@ export default function Home() {
         const appWindow = getCurrentWebviewWindow();
         await appWindow.startDragging();
       } catch (error) {
-        message.error(String(error));
+        message.error(`Failed to handle window drag: ${String(error)}`);
       }
     }
   };

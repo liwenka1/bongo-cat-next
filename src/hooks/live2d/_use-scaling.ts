@@ -3,6 +3,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
+import { message } from "antd";
 import { getImageSize } from "./utils";
 import type { Live2DInstance } from "@/types";
 import type { Model } from "@/stores/model-store";
@@ -21,18 +22,12 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
         const live2d = await initializeLive2D();
         if (!live2d) return;
 
-        console.log("🎚️ Handling scale change:", {
-          scale,
-          currentModel: currentModel.name
-        });
-
         // 获取背景图片
         const bgPath = join(currentModel.path, "resources", "background.png");
         const bgUrl = convertFileSrc(bgPath);
 
         // 获取背景图片的原始尺寸
         const { width, height } = await getImageSize(bgUrl);
-        console.log("📏 Background image size:", { width, height, scale });
 
         // 缩放计算方式 - scale 现在是百分比（如 50, 100, 150）
         const scaleRatio = scale / 100;
@@ -54,16 +49,9 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
           live2d.resize();
           // 使用统一的缩放逻辑
           live2d.setUserScale(scaleRatio);
-          console.log("✅ Live2D user scale updated with unified logic:", scaleRatio);
         }, 100); // 给窗口调整一点时间
-
-        console.log("✅ Window and model scaled:", {
-          newWidth,
-          newHeight,
-          scale
-        });
       } catch (error) {
-        console.error("❌ Failed to handle scale change:", error);
+        message.error(`Failed to scale window: ${String(error)}`);
       }
     },
     [initializeLive2D]
@@ -74,7 +62,6 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
     async (scale: number, currentModel: Model | null) => {
       // 关键修复：如果模型正在加载，则直接跳过，防止竞态条件
       if (isLoading()) {
-        console.log("⏳ Model is loading, skipping resize for now.");
         return;
       }
 
@@ -83,7 +70,6 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
 
         // 关键修复：添加卫兵，确保模型已加载
         if (!live2d || !live2d.model || !currentModel) {
-          console.warn("⚠️ handleResize skipped, model not ready yet.");
           return;
         }
 
@@ -102,14 +88,8 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
         // 使用统一的缩放逻辑
         const currentUserScale = scale / 100;
         live2d.setUserScale(currentUserScale);
-
-        console.log("✅ Live2D resize completed (unified scaling):", {
-          innerWidth,
-          innerHeight,
-          userScale: currentUserScale
-        });
       } catch (error) {
-        console.error("❌ Failed to resize:", error);
+        message.error(`Failed to resize Live2D model: ${String(error)}`);
       }
     },
     [initializeLive2D, isLoading]
@@ -118,12 +98,10 @@ export function _useScaling(initializeLive2D: () => Promise<Live2DInstance | nul
   // 重新调整模型（简化版，主要用于Live2D Canvas的resize）
   const resizeModel = useCallback(async () => {
     const live2d = await initializeLive2D();
-    live2d?.resize();
+    if (live2d) {
+      live2d.resize();
+    }
   }, [initializeLive2D]);
 
-  return {
-    handleScaleChange,
-    handleResize,
-    resizeModel
-  };
+  return { handleScaleChange, handleResize, resizeModel };
 }
