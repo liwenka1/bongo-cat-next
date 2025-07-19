@@ -28,9 +28,9 @@ interface CatState {
   currentModelPath: string;
   backgroundImage: string;
   selectedMotion: { group: string; name: string } | null;
-  availableMotions: { group: string; name: string; displayName: string }[]; // 可用动作列表
+  availableMotions: { group: string; name: string; originalName: string }[]; // 可用动作列表（存储原始名称）
   selectedExpression: { name: string } | null;
-  availableExpressions: { name: string; displayName: string }[]; // 可用表情列表
+  availableExpressions: { name: string; originalName: string }[]; // 可用表情列表（存储原始名称）
 
   // Actions
   setVisible: (visible: boolean) => void;
@@ -55,9 +55,9 @@ interface CatState {
   setCurrentModelPath: (path: string) => void;
   setBackgroundImage: (image: string) => void;
   setSelectedMotion: (motion: { group: string; name: string } | null) => void;
-  setAvailableMotions: (motions: { group: string; name: string; displayName: string }[]) => void; // 设置可用动作
+  setAvailableMotions: (motions: { group: string; name: string; originalName: string }[]) => void; // 设置可用动作
   setSelectedExpression: (expression: { name: string } | null) => void;
-  setAvailableExpressions: (expressions: { name: string; displayName: string }[]) => void; // 设置可用表情
+  setAvailableExpressions: (expressions: { name: string; originalName: string }[]) => void; // 设置可用表情
 }
 
 export const useCatStore = create<CatState>((set, get) => ({

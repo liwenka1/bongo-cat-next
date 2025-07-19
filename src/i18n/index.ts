@@ -9,25 +9,37 @@ import zhCNMenu from "@/locales/zh-CN/menu.json";
 import zhCNWindow from "@/locales/zh-CN/window.json";
 import zhCNModels from "@/locales/zh-CN/models.json";
 import zhCNSystem from "@/locales/zh-CN/system.json";
+import zhCNMotions from "@/locales/zh-CN/motions.json";
+import zhCNExpressions from "@/locales/zh-CN/expressions.json";
+import zhCNUI from "@/locales/zh-CN/ui.json";
 
 // 静态导入英文资源
 import enUSMenu from "@/locales/en-US/menu.json";
 import enUSWindow from "@/locales/en-US/window.json";
 import enUSModels from "@/locales/en-US/models.json";
 import enUSSystem from "@/locales/en-US/system.json";
+import enUSMotions from "@/locales/en-US/motions.json";
+import enUSExpressions from "@/locales/en-US/expressions.json";
+import enUSUI from "@/locales/en-US/ui.json";
 
 const resources = {
   "zh-CN": {
     menu: zhCNMenu,
     window: zhCNWindow,
     models: zhCNModels,
-    system: zhCNSystem
+    system: zhCNSystem,
+    motions: zhCNMotions,
+    expressions: zhCNExpressions,
+    ui: zhCNUI
   },
   "en-US": {
     menu: enUSMenu,
     window: enUSWindow,
     models: enUSModels,
-    system: enUSSystem
+    system: enUSSystem,
+    motions: enUSMotions,
+    expressions: enUSExpressions,
+    ui: enUSUI
   }
 };
 

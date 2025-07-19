@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { CheckMenuItem, Submenu } from "@tauri-apps/api/menu";
-import { useTranslation } from "react-i18next";
+import { useI18n } from "@/hooks/use-i18n";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 
@@ -13,18 +13,8 @@ import { useModelStore } from "@/stores/model-store";
  * - 统一菜单逻辑和状态管理
  */
 export function _useMenuBuilder() {
-  // 使用标准的 useTranslation Hook
-  const { t, i18n } = useTranslation(["menu", "window", "models", "system"]);
-
-  // 语言切换函数
-  const changeLanguage = async (lng: string) => {
-    await i18n.changeLanguage(lng);
-  };
-
-  // 检查当前语言
-  const isLanguage = (lng: string) => {
-    return i18n.language === lng;
-  };
+  // 使用统一的 useI18n Hook
+  const { t, changeLanguage, isLanguage } = useI18n(["menu", "window", "models", "system"]);
 
   const {
     scale,

@@ -1,14 +1,15 @@
 import { useCallback } from "react";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { readTextFile } from "@tauri-apps/plugin-fs";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { useCatStore } from "@/stores/cat-store";
 import type { Live2DInstance } from "@/types";
 import type { CubismSpec } from "pixi-live2d-display";
+import { message } from "antd";
 
 /**
- * 模型和资源加载
- * 处理 Live2D 模型、动作、背景图片的加载
+ * 模型加载器Hook
+ * 负责加载Live2D模型及其相关资源
  */
 export function _useModelLoader(
   initializeLive2D: () => Promise<Live2DInstance | null>,
@@ -17,31 +18,21 @@ export function _useModelLoader(
 ) {
   const { setBackgroundImage, setAvailableMotions, setAvailableExpressions } = useCatStore();
 
-  // 加载模型和背景
   const loadModelAndAssets = useCallback(
     async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement) => {
-      if (isLoading()) {
-        return;
-      }
+      if (isLoading()) return;
 
       setLoading(true);
-
       try {
-        // 优先清空旧的动作列表
-        setAvailableMotions([]);
-        // 优先清空旧的表情列表
-        setAvailableExpressions([]);
-
-        // 先设置背景图片
-        const bgPath = join(modelPath, "resources", "background.png");
-        const bgUrl = convertFileSrc(bgPath);
-        setBackgroundImage(bgUrl);
-
-        // 然后初始化 Live2D 并加载模型
         const live2d = await initializeLive2D();
         if (!live2d) {
           throw new Error("Failed to initialize Live2D");
         }
+
+        // 设置背景图片
+        const bgPath = join(modelPath, "resources", "background.png");
+        const bgUrl = convertFileSrc(bgPath);
+        setBackgroundImage(bgUrl);
 
         // 加载 Live2D 模型
         await live2d.load(modelPath, modelFileName, canvas);
@@ -58,33 +49,33 @@ export function _useModelLoader(
           Name?: string;
         }
 
-        const availableMotions: { group: string; name: string; displayName: string }[] = [];
+        // 存储原始名称，让组件在渲染时动态翻译
+        const availableMotions: { group: string; name: string; originalName: string }[] = [];
         for (const group in motions) {
           (motions[group] as MotionFile[]).forEach((motion) => {
             // 'name' 是内部名称，保持不变，用于播放
             const name = motion.File.split("/").pop()?.replace(".motion3.json", "") ?? "unknown";
-            // 'displayName' 是显示名称，从 JSON 的 Name 字段读取
-            const displayName = motion.Name ?? name; // 如果Name不存在，则回退到内部名称
-            availableMotions.push({ group, name, displayName });
+            // 存储原始显示名称，供组件翻译使用
+            const originalName = motion.Name ?? name;
+            availableMotions.push({ group, name, originalName });
           });
         }
         setAvailableMotions(availableMotions);
 
         // 解析并设置表情列表
-        const availableExpressions: { name: string; displayName: string }[] = [];
+        const availableExpressions: { name: string; originalName: string }[] = [];
         if (expressions) {
           (expressions as MotionFile[]).forEach((expression, index) => {
             // 'name' 是内部名称，通常可以使用文件名前缀或索引
             const name = expression.File.split("/").pop()?.replace(".exp3.json", "") ?? `expression_${index}`;
-            // 'displayName' 是显示名称，从 JSON 的 Name 字段读取
-            const displayName = expression.Name ?? name;
-            availableExpressions.push({ name, displayName });
+            // 存储原始显示名称，供组件翻译使用
+            const originalName = expression.Name ?? name;
+            availableExpressions.push({ name, originalName });
           });
         }
         setAvailableExpressions(availableExpressions);
       } catch (error) {
-        console.error("Failed to load model:", error);
-        throw error;
+        message.error(`Failed to load model: ${String(error)}`);
       } finally {
         setLoading(false);
       }

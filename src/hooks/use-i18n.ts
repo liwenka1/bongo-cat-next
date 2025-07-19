@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -9,23 +10,35 @@ import { useTranslation } from "react-i18next";
 export function useLanguage() {
   const { i18n } = useTranslation();
 
-  const changeLanguage = async (lng: string) => {
-    await i18n.changeLanguage(lng);
-  };
+  const changeLanguage = useCallback(
+    async (lng: string) => {
+      await i18n.changeLanguage(lng);
+    },
+    [i18n]
+  );
 
-  const isLanguage = (lng: string) => {
-    return i18n.language === lng;
-  };
+  const isLanguage = useCallback(
+    (lng: string) => {
+      return i18n.language === lng;
+    },
+    [i18n.language]
+  );
+
+  // 预定义的语言切换函数，使用useCallback确保稳定
+  const toZhCN = useCallback(() => changeLanguage("zh-CN"), [changeLanguage]);
+  const toEnUS = useCallback(() => changeLanguage("en-US"), [changeLanguage]);
+  const isZhCN = useCallback(() => isLanguage("zh-CN"), [isLanguage]);
+  const isEnUS = useCallback(() => isLanguage("en-US"), [isLanguage]);
 
   return {
     currentLanguage: i18n.language,
     changeLanguage,
     isLanguage,
     // 常用语言快捷方法
-    toZhCN: () => changeLanguage("zh-CN"),
-    toEnUS: () => changeLanguage("en-US"),
-    isZhCN: () => isLanguage("zh-CN"),
-    isEnUS: () => isLanguage("en-US")
+    toZhCN,
+    toEnUS,
+    isZhCN,
+    isEnUS
   };
 }
 

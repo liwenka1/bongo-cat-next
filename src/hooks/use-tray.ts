@@ -44,7 +44,6 @@ export function useTray() {
       return tray;
     } catch (error) {
       message.error(`Failed to create system tray: ${String(error)}`);
-      throw error;
     }
   };
 

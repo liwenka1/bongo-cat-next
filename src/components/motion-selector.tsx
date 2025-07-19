@@ -1,54 +1,53 @@
 import { useCatStore } from "@/stores/cat-store";
 import { Select } from "antd";
+import { useI18n } from "@/hooks/use-i18n";
+import { useModelStore } from "@/stores/model-store";
 import type React from "react";
 
 interface MotionSelectorProps {
-  availableMotions: { group: string; name: string; displayName: string }[];
+  availableMotions: { group: string; name: string; originalName: string }[];
 }
 
 export function MotionSelector({ availableMotions }: MotionSelectorProps) {
   const { selectedMotion, setSelectedMotion } = useCatStore();
+  const { currentModel } = useModelStore();
+  const { t } = useI18n(["ui", "motions"]);
+
+  if (availableMotions.length === 0) {
+    return null;
+  }
 
   const handleChange = (value: string | null) => {
     if (value) {
-      const [group, name] = value.split(":");
+      const [group, name] = value.split("|");
       setSelectedMotion({ group, name });
     } else {
       setSelectedMotion(null);
     }
   };
 
-  // 如果没有可用的动作，不渲染任何东西
-  if (availableMotions.length === 0) {
-    return null;
-  }
+  // 动态翻译动作名称
+  const translateMotionName = (originalName: string): string => {
+    if (!currentModel) return originalName;
+    return t(`${currentModel.id}.${originalName}`, {
+      ns: "motions",
+      defaultValue: originalName
+    });
+  };
 
-  // 将动作列表转换为 Select 组件需要的格式
-  const options = availableMotions.map(({ group, name, displayName }) => ({
-    value: `${group}:${name}`, // 值使用内部name
-    label: displayName // 显示使用displayName
+  const options = availableMotions.map((motion) => ({
+    value: `${motion.group}|${motion.name}`,
+    label: translateMotionName(motion.originalName) // 使用动态翻译
   }));
 
-  // 方便地将 selectedMotion 转换为字符串以便与 Select 的 value 属性匹配
-  const selectedValue = selectedMotion ? `${selectedMotion.group}:${selectedMotion.name}` : null;
-
   return (
-    <div
-      className="motion-selector"
-      style={{ width: 200 }}
-      onMouseDown={(e) => {
-        e.stopPropagation();
-      }}
-    >
-      <Select
-        placeholder="Select a motion"
-        value={selectedValue}
-        onChange={handleChange}
-        style={{ width: "100%" }}
-        allowClear
-        options={options}
-        getPopupContainer={(triggerNode: HTMLElement) => triggerNode.parentElement!}
-      />
-    </div>
+    <Select
+      placeholder={t("selectMotion", { ns: "ui" })}
+      value={selectedMotion ? `${selectedMotion.group}|${selectedMotion.name}` : null}
+      onChange={handleChange}
+      options={options}
+      allowClear
+      style={{ width: "100%" }}
+    />
   );
 }
