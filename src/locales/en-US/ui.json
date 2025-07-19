@@ -1,0 +1,9 @@
+{
+  "selectors": {
+    "motionPlaceholder": "Select a motion",
+    "expressionPlaceholder": "Select an expression"
+  },
+  "loading": "Loading...",
+  "selectMotion": "Select Motion",
+  "selectExpression": "Select Expression"
+}
