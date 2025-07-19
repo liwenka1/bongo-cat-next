@@ -1,0 +1,11 @@
+{
+  "scale": {
+    "title": "Scale",
+    "default": "Default",
+    "custom": "Custom"
+  },
+  "opacity": {
+    "title": "Opacity",
+    "custom": "Custom"
+  }
+}

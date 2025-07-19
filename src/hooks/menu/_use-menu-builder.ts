@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { CheckMenuItem, Submenu } from "@tauri-apps/api/menu";
+import { useTranslation } from "react-i18next";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 
@@ -12,6 +13,19 @@ import { useModelStore } from "@/stores/model-store";
  * - 统一菜单逻辑和状态管理
  */
 export function _useMenuBuilder() {
+  // 使用标准的 useTranslation Hook
+  const { t, i18n } = useTranslation(["menu", "window", "models", "system"]);
+
+  // 语言切换函数
+  const changeLanguage = async (lng: string) => {
+    await i18n.changeLanguage(lng);
+  };
+
+  // 检查当前语言
+  const isLanguage = (lng: string) => {
+    return i18n.language === lng;
+  };
+
   const {
     scale,
     setScale,
@@ -36,7 +50,7 @@ export function _useMenuBuilder() {
     const items = await Promise.all(
       scaleOptions.map(async (scaleValue) => {
         return await CheckMenuItem.new({
-          text: scaleValue === 100 ? "默认" : `${scaleValue}%`,
+          text: scaleValue === 100 ? t("scale.default", { ns: "menu" }) : `${scaleValue}%`,
           checked: currentScale === scaleValue,
           action: () => {
             setScale(scaleValue);
@@ -56,7 +70,7 @@ export function _useMenuBuilder() {
     }
 
     return items;
-  }, [scale, setScale]);
+  }, [scale, setScale, t]);
 
   // 🎯 创建透明度选项子菜单
   const getOpacityMenuItems = useCallback(async () => {
@@ -92,7 +106,7 @@ export function _useMenuBuilder() {
     return await Promise.all(
       Object.values(models).map(async (model) => {
         return await CheckMenuItem.new({
-          text: model.name,
+          text: t(`names.${model.id}`, { ns: "models" }),
           checked: currentModel?.id === model.id,
           action: () => {
             setCurrentModel(model.id);
@@ -100,75 +114,100 @@ export function _useMenuBuilder() {
         });
       })
     );
-  }, [models, currentModel, setCurrentModel]);
+  }, [models, currentModel, setCurrentModel, t]);
 
   // 🎯 创建模型模式子菜单
   const createModeSubmenu = useCallback(async () => {
     return await Submenu.new({
-      text: "模型模式",
+      text: t("title", { ns: "models" }),
       items: await getModeMenuItems()
     });
-  }, [getModeMenuItems]);
+  }, [getModeMenuItems, t]);
 
   // 🎯 创建窗口穿透菜单项
   const createPenetrableMenuItem = useCallback(async () => {
     return await CheckMenuItem.new({
-      text: "窗口穿透",
+      text: t("penetrable", { ns: "window" }),
       checked: penetrable,
       action: () => {
         setPenetrable(!penetrable);
       }
     });
-  }, [penetrable, setPenetrable]);
+  }, [penetrable, setPenetrable, t]);
 
   // 🎯 创建始终置顶菜单项
   const createAlwaysOnTopMenuItem = useCallback(async () => {
     return await CheckMenuItem.new({
-      text: "始终置顶",
+      text: t("alwaysOnTop", { ns: "window" }),
       checked: alwaysOnTop,
       action: () => {
         setAlwaysOnTop(!alwaysOnTop);
       }
     });
-  }, [alwaysOnTop, setAlwaysOnTop]);
+  }, [alwaysOnTop, setAlwaysOnTop, t]);
 
   // 🎯 创建镜像模式菜单项
   const createMirrorModeMenuItem = useCallback(async () => {
     return await CheckMenuItem.new({
-      text: "镜像模式",
+      text: t("mirrorMode", { ns: "window" }),
       checked: mirrorMode,
       action: () => {
         setMirrorMode(!mirrorMode);
       }
     });
-  }, [mirrorMode, setMirrorMode]);
+  }, [mirrorMode, setMirrorMode, t]);
 
   // 🎯 创建窗口尺寸子菜单
   const createScaleSubmenu = useCallback(async () => {
     return await Submenu.new({
-      text: "窗口尺寸",
+      text: t("scale.title", { ns: "menu" }),
       items: await getScaleMenuItems()
     });
-  }, [getScaleMenuItems]);
+  }, [getScaleMenuItems, t]);
 
   // 🎯 创建不透明度子菜单
   const createOpacitySubmenu = useCallback(async () => {
     return await Submenu.new({
-      text: "不透明度",
+      text: t("opacity.title", { ns: "menu" }),
       items: await getOpacityMenuItems()
     });
-  }, [getOpacityMenuItems]);
+  }, [getOpacityMenuItems, t]);
 
   // 🎯 创建显示/隐藏选择器菜单项
   const createSelectorsVisibilityMenuItem = useCallback(async () => {
     return await CheckMenuItem.new({
-      text: selectorsVisible ? "隐藏选择器" : "显示选择器",
+      text: t("showSelectors", { ns: "window" }),
       checked: selectorsVisible,
       action: () => {
         setSelectorsVisible(!selectorsVisible);
       }
     });
-  }, [selectorsVisible, setSelectorsVisible]);
+  }, [selectorsVisible, setSelectorsVisible, t]);
+
+  // 🎯 创建语言选择子菜单
+  const createLanguageSubmenu = useCallback(async () => {
+    const languageItems = await Promise.all([
+      CheckMenuItem.new({
+        text: t("language.chinese", { ns: "system" }),
+        checked: isLanguage("zh-CN"),
+        action: () => {
+          void changeLanguage("zh-CN");
+        }
+      }),
+      CheckMenuItem.new({
+        text: t("language.english", { ns: "system" }),
+        checked: isLanguage("en-US"),
+        action: () => {
+          void changeLanguage("en-US");
+        }
+      })
+    ]);
+
+    return await Submenu.new({
+      text: t("language.title", { ns: "system" }),
+      items: languageItems
+    });
+  }, [t, isLanguage, changeLanguage]);
 
   return {
     // 子菜单构建函数
@@ -184,6 +223,7 @@ export function _useMenuBuilder() {
     createScaleSubmenu,
     createOpacitySubmenu,
     createSelectorsVisibilityMenuItem,
+    createLanguageSubmenu,
 
     // 状态对象（用于依赖监听）
     menuStates: {

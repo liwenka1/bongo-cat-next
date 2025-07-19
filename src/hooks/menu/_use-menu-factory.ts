@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
+import { useTranslation } from "react-i18next";
 import { useCatStore } from "@/stores/cat-store";
 import { _useMenuBuilder } from "@/hooks/menu/_use-menu-builder";
 import { exit } from "@tauri-apps/plugin-process";
@@ -22,6 +23,7 @@ export interface MenuOptions {
  * - 高层次的菜单配置管理
  */
 export function _useMenuFactory() {
+  const { t } = useTranslation(["system"]);
   const { visible, setVisible } = useCatStore();
   const {
     createModeSubmenu,
@@ -31,6 +33,7 @@ export function _useMenuFactory() {
     createScaleSubmenu,
     createOpacitySubmenu,
     createSelectorsVisibilityMenuItem,
+    createLanguageSubmenu,
     menuStates
   } = _useMenuBuilder();
 
@@ -81,7 +84,7 @@ export function _useMenuFactory() {
     return [
       // 开源地址
       await MenuItem.new({
-        text: "开源地址",
+        text: t("system:sourceCode"),
         action: () => void openUrl("https://github.com/liwenka1/bongo-cat-next")
       }),
 
@@ -90,7 +93,7 @@ export function _useMenuFactory() {
 
       // 版本信息
       await MenuItem.new({
-        text: `版本 ${appVersion}`,
+        text: `${t("system:version")} ${appVersion}`,
         enabled: false
       })
     ];
@@ -103,18 +106,18 @@ export function _useMenuFactory() {
     return [
       // 重启应用
       await MenuItem.new({
-        text: "重启应用",
+        text: t("system:restart"),
         action: () => void relaunch()
       }),
 
       // 退出应用
       await MenuItem.new({
-        text: "退出应用",
+        text: t("system:quit"),
         accelerator: process.platform === "darwin" ? "Cmd+Q" : "Ctrl+Q",
         action: () => void exit(0)
       })
     ];
-  }, []);
+  }, [t]);
 
   // 🎯 根据配置创建完整菜单
   const createMenu = useCallback(
@@ -124,7 +127,7 @@ export function _useMenuFactory() {
       // 显示/隐藏猫咪 - 所有菜单都包含
       items.push(
         await MenuItem.new({
-          text: visible ? "隐藏猫咪" : "显示猫咪",
+          text: visible ? t("system:hideCat") : t("system:showCat"),
           action: () => {
             setVisible(!visible);
           }
@@ -138,6 +141,9 @@ export function _useMenuFactory() {
       // 根据类型添加不同的额外功能
       switch (options.type) {
         case "tray":
+          // 语言选择 - 托盘菜单包含
+          items.push(await PredefinedMenuItem.new({ item: "Separator" }), await createLanguageSubmenu());
+
           // 托盘菜单默认包含应用信息和控制
           if (options.includeAppInfo !== false) {
             items.push(await PredefinedMenuItem.new({ item: "Separator" }), ...(await createAppInfoMenuItems()));
@@ -149,11 +155,14 @@ export function _useMenuFactory() {
           break;
 
         case "context":
+          // 语言选择 - 右键菜单也包含
+          items.push(await PredefinedMenuItem.new({ item: "Separator" }), await createLanguageSubmenu());
+
           // 右键菜单只包含基础的退出功能
           items.push(
             await PredefinedMenuItem.new({ item: "Separator" }),
             await MenuItem.new({
-              text: "退出",
+              text: t("system:quit"),
               action: () => void exit(0)
             })
           );
@@ -162,7 +171,15 @@ export function _useMenuFactory() {
 
       return await Menu.new({ items });
     },
-    [visible, setVisible, createCoreMenuItems, createAppInfoMenuItems, createAppControlMenuItems]
+    [
+      visible,
+      setVisible,
+      createCoreMenuItems,
+      createLanguageSubmenu,
+      createAppInfoMenuItems,
+      createAppControlMenuItems,
+      t
+    ]
   );
 
   // 🎯 显示菜单的统一方法

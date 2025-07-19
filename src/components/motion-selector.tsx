@@ -1,5 +1,3 @@
-"use client";
-
 import { useCatStore } from "@/stores/cat-store";
 import { Select } from "antd";
 import type React from "react";

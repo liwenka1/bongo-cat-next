@@ -1,0 +1,11 @@
+{
+  "scale": {
+    "title": "缩放",
+    "default": "默认",
+    "custom": "自定义"
+  },
+  "opacity": {
+    "title": "透明度",
+    "custom": "自定义"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "language": {
+    "title": "Language",
+    "chinese": "中文",
+    "english": "English"
+  },
+  "about": "About",
+  "quit": "Quit",
+  "restart": "Restart App",
+  "sourceCode": "Source Code",
+  "version": "Version",
+  "showCat": "Show Cat",
+  "hideCat": "Hide Cat"
+}
