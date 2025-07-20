@@ -66,6 +66,7 @@
 - 🔧 **Global Hotkeys** - System-wide keyboard shortcuts
 - 📱 **Multi-window** - Independent main and settings windows
 - 🌐 **Cross-platform** - Windows, macOS, and Linux support
+- 🌍 **Internationalization** - Multi-language support (English/Chinese) with automatic language detection
 
 ## 🛠️ Tech Stack
 
@@ -77,6 +78,7 @@
 - **[Zustand](https://github.com/pmndrs/zustand)** - Lightweight state management
 - **[PIXI.js v6](https://pixijs.com/)** - High-performance 2D rendering
 - **[pixi-live2d-display](https://github.com/guansss/pixi-live2d-display)** - Live2D model rendering
+- **[react-i18next](https://react.i18next.com/)** - Internationalization framework
 
 ### Backend
 - **[Tauri 2](https://tauri.app/)** - Lightweight cross-platform desktop framework
@@ -150,6 +152,11 @@ bongo-cat-next/
 │   │   ├── 📄 use-keyboard.ts         # Keyboard events
 │   │   ├── 📄 use-tray.ts             # System tray
 │   │   └── 📄 use-shared-menu.ts      # Context menu
+│   ├── 📁 i18n/               # Internationalization
+│   │   └── 📄 index.ts                # i18n configuration
+│   ├── � localoes/            # Language resources
+│   │   ├── 📁 en-US/          # English translations
+│   │   └── � lzh-CN/          # Chinese translations
 │   ├── 📁 stores/             # Zustand state management
 │   │   ├── 📄 cat-store.ts            # Cat state & settings
 │   │   └── 📄 model-store.ts          # Model management
@@ -232,9 +239,10 @@ This project is licensed under [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- Thanks to [ayangweb](https://github.com/ayangweb) for the original [BongoCat](https://github.com/ayangweb/BongoCat) project inspiration
+- Thanks to [BongoCat](https://github.com/ayangweb/BongoCat) project inspiration
 - Thanks to [Tauri](https://tauri.app/) team for the excellent framework
 - Thanks to [Live2D](https://www.live2d.com/) Inc. for technical support
+- Thanks to [Live2d-model](https://github.com/Eikanya/Live2d-model) for providing the Live2D models
 - Thanks to all developers contributing to the open source community
 
 ## 📞 Contact

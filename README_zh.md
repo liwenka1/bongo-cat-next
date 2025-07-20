@@ -66,6 +66,7 @@
 - 🔧 **热键支持** - 全局快捷键控制
 - 📱 **多窗口管理** - 主窗口和设置窗口独立管理
 - 🌐 **跨平台** - 支持 Windows、macOS、Linux
+- 🌍 **国际化支持** - 多语言支持（中英文），自动语言检测
 
 ## 🛠️ 技术栈
 
@@ -77,6 +78,7 @@
 - **[Zustand](https://github.com/pmndrs/zustand)** - 轻量级状态管理
 - **[PIXI.js v6](https://pixijs.com/)** - 高性能2D渲染引擎
 - **[pixi-live2d-display](https://github.com/guansss/pixi-live2d-display)** - Live2D模型显示
+- **[react-i18next](https://react.i18next.com/)** - 国际化框架
 
 ### 后端技术
 - **[Tauri 2](https://tauri.app/)** - 轻量级跨平台桌面应用框架
@@ -150,6 +152,11 @@ bongo-cat-next/
 │   │   ├── 📄 use-keyboard.ts         # 键盘事件
 │   │   ├── 📄 use-tray.ts             # 系统托盘
 │   │   └── 📄 use-shared-menu.ts      # 上下文菜单
+│   ├── 📁 i18n/               # 国际化
+│   │   └── 📄 index.ts                # i18n 配置
+│   ├── 📁 locales/            # 语言资源
+│   │   ├── 📁 en-US/          # 英文翻译
+│   │   └── 📁 zh-CN/          # 中文翻译
 │   ├── 📁 stores/             # Zustand 状态管理
 │   │   ├── 📄 cat-store.ts            # 猫咪状态和设置
 │   │   └── 📄 model-store.ts          # 模型管理
@@ -232,9 +239,10 @@ bongo-cat-next/
 
 ## 🙏 致谢
 
-- 感谢 [ayangweb](https://github.com/ayangweb) 的原版 [BongoCat](https://github.com/ayangweb/BongoCat) 项目提供的灵感
+- 感谢 [BongoCat](https://github.com/ayangweb/BongoCat) 项目提供的灵感
 - 感谢 [Tauri](https://tauri.app/) 团队提供的优秀框架
 - 感谢 [Live2D](https://www.live2d.com/) 公司的技术支持
+- 感谢 [Live2d-model](https://github.com/Eikanya/Live2d-model) 仓库提供的Live2D模型
 - 感谢所有为开源社区做出贡献的开发者们
 
 ## 📞 联系我
