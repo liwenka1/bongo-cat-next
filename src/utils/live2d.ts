@@ -14,7 +14,6 @@ Live2DModel.registerTicker(Ticker);
 class Live2d {
   private app: Application | null = null;
   public model: Live2DModel | null = null;
-  private userScale: number = 1; // 保留用户缩放功能
 
   constructor() {}
 
@@ -60,17 +59,12 @@ class Live2d {
 
     this.model = await Live2DModel.from(modelSettings);
 
-    // 保留原有的定位和缩放逻辑
+    // 移除自动定位和缩放，由useWindowScaling统一管理
     const model = this.model;
     const app = this.app!;
 
-    // 居中定位
-    model.x = app.screen.width / 2;
-    model.y = app.screen.height / 2;
+    // 只设置锚点，不设置位置和缩放
     model.anchor.set(0.5, 0.5);
-
-    // 应用用户缩放
-    this.applyUserScale();
 
     app.stage.addChild(model);
 
@@ -82,30 +76,11 @@ class Live2d {
     };
   }
 
-  private applyUserScale() {
-    if (this.model && this.app) {
-      const baseScale = this.app.screen.width / this.model.width;
-      const finalScale = baseScale * this.userScale;
-      this.model.scale.set(finalScale);
-    }
-  }
-
-  public setUserScale(scale: number) {
-    this.userScale = scale;
-    this.applyUserScale();
-  }
-
   public resize() {
     if (!this.app || !this.model) return;
 
-    // 重新计算模型位置
-    this.model.x = this.app.screen.width / 2;
-    this.model.y = this.app.screen.height / 2;
-
-    // 重新应用缩放
-    this.applyUserScale();
-
-    // 确保应用程序调整大小
+    // 移除自动位置重设，由useWindowScaling统一管理
+    // 只确保应用程序调整大小
     this.app.resize();
   }
 

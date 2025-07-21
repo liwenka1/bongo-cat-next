@@ -16,7 +16,7 @@ const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
 
 export default function Home() {
   // 🎯 page.tsx 只负责应用级别的状态和事件
-  const { opacity, mirrorMode, visible } = useCatStore();
+  const { mirrorMode } = useCatStore();
   const { showContextMenu } = useSharedMenu();
   const { createTray } = useTray();
 

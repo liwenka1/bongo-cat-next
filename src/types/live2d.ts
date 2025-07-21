@@ -14,7 +14,6 @@ export interface Live2DInstance {
   load: (path: string, modelName: string, canvas: HTMLCanvasElement) => Promise<any>;
   getParameterRange: (id: string) => { min?: number; max?: number };
   setParameterValue: (id: string, value: number) => void;
-  setUserScale: (scale: number) => void;
   resize: () => void;
   destroy: () => void;
   playMotion: (group: string, index?: number) => Promise<void>;

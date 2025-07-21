@@ -97,20 +97,4 @@ export function useWindowEffects() {
   useEffect(() => {
     document.documentElement.style.setProperty("--window-opacity", (opacity / 100).toString());
   }, [opacity]);
-
-  // 🎯 处理窗口缩放（通过 CSS 变换实现）
-  useEffect(() => {
-    document.documentElement.style.setProperty("--window-scale", (scale / 100).toString());
-  }, [scale]);
-
-  return {
-    // 返回当前状态供调试使用
-    effects: {
-      penetrable,
-      alwaysOnTop,
-      visible,
-      opacity,
-      scale
-    }
-  };
 }
