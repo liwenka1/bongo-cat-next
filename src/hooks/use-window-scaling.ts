@@ -37,32 +37,24 @@ export function useWindowScaling(
 
       // 基于背景图计算基础缩放比例
       const scaleX = innerWidth / width;
-      const scaleY = innerHeight / height; 
+      const scaleY = innerHeight / height;
       let optimalScale = Math.min(scaleX, scaleY);
 
-      // 🎯 特殊处理：naximofu_2 模型需要额外缩放
-      // 通过背景图尺寸识别naximofu_2（612x612正方形）
+      // 特殊处理：naximofu_2 模型需要额外缩放
       if (width === 612 && height === 612) {
-        // naximofu_2 的设计尺寸是13500x8000，需要缩放到612x612
-        const naximofuScaleFactor = 612 / 13500; // ≈ 0.045
-        optimalScale = naximofuScaleFactor;
-        console.log("Detected naximofu_2 model, applying special scale factor:", naximofuScaleFactor);
+        const naximofuBaseFactor = 612 / 13500;
+        optimalScale = (naximofuBaseFactor * scale) / 100;
       }
-
-      console.log("Scale Calculations (based on background):", { scaleX, scaleY, optimalScale });
 
       live2d.model.scale.set(optimalScale);
       live2d.model.x = innerWidth / 2;
       live2d.model.y = innerHeight / 2;
-
-      console.log("Applied Scale:", optimalScale);
-      console.log("Model Position:", { x: live2d.model.x, y: live2d.model.y });
     } catch (error) {
       console.error(`Model initialization failed: ${String(error)}`);
     }
-  }, [live2dInstance, backgroundImage]);
+  }, [live2dInstance, backgroundImage, scale]);
 
-  // 核心逻辑1：监听scale变化，自动调整窗口尺寸（参考watch逻辑）
+  // 监听scale变化，自动调整窗口尺寸
   useEffect(() => {
     const handleScaleChange = async () => {
       if (!backgroundImage || isResizingRef.current) return;
@@ -78,7 +70,7 @@ export function useWindowScaling(
           })
         );
 
-        // 缩放后重新初始化模型位置
+
         setTimeout(() => {
           void initializeModelPosition();
         }, 100);
@@ -90,10 +82,10 @@ export function useWindowScaling(
     void handleScaleChange();
   }, [scale, backgroundImage, initializeModelPosition]);
 
-  // 核心逻辑2：监听模型变化，自动初始化位置
+  // 监听模型变化，自动初始化位置
   useEffect(() => {
     if (currentModel && backgroundImage && canvasRef?.current) {
-      // 延时确保模型加载完成
+
       const timer = setTimeout(() => {
         void initializeModelPosition();
       }, 200);
@@ -104,7 +96,7 @@ export function useWindowScaling(
     }
   }, [currentModel, backgroundImage, canvasRef, initializeModelPosition]);
 
-  // 核心逻辑3：窗口resize处理（完全采用参考代码逻辑）
+  // 窗口resize处理
   const handleWindowResize = useCallback(async () => {
     if (!backgroundImage) return;
 
@@ -114,30 +106,23 @@ export function useWindowScaling(
     }
 
     try {
-      isResizingRef.current = true; // 防止循环更新
+      isResizingRef.current = true;
 
       const { innerWidth, innerHeight } = window;
       const { width, height } = await getImageSize(backgroundImage);
-
-      // 基于背景图计算合适的缩放比例
       const scaleX = innerWidth / width;
       const scaleY = innerHeight / height;
       let optimalScale = Math.min(scaleX, scaleY);
 
-      // 🎯 特殊处理：naximofu_2 模型需要额外缩放
+      // 特殊处理：naximofu_2 模型需要额外缩放
       if (width === 612 && height === 612) {
-        const naximofuScaleFactor = 612 / 13500; // ≈ 0.045
-        optimalScale = naximofuScaleFactor;
+        const naximofuBaseFactor = 612 / 13500;
+        optimalScale = (naximofuBaseFactor * scale) / 100;
       }
 
-      // 应用缩放
       live2d.model.scale.set(optimalScale);
-
-      // 设置模型位置（居中）
       live2d.model.x = innerWidth / 2;
       live2d.model.y = innerHeight / 2;
-
-      // 智能宽高比修正（直接采用参考代码的精确逻辑）
       const currentRatio = Math.round((innerWidth / innerHeight) * 10) / 10;
       const targetRatio = Math.round((width / height) * 10) / 10;
 
@@ -150,25 +135,21 @@ export function useWindowScaling(
           })
         );
 
-        // 等待窗口调整完成后重新定位模型
+
         setTimeout(() => {
           const newLive2d = live2dInstance();
           if (newLive2d?.model) {
             const newWidth = window.innerWidth;
             const newHeight = window.innerHeight;
-
-            // 重新计算缩放
             const newScaleX = newWidth / width;
             const newScaleY = newHeight / height;
             let newOptimalScale = Math.min(newScaleX, newScaleY);
-            
-            // 🎯 特殊处理：naximofu_2 模型需要额外缩放
-            if (width === 612 && height === 612) {
-              const naximofuScaleFactor = 612 / 13500; // ≈ 0.045
-              newOptimalScale = naximofuScaleFactor;
-            }
 
-            // 重新设置模型缩放和位置
+            // 特殊处理：naximofu_2 模型需要额外缩放
+            if (width === 612 && height === 612) {
+              const naximofuBaseFactor = 612 / 13500;
+              newOptimalScale = (naximofuBaseFactor * scale) / 100;
+            }
             newLive2d.model.scale.set(newOptimalScale);
             newLive2d.model.x = newWidth / 2;
             newLive2d.model.y = newHeight / 2;
@@ -177,14 +158,13 @@ export function useWindowScaling(
         }, 150);
       }
 
-      // 关键：状态同步（参考代码的核心精髓）
+
       setTimeout(() => {
         void (async () => {
           try {
             const size = await getCurrentWebviewWindow().size();
             const newScale = Math.round((size.width / width) * 100);
             if (Math.abs(newScale - scale) > 1) {
-              // 避免微小差异导致的频繁更新
               setScale(newScale);
             }
           } catch (error) {
@@ -200,7 +180,7 @@ export function useWindowScaling(
     }
   }, [backgroundImage, scale, setScale, live2dInstance]);
 
-  // 设置resize监听
+
   useEffect(() => {
     const handleResize = () => {
       void handleWindowResize();
