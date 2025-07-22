@@ -7,6 +7,8 @@ import { useTray } from "@/hooks/use-tray";
 import { useWindowEffects } from "@/hooks/use-window-effects";
 import dynamic from "next/dynamic";
 import { message } from "antd";
+import { ExpressionSelector } from "@/components/expression-selector";
+import { MotionSelector } from "@/components/motion-selector";
 
 // 🎯 动态导入 CatViewer 避免 SSR 问题
 const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
@@ -16,7 +18,7 @@ const CatViewer = dynamic(() => import("@/components/cat-viewer"), {
 
 export default function Home() {
   // 🎯 page.tsx 只负责应用级别的状态和事件
-  const { mirrorMode } = useCatStore();
+  const { mirrorMode, selectorsVisible, availableMotions, availableExpressions } = useCatStore();
   const { showContextMenu } = useSharedMenu();
   const { createTray } = useTray();
 
@@ -50,13 +52,29 @@ export default function Home() {
   };
 
   return (
-    <div
-      className={`relative h-screen w-screen overflow-hidden ${mirrorMode ? "-scale-x-100" : "scale-x-100"}`}
-      onContextMenu={handleContextMenu}
-      onMouseDown={(e) => void handleWindowDrag(e)}
-    >
-      {/* 🎯 所有 Live2D 渲染逻辑都由 CatViewer 负责 */}
-      <CatViewer />
-    </div>
+    <>
+      <div
+        className={`relative h-screen w-screen overflow-hidden ${mirrorMode ? "-scale-x-100" : "scale-x-100"}`}
+        onContextMenu={handleContextMenu}
+        onMouseDown={(e) => void handleWindowDrag(e)}
+      >
+        {/* 🎯 所有 Live2D 渲染逻辑都由 CatViewer 负责 */}
+        <CatViewer />
+      </div>
+
+      {/* 😃 表情选择器 - 对所有有表情的模型显示 */}
+      {selectorsVisible && (
+        <div className="absolute top-0 left-0 z-50">
+          <ExpressionSelector availableExpressions={availableExpressions} />
+        </div>
+      )}
+
+      {/* 🎮 动作选择器 - 对所有有动作的模型显示 */}
+      {selectorsVisible && (
+        <div className="absolute top-0 right-0 z-50">
+          <MotionSelector availableMotions={availableMotions} />
+        </div>
+      )}
+    </>
   );
 }
