@@ -59,7 +59,7 @@ export function KeyboardVisualization() {
             height={100}
             src={imagePath}
             alt={`${key} key`}
-            className="absolute z-10 size-full"
+            className="absolute size-full"
           />
         );
       })
@@ -84,7 +84,7 @@ export function KeyboardVisualization() {
             height={100}
             src={imagePath}
             alt={`${key} key`}
-            className="absolute z-10 size-full"
+            className="absolute size-full"
           />
         );
       })
