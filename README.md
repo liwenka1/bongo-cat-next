@@ -71,7 +71,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **[Next.js 15](https://nextjs.org/)** - Modern React framework with SSG support
+- **[Next.js 15](https://nextjs.org/)** - Modern React framework with Static Site Generation (SSG) support
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[Ant Design](https://ant.design/)** - Enterprise UI components
@@ -154,9 +154,9 @@ bongo-cat-next/
 │   │   └── 📄 use-shared-menu.ts      # Context menu
 │   ├── 📁 i18n/               # Internationalization
 │   │   └── 📄 index.ts                # i18n configuration
-│   ├── � localoes/            # Language resources
+│   ├── 📁 locales/            # Language resources
 │   │   ├── 📁 en-US/          # English translations
-│   │   └── � lzh-CN/          # Chinese translations
+│   │   └── 📁 zh-CN/          # Chinese translations
 │   ├── 📁 stores/             # Zustand state management
 │   │   ├── 📄 cat-store.ts            # Cat state & settings
 │   │   └── 📄 model-store.ts          # Model management
@@ -189,7 +189,7 @@ bongo-cat-next/
 - **Low Resource Usage** - Memory usage < 50MB, CPU usage < 1%
 - **Native Performance** - Rust backend provides native-level performance
 - **Fast Startup** - Application startup time < 2 seconds
-- **Responsive** - Input event response latency < 10ms
+- **Responsive** - Keyboard and mouse event response latency < 10ms
 
 ## 📋 Usage
 
