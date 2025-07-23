@@ -70,7 +70,6 @@ export function useWindowScaling(
           })
         );
 
-
         setTimeout(() => {
           void initializeModelPosition();
         }, 100);
@@ -85,7 +84,6 @@ export function useWindowScaling(
   // 监听模型变化，自动初始化位置
   useEffect(() => {
     if (currentModel && backgroundImage && canvasRef?.current) {
-
       const timer = setTimeout(() => {
         void initializeModelPosition();
       }, 200);
@@ -135,7 +133,6 @@ export function useWindowScaling(
           })
         );
 
-
         setTimeout(() => {
           const newLive2d = live2dInstance();
           if (newLive2d?.model) {
@@ -158,7 +155,6 @@ export function useWindowScaling(
         }, 150);
       }
 
-
       setTimeout(() => {
         void (async () => {
           try {
@@ -179,7 +175,6 @@ export function useWindowScaling(
       isResizingRef.current = false;
     }
   }, [backgroundImage, scale, setScale, live2dInstance]);
-
 
   useEffect(() => {
     const handleResize = () => {
