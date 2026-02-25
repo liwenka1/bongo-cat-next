@@ -66,14 +66,6 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
         mode: "keyboard",
         isPreset: true,
         modelName: "cat.model3.json"
-      },
-      {
-        id: "naximofu_2",
-        name: "猫娘模式",
-        path: "assets/models/naximofu_2",
-        mode: "standard",
-        isPreset: true,
-        modelName: "naximofu_2.model3.json"
       }
     ];
 

@@ -20,31 +20,27 @@
 <div align="center">
 
 ### Standard Mode (Mouse Interaction)
+
 ![Standard Mode](public/img/standard.gif)
 
-*Interactive animations with motions and expressions*
+_Interactive animations with motions and expressions_
 
 ![Standard Mode with Motions](public/img/standard-motions.gif)
 
 ### Keyboard Mode
+
 ![Keyboard Mode](public/img/keyboard.gif)
 
-*The cat responds to your keyboard input with adorable animations!*
+_The cat responds to your keyboard input with adorable animations!_
 
 ![Keyboard Mode with Motions](public/img/keyboard-motions.gif)
-
-### Cat Girl Mode (Naximofu)
-![Cat Girl Mode](public/img/naximofu_2.gif)
-
-*Advanced Live2D model with rich animations*
-
-![Cat Girl Mode with Motions](public/img/naximofu_2-motions.gif)
 
 </div>
 
 ## ✨ Features
 
 ### 🎯 Core Features
+
 - 🐱 **Desktop Pet Display** - Adorable Live2D cat models
 - ⌨️ **Keyboard Response** - Real-time keyboard input detection with corresponding animations
 - 🖱️ **Mouse Interaction** - Click animations and mouse tracking
@@ -54,6 +50,7 @@
 - 🖼️ **Transparent Window** - Seamless desktop integration with full transparency
 
 ### ⚙️ Customization
+
 - 🎛️ **Opacity Control** - Adjust cat transparency (0-100%)
 - 🔄 **Mirror Mode** - Horizontal flip for different usage preferences
 - 📌 **Always on Top** - Stay above all other windows
@@ -62,33 +59,17 @@
 - 🎮 **Selector Visibility** - Toggle motion and expression selectors
 
 ### 🛠️ System Integration
+
 - 🎪 **System Tray** - Convenient tray menu for quick access
 - 🔧 **Global Hotkeys** - System-wide keyboard shortcuts
 - 📱 **Multi-window** - Independent main and settings windows
 - 🌐 **Cross-platform** - Windows, macOS, and Linux support
 - 🌍 **Internationalization** - Multi-language support (English/Chinese) with automatic language detection
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **[Next.js 15](https://nextjs.org/)** - Modern React framework with Static Site Generation (SSG) support
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Ant Design](https://ant.design/)** - Enterprise UI components
-- **[Zustand](https://github.com/pmndrs/zustand)** - Lightweight state management
-- **[PIXI.js v6](https://pixijs.com/)** - High-performance 2D rendering
-- **[pixi-live2d-display](https://github.com/guansss/pixi-live2d-display)** - Live2D model rendering
-- **[react-i18next](https://react.i18next.com/)** - Internationalization framework
-
-### Backend
-- **[Tauri 2](https://tauri.app/)** - Lightweight cross-platform desktop framework
-- **[Rust](https://www.rust-lang.org/)** - Systems programming language
-- **[rdev](https://github.com/Narsil/rdev)** - Cross-platform device event listening
-- **[tauri-plugin-*](https://github.com/tauri-apps/plugins-workspace)** - Rich Tauri plugin ecosystem
-
 ## 📦 Installation
 
 ### Pre-built Releases
+
 Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) page:
 
 - **Windows**: `.msi` installer
@@ -98,6 +79,7 @@ Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) pa
 ### Development Setup
 
 #### Requirements
+
 - **Node.js** 18.0.0 or higher
 - **Rust** 1.70.0 or higher
 - **pnpm** 8.0.0 or higher
@@ -129,58 +111,14 @@ pnpm build
 pnpm tauri build
 ```
 
-## 🏗️ Project Structure
+#### Build
 
-```
-bongo-cat-next/
-├── 📁 src/                     # Next.js frontend source
-│   ├── 📁 app/                # App Router pages
-│   │   ├── 📄 page.tsx        # Main window page
-│   │   └── 📄 layout.tsx      # Root layout
-│   ├── 📁 components/         # React components
-│   │   ├── 📄 cat-viewer.tsx          # Cat rendering component
-│   │   ├── 📄 motion-selector.tsx     # Motion selection UI
-│   │   ├── 📄 expression-selector.tsx # Expression selection UI
-│   │   └── 📄 keyboard-visualization.tsx
-│   ├── 📁 hooks/              # Custom hooks
-│   │   ├── 📁 live2d/         # Live2D system hooks
-│   │   │   ├── 📄 _useCore.ts         # Core Live2D management
-│   │   │   ├── 📄 _useModelLoader.ts  # Model loading
-│   │   │   ├── 📄 _useMotionPlayer.ts # Motion & expression control
-│   │   │   └── 📄 _useMouseEvents.ts  # Mouse interaction
-│   │   ├── 📄 use-live2d-system.ts    # Main Live2D system
-│   │   ├── 📄 use-keyboard.ts         # Keyboard events
-│   │   ├── 📄 use-tray.ts             # System tray
-│   │   └── 📄 use-shared-menu.ts      # Context menu
-│   ├── 📁 i18n/               # Internationalization
-│   │   └── 📄 index.ts                # i18n configuration
-│   ├── 📁 locales/            # Language resources
-│   │   ├── 📁 en-US/          # English translations
-│   │   └── 📁 zh-CN/          # Chinese translations
-│   ├── 📁 stores/             # Zustand state management
-│   │   ├── 📄 cat-store.ts            # Cat state & settings
-│   │   └── 📄 model-store.ts          # Model management
-│   ├── 📁 types/              # TypeScript definitions
-│   │   ├── 📄 live2d.ts              # Live2D types
-│   │   └── 📄 device.ts              # Device event types
-│   └── 📁 utils/              # Utility functions
-│       └── 📄 live2d.ts              # Live2D implementation
-├── 📁 src-tauri/              # Tauri Rust backend
-│   ├── 📁 src/
-│   │   ├── 📄 main.rs         # Main entry
-│   │   ├── 📄 lib.rs          # Library entry
-│   │   └── 📁 core/           # Core functionality
-│   │       └── 📄 device.rs   # Device monitoring
-│   ├── 📁 assets/             # Static assets
-│   │   ├── 📁 models/         # Live2D model files
-│   │   │   ├── 📁 standard/   # Standard cat model
-│   │   │   ├── 📁 keyboard/   # Keyboard responsive model
-│   │   │   └── 📁 naximofu_2/ # Advanced cat girl model
-│   │   └── 📄 tray.png        # Tray icon
-│   └── 📄 tauri.conf.json     # Tauri configuration
-├── 📁 public/                 # Static files
-│   └── 📁 img/                # Demo GIFs
-└── 📄 package.json            # Node.js configuration
+```bash
+# Build frontend static files
+pnpm build
+
+# Build Tauri application
+pnpm tauri build
 ```
 
 ## ⚡ Performance
@@ -194,6 +132,7 @@ bongo-cat-next/
 ## 📋 Usage
 
 ### Basic Operations
+
 1. **Launch** - Double-click to run, cat appears on desktop
 2. **Drag** - Left-click and drag to move the cat anywhere
 3. **Right-click Menu** - Right-click on cat for feature menu
@@ -202,12 +141,15 @@ bongo-cat-next/
 6. **Expression Control** - Use the expression selector to change facial expressions
 
 ### Keyboard Shortcuts
+
 - `Ctrl + Alt + H` - Show/Hide cat
 - `Ctrl + Alt + S` - Open settings
 - `Ctrl + Alt + Q` - Quit application
 
 ### Configuration
+
 Settings are saved in:
+
 - **Windows**: `%APPDATA%/BongoCat Next/`
 - **macOS**: `~/Library/Application Support/BongoCat Next/`
 - **Linux**: `~/.config/BongoCat Next/`
@@ -217,6 +159,7 @@ Settings are saved in:
 We welcome all forms of contributions!
 
 ### Development
+
 1. **Fork** this repository
 2. **Create** feature branch: `git checkout -b feature/AmazingFeature`
 3. **Commit** changes: `git commit -m 'Add some AmazingFeature'`
@@ -224,7 +167,9 @@ We welcome all forms of contributions!
 5. **Create** Pull Request
 
 ### Commit Convention
+
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
 - `feat:` New features
 - `fix:` Bug fixes
 - `docs:` Documentation updates
@@ -244,16 +189,3 @@ This project is licensed under [MIT License](LICENSE).
 - Thanks to [Live2D](https://www.live2d.com/) Inc. for technical support
 - Thanks to [Live2d-model](https://github.com/Eikanya/Live2d-model) for providing the Live2D models
 - Thanks to all developers contributing to the open source community
-
-## 📞 Contact
-
-- **GitHub Issues**: [Submit Issues](https://github.com/liwenka1/bongo-cat-next/issues)
-- **Discussions**: [Join Discussions](https://github.com/liwenka1/bongo-cat-next/discussions)
-
----
-
-<div align="center">
-
-**If this project helps you, please give it a ⭐ Star!**
-
-</div>

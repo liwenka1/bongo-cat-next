@@ -38,13 +38,7 @@ export function useWindowScaling(
       // 基于背景图计算基础缩放比例
       const scaleX = innerWidth / width;
       const scaleY = innerHeight / height;
-      let optimalScale = Math.min(scaleX, scaleY);
-
-      // 特殊处理：naximofu_2 模型需要额外缩放
-      if (width === 612 && height === 612) {
-        const naximofuBaseFactor = 612 / 13500;
-        optimalScale = (naximofuBaseFactor * scale) / 100;
-      }
+      const optimalScale = Math.min(scaleX, scaleY);
 
       live2d.model.scale.set(optimalScale);
       live2d.model.x = innerWidth / 2;
@@ -110,13 +104,7 @@ export function useWindowScaling(
       const { width, height } = await getImageSize(backgroundImage);
       const scaleX = innerWidth / width;
       const scaleY = innerHeight / height;
-      let optimalScale = Math.min(scaleX, scaleY);
-
-      // 特殊处理：naximofu_2 模型需要额外缩放
-      if (width === 612 && height === 612) {
-        const naximofuBaseFactor = 612 / 13500;
-        optimalScale = (naximofuBaseFactor * scale) / 100;
-      }
+      const optimalScale = Math.min(scaleX, scaleY);
 
       live2d.model.scale.set(optimalScale);
       live2d.model.x = innerWidth / 2;
@@ -140,13 +128,7 @@ export function useWindowScaling(
             const newHeight = window.innerHeight;
             const newScaleX = newWidth / width;
             const newScaleY = newHeight / height;
-            let newOptimalScale = Math.min(newScaleX, newScaleY);
-
-            // 特殊处理：naximofu_2 模型需要额外缩放
-            if (width === 612 && height === 612) {
-              const naximofuBaseFactor = 612 / 13500;
-              newOptimalScale = (naximofuBaseFactor * scale) / 100;
-            }
+            const newOptimalScale = Math.min(newScaleX, newScaleY);
             newLive2d.model.scale.set(newOptimalScale);
             newLive2d.model.x = newWidth / 2;
             newLive2d.model.y = newHeight / 2;
