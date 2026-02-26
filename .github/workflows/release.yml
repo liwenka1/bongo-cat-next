@@ -93,6 +93,9 @@ jobs:
       - name: Install app dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Tauri icons
+        run: pnpm tauri:icon
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:

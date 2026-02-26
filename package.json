@@ -12,12 +12,14 @@
     "format": "prettier --write src/",
     "clean": "rimraf dist src-tauri/target",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "tauri:build:debug": "tauri build --debug",
+    "tauri:icon": "tauri icon src-tauri/assets/logo.png",
+    "tauri:dev": "pnpm tauri:icon && tauri dev",
+    "tauri:build": "pnpm tauri:icon && tauri build",
+    "tauri:build:debug": "pnpm tauri:icon && tauri build --debug",
     "build:all": "pnpm clean && pnpm build && pnpm tauri:build",
     "release:prepare": "pnpm lint && pnpm format && pnpm build",
-    "release:build": "pnpm release:prepare && pnpm tauri:build"
+    "release:build": "pnpm release:prepare && pnpm tauri:build",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
