@@ -69,7 +69,7 @@ fs.writeFileSync(tauriPath, JSON.stringify(tauri, null, 2) + '\n');
 let cargo = fs.readFileSync(cargoPath, 'utf8');
 cargo = cargo.replace(
   /^(\[package\][\s\S]*?^version\s*=\s*\")([^\"]+)(\")/m,
-  '$1' + newVersion + '$3'
+  '\$1' + newVersion + '\$3'
 );
 fs.writeFileSync(cargoPath, cargo);
 " "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML" "$NEW_VERSION"
