@@ -52,44 +52,12 @@ if git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; then
   exit 1
 fi
 
-node -e "
-const fs = require('fs');
-const pkgPath = process.argv[1];
-const tauriPath = process.argv[2];
-const cargoPath = process.argv[3];
-const newVersion = process.argv[4];
-const cargoLockPath = process.argv[5];
-
-const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-pkg.version = newVersion;
-fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-
-const tauri = JSON.parse(fs.readFileSync(tauriPath, 'utf8'));
-tauri.version = newVersion;
-fs.writeFileSync(tauriPath, JSON.stringify(tauri, null, 2) + '\n');
-
-let cargo = fs.readFileSync(cargoPath, 'utf8');
-cargo = cargo.replace(
-  /^(\[package\][\s\S]*?^version\s*=\s*\")([^\"]+)(\")/m,
-  '\$1' + newVersion + '\$3'
-);
-fs.writeFileSync(cargoPath, cargo);
-
-if (cargoLockPath && fs.existsSync(cargoLockPath)) {
-  let cargoLock = fs.readFileSync(cargoLockPath, 'utf8');
-  const packageNameMatch = cargo.match(/^\[package\][\s\S]*?^name\s*=\s*\"([^\"]+)\"/m);
-
-  if (packageNameMatch) {
-    const packageName = packageNameMatch[1];
-    const packagePattern = new RegExp(
-      `(\\[\\[package\\]\\]\\nname\\s*=\\s*\"${packageName}\"[\\s\\S]*?^version\\s*=\\s*\")([^\"]+)(\")`,
-      'm'
-    );
-    cargoLock = cargoLock.replace(packagePattern, '\$1' + newVersion + '\$3');
-    fs.writeFileSync(cargoLockPath, cargoLock);
-  }
-}
-" "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML" "$NEW_VERSION" "$CARGO_LOCK"
+node "$REPO_ROOT/scripts/bump-version.mjs" \
+  "$PACKAGE_JSON" \
+  "$TAURI_CONF" \
+  "$CARGO_TOML" \
+  "$NEW_VERSION" \
+  "$CARGO_LOCK"
 
 echo ""
 echo "Done: $CURRENT_VERSION -> $NEW_VERSION"
