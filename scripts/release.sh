@@ -7,6 +7,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PACKAGE_JSON="$REPO_ROOT/package.json"
 TAURI_CONF="$REPO_ROOT/src-tauri/tauri.conf.json"
 CARGO_TOML="$REPO_ROOT/src-tauri/Cargo.toml"
+CARGO_LOCK="$REPO_ROOT/src-tauri/Cargo.lock"
 
 cd "$REPO_ROOT"
 
@@ -57,6 +58,7 @@ const pkgPath = process.argv[1];
 const tauriPath = process.argv[2];
 const cargoPath = process.argv[3];
 const newVersion = process.argv[4];
+const cargoLockPath = process.argv[5];
 
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 pkg.version = newVersion;
@@ -72,12 +74,30 @@ cargo = cargo.replace(
   '\$1' + newVersion + '\$3'
 );
 fs.writeFileSync(cargoPath, cargo);
-" "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML" "$NEW_VERSION"
+
+if (cargoLockPath && fs.existsSync(cargoLockPath)) {
+  let cargoLock = fs.readFileSync(cargoLockPath, 'utf8');
+  const packageNameMatch = cargo.match(/^\[package\][\s\S]*?^name\s*=\s*\"([^\"]+)\"/m);
+
+  if (packageNameMatch) {
+    const packageName = packageNameMatch[1];
+    const packagePattern = new RegExp(
+      `(\\[\\[package\\]\\]\\nname\\s*=\\s*\"${packageName}\"[\\s\\S]*?^version\\s*=\\s*\")([^\"]+)(\")`,
+      'm'
+    );
+    cargoLock = cargoLock.replace(packagePattern, '\$1' + newVersion + '\$3');
+    fs.writeFileSync(cargoLockPath, cargoLock);
+  }
+}
+" "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML" "$NEW_VERSION" "$CARGO_LOCK"
 
 echo ""
 echo "Done: $CURRENT_VERSION -> $NEW_VERSION"
 
 git add "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML"
+if git ls-files --error-unmatch "$CARGO_LOCK" >/dev/null 2>&1; then
+  git add "$CARGO_LOCK"
+fi
 git commit -m "release: v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 git push origin main

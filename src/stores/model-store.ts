@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { resolveResource } from "@tauri-apps/api/path";
-import { join } from "@/utils/path";
 
 export type ModelMode = "standard" | "keyboard" | "handle";
 
@@ -69,7 +68,16 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       }
     ];
 
-    const initialModels = presetModels.reduce<Record<string, Model>>((acc, model) => {
+    // Always resolve model directories from bundled resources to avoid
+    // platform-specific relative path behavior differences.
+    const resolvedModels = await Promise.all(
+      presetModels.map(async (model) => ({
+        ...model,
+        path: await resolveResource(model.path)
+      }))
+    );
+
+    const initialModels = resolvedModels.reduce<Record<string, Model>>((acc, model) => {
       acc[model.id] = model;
       return acc;
     }, {});
