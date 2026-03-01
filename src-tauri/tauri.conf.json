@@ -52,7 +52,6 @@
     "resources": [
       "assets/tray.png",
       "assets/logo.png",
-      "assets/logo-mac.png",
       "assets/models"
     ]
   },
