@@ -69,4 +69,4 @@ pub fn start_listening(app_handle: AppHandle) {
             eprintln!("Device listening error: {:?}", e);
         }
     });
-} 
+}
