@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "bongo-cat-next"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "rdev",
  "serde",
