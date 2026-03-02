@@ -64,14 +64,14 @@ export default function Home() {
 
       {/* 😃 表情选择器 - 对所有有表情的模型显示 */}
       {selectorsVisible && (
-        <div className="absolute top-0 left-0 z-50">
+        <div className="facial-expression-selector absolute top-0 left-0 z-50">
           <ExpressionSelector availableExpressions={availableExpressions} />
         </div>
       )}
 
       {/* 🎮 动作选择器 - 对所有有动作的模型显示 */}
       {selectorsVisible && (
-        <div className="absolute top-0 right-0 z-50">
+        <div className="action-selector absolute top-0 right-0 z-50">
           <MotionSelector availableMotions={availableMotions} />
         </div>
       )}

@@ -21,4 +21,17 @@ html {
 body {
   font-family: Arial, Helvetica, sans-serif;
   background: transparent;
+
+  &:hover {
+    .action-selector,
+    .facial-expression-selector {
+      opacity: 1;
+    }
+  }
+}
+
+.action-selector,
+.facial-expression-selector {
+  opacity: 0;
+  transition: all 0.3s;
 }
