@@ -7,7 +7,7 @@ import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { getImageSize } from "@/hooks/live2d/utils";
 import type { Live2DInstance } from "@/types";
-import { message } from "antd";
+import { toast } from "sonner";
 
 /**
  * 统一的窗口缩放和模型管理Hook
@@ -68,7 +68,7 @@ export function useWindowScaling(
           void initializeModelPosition();
         }, 100);
       } catch (error) {
-        message.error(`Scale change failed: ${String(error)}`);
+        toast.error(`Scale change failed: ${String(error)}`);
       }
     };
 
@@ -146,14 +146,14 @@ export function useWindowScaling(
               setScale(newScale);
             }
           } catch (error) {
-            message.error(`Scale sync failed: ${String(error)}`);
+            toast.error(`Scale sync failed: ${String(error)}`);
           } finally {
             isResizingRef.current = false;
           }
         })();
       }, 200);
     } catch (error) {
-      message.error(`Window resize failed: ${String(error)}`);
+      toast.error(`Window resize failed: ${String(error)}`);
       isResizingRef.current = false;
     }
   }, [backgroundImage, scale, setScale, live2dInstance]);

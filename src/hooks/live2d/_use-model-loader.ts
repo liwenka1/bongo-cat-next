@@ -5,7 +5,7 @@ import { join } from "@/utils/path";
 import { useCatStore } from "@/stores/cat-store";
 import type { Live2DInstance } from "@/types";
 import type { CubismSpec } from "pixi-live2d-display";
-import { message } from "antd";
+import { toast } from "sonner";
 
 /**
  * 模型加载器Hook
@@ -75,7 +75,7 @@ export function _useModelLoader(
         }
         setAvailableExpressions(availableExpressions);
       } catch (error) {
-        message.error(`Failed to load model: ${String(error)}`);
+        toast.error(`Failed to load model: ${String(error)}`);
       } finally {
         setLoading(false);
       }

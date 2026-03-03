@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useCatStore } from "@/stores/cat-store";
 import { _useMenuBuilder } from "@/hooks/menu/_use-menu-builder";
 import { exit } from "@tauri-apps/plugin-process";
-import { message } from "antd";
+import { toast } from "sonner";
 
 export type MenuType = "context" | "tray";
 
@@ -194,7 +194,7 @@ export function _useMenuFactory() {
 
         return menu;
       } catch (error) {
-        message.error(`Failed to show ${options.type} menu: ${String(error)}`);
+        toast.error(`Failed to show ${options.type} menu: ${String(error)}`);
       }
     },
     [createMenu]

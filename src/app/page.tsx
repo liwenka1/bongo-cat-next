@@ -6,7 +6,7 @@ import { useSharedMenu } from "@/hooks/use-shared-menu";
 import { useTray } from "@/hooks/use-tray";
 import { useWindowEffects } from "@/hooks/use-window-effects";
 import dynamic from "next/dynamic";
-import { message } from "antd";
+import { toast } from "sonner";
 import { ExpressionSelector } from "@/components/expression-selector";
 import { MotionSelector } from "@/components/motion-selector";
 
@@ -39,7 +39,7 @@ export default function Home() {
         const appWindow = getCurrentWebviewWindow();
         await appWindow.startDragging();
       } catch (error) {
-        message.error(`Failed to handle window drag: ${String(error)}`);
+        toast.error(`Failed to handle window drag: ${String(error)}`);
       }
     }
   };

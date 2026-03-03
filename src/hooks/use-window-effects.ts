@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { message } from "antd";
+import { toast } from "sonner";
 import { useCatStore } from "@/stores/cat-store";
 
 /**
@@ -36,7 +36,7 @@ export function useWindowEffects() {
           const window = getWindow();
           await window.setAlwaysOnTop(alwaysOnTop);
         } catch (error) {
-          message.error(`Failed to set window always on top: ${String(error)}`);
+          toast.error(`Failed to set window always on top: ${String(error)}`);
         }
       };
 
@@ -51,7 +51,7 @@ export function useWindowEffects() {
         const window = getWindow();
         await window.setIgnoreCursorEvents(penetrable);
       } catch (error) {
-        message.error(`Failed to set window click-through: ${String(error)}`);
+        toast.error(`Failed to set window click-through: ${String(error)}`);
       }
     };
 
@@ -67,7 +67,7 @@ export function useWindowEffects() {
         const window = getWindow();
         await window.setAlwaysOnTop(alwaysOnTop);
       } catch (error) {
-        message.error(`Failed to update window always on top: ${String(error)}`);
+        toast.error(`Failed to update window always on top: ${String(error)}`);
       }
     };
 
@@ -86,7 +86,7 @@ export function useWindowEffects() {
           await window.hide();
         }
       } catch (error) {
-        message.error(`Failed to set window visibility: ${String(error)}`);
+        toast.error(`Failed to set window visibility: ${String(error)}`);
       }
     };
 

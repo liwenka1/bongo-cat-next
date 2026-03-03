@@ -22,13 +22,12 @@
     "release": "bash scripts/release.sh"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.0.0",
+    "@base-ui/react": "^1.2.0",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-fs": "^2.3.0",
     "@tauri-apps/plugin-opener": "^2.2.7",
     "@tauri-apps/plugin-os": "^2.3.0",
     "@tauri-apps/plugin-process": "^2.3.0",
-    "antd": "^5.26.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^25.3.2",
@@ -38,7 +37,6 @@
     "next-themes": "^0.4.6",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
-    "radix-ui": "^1.4.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^15.6.0",

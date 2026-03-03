@@ -41,21 +41,10 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-/* Reset and base styles */
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
 /* 🎯 应用窗口效果 */
 html {
   opacity: var(--window-opacity);
   transition: opacity 0.2s ease-in-out;
-}
-
-body {
-  background: transparent;
 }
 
 @theme inline {
@@ -135,9 +124,9 @@ body {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 m-0 box-border p-0;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground bg-transparent;
   }
 }

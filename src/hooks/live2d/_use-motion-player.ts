@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Cubism4InternalModel } from "pixi-live2d-display";
 import type { Live2DInstance } from "@/types";
-import { message } from "antd";
+import { toast } from "sonner";
 
 /**
  * 动作和表情播放器
@@ -58,7 +58,7 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
         if (index !== -1) {
           void live2d.playMotion(group, index);
         } else {
-          message.error(`Motion "${name}" not found in group "${group}"`);
+          toast.error(`Motion "${name}" not found in group "${group}"`);
         }
       }
     },
@@ -82,7 +82,7 @@ export function _useMotionPlayer(getInstance: () => Live2DInstance | null) {
         if (index !== -1) {
           void live2d.playExpression(index);
         } else {
-          message.error(`Expression "${name}" not found`);
+          toast.error(`Expression "${name}" not found`);
         }
       }
     },

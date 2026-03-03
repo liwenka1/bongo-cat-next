@@ -7,7 +7,7 @@ import { useModelStore } from "@/stores/model-store";
 import { readDir, exists } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import type { SpecificDeviceEvent } from "@/types";
-import { message } from "antd";
+import { toast } from "sonner";
 
 export function useKeyboard() {
   const { setPressedLeftKeys, setPressedRightKeys, setSupportedLeftKeys, setSupportedRightKeys, singleMode } =
@@ -73,7 +73,7 @@ export function useKeyboard() {
         setSupportedLeftKeys(leftKeys);
         setSupportedRightKeys(rightKeys);
       } catch (error) {
-        message.error(`Failed to update supported keys: ${String(error)}`);
+        toast.error(`Failed to update supported keys: ${String(error)}`);
 
         supportedLeftKeysRef.current = [];
         setSupportedLeftKeys([]);
