@@ -23,11 +23,8 @@ export function MotionSelector({ availableMotions }: MotionSelectorProps) {
       selectedMotion !== null &&
       availableMotions.some((motion) => motion.group === selectedMotion.group && motion.name === selectedMotion.name);
 
-    if (!hasSelectedMotion) {
-      setSelectedMotion({
-        group: availableMotions[0].group,
-        name: availableMotions[0].name
-      });
+    if (!hasSelectedMotion && selectedMotion !== null) {
+      setSelectedMotion(null);
     }
   }, [availableMotions, selectedMotion, setSelectedMotion]);
 
