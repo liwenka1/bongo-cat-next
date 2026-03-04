@@ -60,7 +60,7 @@ export function ExpressionSelector({ availableExpressions }: ExpressionSelectorP
 
   return (
     <Select
-      value={selectedExpression?.name ?? undefined}
+      value={selectedExpression?.name ?? null}
       onValueChange={(value) => {
         handleChange(value);
       }}

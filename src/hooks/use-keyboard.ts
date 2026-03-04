@@ -6,6 +6,7 @@ import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { readDir, exists } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
+import { isTauriRuntime } from "@/utils/tauri";
 import type { SpecificDeviceEvent } from "@/types";
 import { toast } from "sonner";
 
@@ -25,6 +26,15 @@ export function useKeyboard() {
     }
 
     const updateSupportedKeys = async () => {
+      // In plain browser mode, Tauri fs APIs are unavailable.
+      if (!isTauriRuntime()) {
+        supportedLeftKeysRef.current = [];
+        supportedRightKeysRef.current = [];
+        setSupportedLeftKeys([]);
+        setSupportedRightKeys([]);
+        return;
+      }
+
       // 🎯 只为交互式模型读取键盘目录
       const isInteractiveModel = currentModel.id === "keyboard" || currentModel.id === "standard";
 
@@ -185,6 +195,10 @@ export function useKeyboard() {
 
   // Tauri 全局设备事件监听（应用外）
   useEffect(() => {
+    if (!isTauriRuntime()) {
+      return;
+    }
+
     const setupTauriListener = async () => {
       const unlisten = await listen<SpecificDeviceEvent>("device-changed", ({ payload }) => {
         const { kind, value } = payload;

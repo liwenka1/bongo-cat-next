@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { resolveResource } from "@tauri-apps/api/path";
+import { isTauriRuntime } from "@/utils/tauri";
 
 export type ModelMode = "standard" | "keyboard" | "handle";
 
@@ -73,7 +74,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
     const resolvedModels = await Promise.all(
       presetModels.map(async (model) => ({
         ...model,
-        path: await resolveResource(model.path)
+        path: isTauriRuntime() ? await resolveResource(model.path) : model.path
       }))
     );
 

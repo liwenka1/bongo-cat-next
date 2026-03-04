@@ -65,7 +65,7 @@ export function MotionSelector({ availableMotions }: MotionSelectorProps) {
 
   return (
     <Select
-      value={selectedMotion ? `${selectedMotion.group}|${selectedMotion.name}` : undefined}
+      value={selectedMotion ? `${selectedMotion.group}|${selectedMotion.name}` : null}
       onValueChange={(value) => {
         handleChange(value);
       }}
