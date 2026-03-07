@@ -30,7 +30,7 @@ CURRENT_VERSION="$(node -e "const fs=require('fs');const p=JSON.parse(fs.readFil
 
 echo "Current version: $CURRENT_VERSION"
 echo ""
-read -r -p "Enter new version (e.g. 0.2.4 or 0.2.4-beta.1): " NEW_VERSION
+read -r -p "Enter new version (e.g. 0.x.x or 0.x.x-beta): " NEW_VERSION
 
 if [ -z "${NEW_VERSION}" ]; then
   echo "Error: version cannot be empty."
