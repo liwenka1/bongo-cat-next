@@ -69,7 +69,7 @@ export const useCatStore = create<CatState>((set, get) => ({
   mirrorMode: false,
   singleMode: false,
   mouseMirror: false,
-  selectorsVisible: true,
+  selectorsVisible: false,
 
   x: 0,
   y: 0,
