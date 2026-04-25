@@ -76,6 +76,16 @@ _猫咪会根据你的键盘操作做出可爱的反应！_
 - **macOS**: `.dmg` 磁盘镜像 (支持Intel和Apple Silicon)
 - **Linux**: `.deb` / `.rpm` / `.AppImage`
 
+### macOS 特别说明
+
+由于应用当前未签名，首次启动时如果出现“应用已损坏”提示，可在终端执行：
+
+```bash
+xattr -cr /Applications/BongoCat\ Next.app
+```
+
+执行一次后重新打开应用即可。
+
 ### 开发环境
 
 #### 环境要求

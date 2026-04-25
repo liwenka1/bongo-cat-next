@@ -76,6 +76,16 @@ Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) pa
 - **macOS**: `.dmg` disk image (Intel & Apple Silicon)
 - **Linux**: `.deb` / `.rpm` / `.AppImage`
 
+### macOS Note
+
+Because the app is currently unsigned, macOS may show a damaged-app warning on first launch.
+
+```bash
+xattr -cr /Applications/BongoCat\ Next.app
+```
+
+Run the command once, then open the app again.
+
 ### Development Setup
 
 #### Requirements
