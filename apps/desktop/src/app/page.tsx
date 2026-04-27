@@ -155,13 +155,12 @@ export default function Home() {
     setPendingAction
   } = useAssistantStore();
 
-  const refreshServiceState = async (serviceUrlOverride?: string) => {
-    const serviceUrl = serviceUrlOverride ?? (settings.ai.serviceUrl.trim() || undefined);
+  const refreshServiceState = async () => {
     const [healthResult, tasksResult, logsResult, memoryResult] = await Promise.allSettled([
-      getServiceHealth(serviceUrl),
-      getTasks(serviceUrl),
-      getOperationLogs(12, serviceUrl),
-      getMemoryProfileFromAgent(serviceUrl)
+      getServiceHealth(),
+      getTasks(),
+      getOperationLogs(12),
+      getMemoryProfileFromAgent()
     ]);
 
     setHealth(healthResult.status === "fulfilled" ? healthResult.value : null);
@@ -226,8 +225,6 @@ export default function Home() {
     };
 
     const bootstrap = async () => {
-      let serviceUrl = settings.ai.serviceUrl.trim() || undefined;
-
       await setBootstrapStep(16, "读取本地设置...");
 
       try {
@@ -236,14 +233,13 @@ export default function Home() {
           return;
         }
 
-        serviceUrl = bundle.settings.ai.serviceUrl.trim() || undefined;
         setSettingsBundle(bundle.settings, bundle.permissions);
       } catch (error) {
         toast.error(`初始化设置失败：${String(error)}`);
       }
 
       await setBootstrapStep(44, "检查本地 agent-service...");
-      await refreshServiceState(serviceUrl);
+      await refreshServiceState();
 
       if (isTauriRuntime()) {
         await setBootstrapStep(72, "检查桌宠进程状态...");
@@ -413,8 +409,10 @@ export default function Home() {
       toast.success(result.summary);
 
       if (taskId) {
-        const task = await updateTaskEvent(taskId, { status: "completed", result: result.summary }, settings.ai.serviceUrl);
-        upsertTask(task);
+        const task = await updateTaskEvent(taskId, { status: "completed", result: result.summary });
+        if (task) {
+          upsertTask(task);
+        }
       }
 
       void refreshServiceState();
@@ -423,8 +421,10 @@ export default function Home() {
       toast.error(detail);
 
       if (taskId) {
-        const task = await updateTaskEvent(taskId, { status: "failed", error: detail }, settings.ai.serviceUrl);
-        upsertTask(task);
+        const task = await updateTaskEvent(taskId, { status: "failed", error: detail });
+        if (task) {
+          upsertTask(task);
+        }
       }
     }
   };
@@ -434,13 +434,10 @@ export default function Home() {
     setSendingState(true);
 
     try {
-      const response = await sendChat(
-        {
-          message: content,
-          conversation: [...messages, userMessage]
-        },
-        settings.ai.serviceUrl
-      );
+      const response = await sendChat({
+        message: content,
+        conversation: [...messages, userMessage]
+      });
 
       addMessage(response.reply);
       setTasks(response.tasks.concat(tasks).slice(0, 20));
@@ -651,10 +648,11 @@ export default function Home() {
                 {
                   status: "completed",
                   result: result.summary
-                },
-                settings.ai.serviceUrl
+                }
               );
-              upsertTask(task);
+              if (task) {
+                upsertTask(task);
+              }
             }
           } catch (error) {
             const detail = String(error);
@@ -666,10 +664,11 @@ export default function Home() {
                 {
                   status: "failed",
                   error: detail
-                },
-                settings.ai.serviceUrl
+                }
               );
-              upsertTask(task);
+              if (task) {
+                upsertTask(task);
+              }
             }
           } finally {
             setPendingAction(null, null);
