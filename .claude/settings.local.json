@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm --filter @my-pet/shared-types build)",
+      "Bash(pnpm --filter @my-pet/shared-prompts build)",
+      "Bash(pnpm --filter @my-pet/shared-config build)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm --filter @my-pet/desktop typecheck)",
+      "Bash(pnpm --filter @my-pet/agent-service typecheck)",
+      "Bash(sed -i 's|~/AppData/Roaming/My Pet Assistant/|~/AppData/Roaming/BongoCat/|g' docs/agent.md)",
+      "Bash(sed -i 's|~/Library/Application Support/My Pet Assistant/|~/Library/Application Support/BongoCat/|g' docs/agent.md)",
+      "Bash(sed -i 's|~/.config/My Pet Assistant/|~/.config/BongoCat/|g' docs/agent.md)",
+      "Bash(git add *)"
+    ]
+  }
+}

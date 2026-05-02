@@ -1,10 +1,10 @@
-# BongoCat Next
+# BongoCat
 
 <div align="center">
 
 **[English](README.md)** | **[简体中文](README_zh.md)**
 
-![BongoCat Next Logo](public/logo.png)
+![BongoCat Logo](public/logo.png)
 
 **一个现代化的桌面宠物应用，让可爱的猫咪陪伴你的编程时光**
 
@@ -70,7 +70,7 @@ _猫咪会根据你的键盘操作做出可爱的反应！_
 
 ### 预编译版本
 
-从 [Releases](https://github.com/liwenka1/bongo-cat-next/releases) 页面下载对应平台的安装包：
+从 [Releases](https://github.com/liwenka1/bongo-cat/releases) 页面下载对应平台的安装包：
 
 - **Windows**: `.msi` 安装包
 - **macOS**: `.dmg` 磁盘镜像 (支持Intel和Apple Silicon)
@@ -88,8 +88,8 @@ _猫咪会根据你的键盘操作做出可爱的反应！_
 
 ```bash
 # 克隆项目
-git clone https://github.com/liwenka1/bongo-cat-next.git
-cd bongo-cat-next
+git clone https://github.com/liwenka1/bongo-cat.git
+cd bongo-cat
 
 # 安装依赖
 pnpm install
@@ -140,9 +140,9 @@ pnpm tauri build
 
 应用设置保存在以下位置：
 
-- **Windows**: `%APPDATA%/BongoCat Next/`
-- **macOS**: `~/Library/Application Support/BongoCat Next/`
-- **Linux**: `~/.config/BongoCat Next/`
+- **Windows**: `%APPDATA%/BongoCat/`
+- **macOS**: `~/Library/Application Support/BongoCat/`
+- **Linux**: `~/.config/BongoCat/`
 
 ## 🤝 贡献指南
 

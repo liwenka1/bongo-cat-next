@@ -32,7 +32,7 @@ pub fn run() {
             hotkey::initialize_saved_hotkey(&app_handle)
                 .map_err(std::io::Error::other)?;
 
-            println!("My Pet Assistant manager shell started successfully!");
+            println!("BongoCat manager shell started successfully!");
 
             Ok(())
         })

@@ -1,10 +1,10 @@
-# BongoCat Next
+# BongoCat
 
 <div align="center">
 
 **[English](README.md)** | **[简体中文](README_zh.md)**
 
-![BongoCat Next Logo](public/logo.png)
+![BongoCat Logo](public/logo.png)
 
 **A modern desktop pet application featuring cute Live2D cats to accompany your coding journey**
 
@@ -70,7 +70,7 @@ _The cat responds to your keyboard input with adorable animations!_
 
 ### Pre-built Releases
 
-Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) page:
+Download from [Releases](https://github.com/liwenka1/bongo-cat/releases) page:
 
 - **Windows**: `.msi` installer
 - **macOS**: `.dmg` disk image (Intel & Apple Silicon)
@@ -88,8 +88,8 @@ Download from [Releases](https://github.com/liwenka1/bongo-cat-next/releases) pa
 
 ```bash
 # Clone the repository
-git clone https://github.com/liwenka1/bongo-cat-next.git
-cd bongo-cat-next
+git clone https://github.com/liwenka1/bongo-cat.git
+cd bongo-cat
 
 # Install dependencies
 pnpm install
@@ -150,9 +150,9 @@ pnpm tauri build
 
 Settings are saved in:
 
-- **Windows**: `%APPDATA%/BongoCat Next/`
-- **macOS**: `~/Library/Application Support/BongoCat Next/`
-- **Linux**: `~/.config/BongoCat Next/`
+- **Windows**: `%APPDATA%/BongoCat/`
+- **macOS**: `~/Library/Application Support/BongoCat/`
+- **Linux**: `~/.config/BongoCat/`
 
 ## 🤝 Contributing
 

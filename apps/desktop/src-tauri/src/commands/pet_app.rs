@@ -8,7 +8,7 @@ use std::thread;
 use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Manager};
 
-const PET_EXE_PREFIX: &str = "My Pet Assistant_";
+const PET_EXE_PREFIX: &str = "BongoCat_";
 const PET_EXE_SUFFIX: &str = "_pyqt5_win11_x64.exe";
 const BUNDLED_PET_RESOURCE_DIR: &str = "pet-app";
 

@@ -1,6 +1,6 @@
 import type { AllowedApp, AllowedCommand, AppSettings, MemoryProfile, PermissionSettings } from "@my-pet/shared-types";
 
-export const APP_NAME = "My Pet Assistant";
+export const APP_NAME = "BongoCat";
 export const AGENT_SERVICE_PORT = 4343;
 export const AGENT_SERVICE_URL = `http://127.0.0.1:${AGENT_SERVICE_PORT}`;
 export const WORKSPACE_ALIAS = "workspace";

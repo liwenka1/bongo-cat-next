@@ -1,5 +1,5 @@
 [package]
-name = "bongo-cat-next"
+name = "bongo-cat"
 version = "0.2.16"
 description = "A Tauri App"
 authors = ["you"]
