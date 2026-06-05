@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useCatStore } from "@/stores/cat-store";
-import { useModelStore } from "@/stores/model-store";
+import { isInteractiveModelMode, useModelStore } from "@/stores/model-store";
 import { readDir, exists } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import { isTauriRuntime } from "@/utils/tauri";
@@ -35,10 +35,8 @@ export function useKeyboard() {
         return;
       }
 
-      // 🎯 只为交互式模型读取键盘目录
-      const isInteractiveModel = currentModel.id === "keyboard" || currentModel.id === "standard";
-
-      if (!isInteractiveModel) {
+      // 🎯 只为 standard / keyboard 模式读取键盘资源目录
+      if (!isInteractiveModelMode(currentModel.mode)) {
         supportedLeftKeysRef.current = [];
         supportedRightKeysRef.current = [];
         setSupportedLeftKeys([]);

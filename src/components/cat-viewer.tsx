@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useCatStore } from "@/stores/cat-store";
-import { useModelStore } from "@/stores/model-store";
+import { isInteractiveModelMode, useModelStore } from "@/stores/model-store";
 import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
 import { useLive2DSystem } from "@/hooks/use-live2d-system";
@@ -31,8 +31,8 @@ export default function CatViewer() {
     height: 600
   });
 
-  // 🎯 判断当前模型是否是高级交互模型
-  const isInteractiveModel = currentModel?.id === "keyboard" || currentModel?.id === "standard";
+  // 🎯 判断当前模型是否启用背景/键盘等交互能力
+  const isInteractiveModel = currentModel ? isInteractiveModelMode(currentModel.mode) : false;
   const shouldShowBackground = isInteractiveModel && backgroundImage;
   const shouldShowKeyboard = isInteractiveModel;
 

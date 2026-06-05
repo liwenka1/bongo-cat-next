@@ -96,7 +96,7 @@ export function _useMenuBuilder() {
     return await Promise.all(
       Object.values(models).map(async (model) => {
         return await CheckMenuItem.new({
-          text: t(`names.${model.id}`, { ns: "models" }),
+          text: model.isPreset ? t(`names.${model.id}`, { ns: "models" }) : model.name,
           checked: currentModel?.id === model.id,
           action: () => {
             setCurrentModel(model.id);

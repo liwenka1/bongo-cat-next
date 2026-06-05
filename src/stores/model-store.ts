@@ -13,6 +13,10 @@ import { isTauriRuntime } from "@/utils/tauri";
 
 export type ModelMode = "standard" | "keyboard" | "handle";
 
+export function isInteractiveModelMode(mode: ModelMode): boolean {
+  return mode === "standard" || mode === "keyboard";
+}
+
 export interface Model {
   id: string;
   name: string;
