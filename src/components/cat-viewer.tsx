@@ -5,6 +5,7 @@ import { useCatStore } from "@/stores/cat-store";
 import { isInteractiveModelMode, useModelStore } from "@/stores/model-store";
 import { KeyboardVisualization } from "./keyboard-visualization";
 import NextImage from "next/image";
+import { DEFAULT_VIEWPORT_SIZE } from "@/hooks/live2d/utils";
 import { useLive2DSystem } from "@/hooks/use-live2d-system";
 import { MotionSelector } from "@/components/motion-selector";
 import { ExpressionSelector } from "@/components/expression-selector";
@@ -26,9 +27,9 @@ export default function CatViewer() {
   // 从 store 中获取状态
   const { backgroundImage, scale, availableMotions, availableExpressions, selectorsVisible } = useCatStore();
 
-  const [imageDimensions, setImageDimensions] = useState({
-    width: 800,
-    height: 600
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({
+    width: DEFAULT_VIEWPORT_SIZE.width,
+    height: DEFAULT_VIEWPORT_SIZE.height
   });
 
   // 🎯 判断当前模型是否启用背景/键盘等交互能力
@@ -36,18 +37,24 @@ export default function CatViewer() {
   const shouldShowBackground = isInteractiveModel && backgroundImage;
   const shouldShowKeyboard = isInteractiveModel;
 
-  // 获取图片实际尺寸
+  // 获取背景图尺寸；无背景时回退默认视口尺寸
   useEffect(() => {
-    if (backgroundImage) {
-      const img = document.createElement("img");
-      img.onload = () => {
-        setImageDimensions({
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        });
-      };
-      img.src = backgroundImage;
+    if (!backgroundImage) {
+      setImageDimensions({
+        width: DEFAULT_VIEWPORT_SIZE.width,
+        height: DEFAULT_VIEWPORT_SIZE.height
+      });
+      return;
     }
+
+    const img = document.createElement("img");
+    img.onload = () => {
+      setImageDimensions({
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      });
+    };
+    img.src = backgroundImage;
   }, [backgroundImage]);
 
   // 🎯 计算缩放后的尺寸

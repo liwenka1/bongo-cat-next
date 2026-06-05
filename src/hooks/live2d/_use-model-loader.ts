@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { readTextFile } from "@tauri-apps/plugin-fs";
+import { exists, readTextFile } from "@tauri-apps/plugin-fs";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@/utils/path";
 import { useCatStore } from "@/stores/cat-store";
 import type { Live2DInstance } from "@/types";
 import type { CubismSpec } from "pixi-live2d-display";
+import { isTauriRuntime } from "@/utils/tauri";
 import { toast } from "sonner";
 
 /**
@@ -29,9 +30,14 @@ export function _useModelLoader(
           throw new Error("Failed to initialize Live2D");
         }
 
-        // 设置背景图片
+        // 设置背景图片（无 resources/background.png 时使用空字符串）
         const bgPath = join(modelPath, "resources", "background.png");
-        const bgUrl = convertFileSrc(bgPath);
+        let bgUrl = "";
+
+        if (isTauriRuntime() && (await exists(bgPath))) {
+          bgUrl = convertFileSrc(bgPath);
+        }
+
         setBackgroundImage(bgUrl);
 
         // 加载 Live2D 模型

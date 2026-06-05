@@ -5,7 +5,7 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PhysicalSize, LogicalSize } from "@tauri-apps/api/dpi";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
-import { getImageSize } from "@/hooks/live2d/utils";
+import { getViewportSize } from "@/hooks/live2d/utils";
 import type { Live2DInstance } from "@/types";
 import { toast } from "sonner";
 
@@ -29,13 +29,13 @@ export function useWindowScaling(
   // 统一的模型初始化和位置设置函数
   const initializeModelPosition = useCallback(async () => {
     const live2d = live2dInstance();
-    if (!live2d?.model || !backgroundImage) return;
+    if (!live2d?.model) return;
 
     try {
-      const { width, height } = await getImageSize(backgroundImage);
+      const { width, height } = await getViewportSize(backgroundImage);
       const { innerWidth, innerHeight } = window;
 
-      // 基于背景图计算基础缩放比例
+      // 基于视口尺寸计算基础缩放比例
       const scaleX = innerWidth / width;
       const scaleY = innerHeight / height;
       const optimalScale = Math.min(scaleX, scaleY);
@@ -46,15 +46,15 @@ export function useWindowScaling(
     } catch (error) {
       console.error(`Model initialization failed: ${String(error)}`);
     }
-  }, [live2dInstance, backgroundImage, scale]);
+  }, [live2dInstance, backgroundImage]);
 
   // 监听scale变化，自动调整窗口尺寸
   useEffect(() => {
     const handleScaleChange = async () => {
-      if (!backgroundImage || isResizingRef.current) return;
+      if (isResizingRef.current) return;
 
       try {
-        const { width, height } = await getImageSize(backgroundImage);
+        const { width, height } = await getViewportSize(backgroundImage);
         const appWindow = getCurrentWebviewWindow();
 
         await appWindow.setSize(
@@ -77,7 +77,7 @@ export function useWindowScaling(
 
   // 监听模型变化，自动初始化位置
   useEffect(() => {
-    if (currentModel && backgroundImage && canvasRef?.current) {
+    if (currentModel && canvasRef?.current) {
       const timer = setTimeout(() => {
         void initializeModelPosition();
       }, 200);
@@ -90,8 +90,6 @@ export function useWindowScaling(
 
   // 窗口resize处理
   const handleWindowResize = useCallback(async () => {
-    if (!backgroundImage) return;
-
     const live2d = live2dInstance();
     if (!live2d?.model) {
       return;
@@ -101,7 +99,7 @@ export function useWindowScaling(
       isResizingRef.current = true;
 
       const { innerWidth, innerHeight } = window;
-      const { width, height } = await getImageSize(backgroundImage);
+      const { width, height } = await getViewportSize(backgroundImage);
       const scaleX = innerWidth / width;
       const scaleY = innerHeight / height;
       const optimalScale = Math.min(scaleX, scaleY);
