@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
 import { useKeyboard } from "@/hooks/use-keyboard";
@@ -10,17 +11,22 @@ import { _useMouseEvents } from "@/hooks/live2d/_use-mouse-events";
 import { _useKeyboardSync } from "@/hooks/live2d/_use-keyboard-sync";
 import { _useMotionPlayer } from "@/hooks/live2d/_use-motion-player";
 import { useWindowScaling } from "@/hooks/use-window-scaling";
+import { useI18n } from "@/hooks/use-i18n";
+import { validateLinkedModel } from "@/utils/model-link";
+import { isTauriRuntime } from "@/utils/tauri";
 
 /**
  * 统一的Live2D系统Hook
  * 组合各个功能模块的内部 hooks
  */
 export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+  const { t } = useI18n(["models"]);
+
   // 🎯 使用键盘处理逻辑
   useKeyboard();
 
   // Store 状态
-  const { currentModel, initializeModels } = useModelStore();
+  const { currentModel, initializeModels, markLinkedModelInvalid, markLinkedModelValid } = useModelStore();
   const { pressedLeftKeys, pressedRightKeys, selectedMotion, selectedExpression } = useCatStore();
 
   // 🔧 Live2D 核心管理
@@ -49,10 +55,42 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   // 🎬 模型加载
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (currentModel && canvas) {
-      void loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
+    if (!currentModel || !canvas) {
+      return;
     }
-  }, [currentModel, canvasRef, loadModelAndAssets]);
+
+    const loadCurrentModel = async () => {
+      if (currentModel.linked && isTauriRuntime()) {
+        if (currentModel.pathInvalid) {
+          toast.error(t("pathNotFound", { ns: "models" }));
+          return;
+        }
+
+        const validation = await validateLinkedModel(currentModel.path, currentModel.modelName);
+        if (!validation.valid) {
+          markLinkedModelInvalid(currentModel.id);
+          toast.error(t("pathNotFound", { ns: "models" }));
+          return;
+        }
+
+        markLinkedModelValid(currentModel.id);
+      }
+
+      const loaded = await loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
+      if (!loaded) {
+        toast.error(t("loadFailed", { ns: "models" }));
+      }
+    };
+
+    void loadCurrentModel();
+  }, [
+    currentModel,
+    canvasRef,
+    loadModelAndAssets,
+    markLinkedModelInvalid,
+    markLinkedModelValid,
+    t
+  ]);
 
   // 🖱️ 鼠标事件
   useEffect(() => {

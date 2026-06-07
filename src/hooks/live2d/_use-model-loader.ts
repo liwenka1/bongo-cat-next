@@ -6,7 +6,6 @@ import { useCatStore } from "@/stores/cat-store";
 import type { Live2DInstance } from "@/types";
 import type { CubismSpec } from "pixi-live2d-display";
 import { isTauriRuntime } from "@/utils/tauri";
-import { toast } from "sonner";
 
 /**
  * 模型加载器Hook
@@ -20,8 +19,8 @@ export function _useModelLoader(
   const { setBackgroundImage, setAvailableMotions, setAvailableExpressions } = useCatStore();
 
   const loadModelAndAssets = useCallback(
-    async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement) => {
-      if (isLoading()) return;
+    async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement): Promise<boolean> => {
+      if (isLoading()) return false;
 
       setLoading(true);
       try {
@@ -80,8 +79,10 @@ export function _useModelLoader(
           });
         }
         setAvailableExpressions(availableExpressions);
+        return true;
       } catch (error) {
-        toast.error(`Failed to load model: ${String(error)}`);
+        console.error(`Failed to load model: ${String(error)}`);
+        return false;
       } finally {
         setLoading(false);
       }

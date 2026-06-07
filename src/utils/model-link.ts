@@ -26,9 +26,23 @@ export interface ModelsManifest {
 
 export interface ModelDirectoryValidationResult {
   valid: boolean;
-  error?: string;
+  errorCode?: ModelValidationErrorCode;
   modelName?: string;
 }
+
+export type ModelValidationErrorCode =
+  | "emptyPath"
+  | "directoryNotFound"
+  | "noModelEntry"
+  | "entryNotFound"
+  | "entryUnreadable";
+
+export type LinkModelErrorCode =
+  | ModelValidationErrorCode
+  | "alreadyLinked"
+  | "desktopOnly"
+  | "manifestSaveFailed"
+  | "unknown";
 
 const EMPTY_MANIFEST: ModelsManifest = { models: [] };
 
@@ -146,28 +160,47 @@ export async function detectModelEntryFile(directoryPath: string): Promise<strin
   return files[0] ?? null;
 }
 
+export async function validateLinkedModel(
+  path: string,
+  modelName: string
+): Promise<ModelDirectoryValidationResult> {
+  if (!path.trim()) {
+    return { valid: false, errorCode: "emptyPath" };
+  }
+
+  if (!(await exists(path))) {
+    return { valid: false, errorCode: "directoryNotFound" };
+  }
+
+  const entryPath = join(path, modelName);
+  if (!(await exists(entryPath))) {
+    return { valid: false, errorCode: "entryNotFound" };
+  }
+
+  try {
+    await readTextFile(entryPath);
+  } catch {
+    return { valid: false, errorCode: "entryUnreadable" };
+  }
+
+  return { valid: true, modelName };
+}
+
 export async function validateModelDirectory(directoryPath: string): Promise<ModelDirectoryValidationResult> {
   if (!directoryPath.trim()) {
-    return { valid: false, error: "Model directory path is empty" };
+    return { valid: false, errorCode: "emptyPath" };
   }
 
   if (!(await exists(directoryPath))) {
-    return { valid: false, error: "Model directory does not exist" };
+    return { valid: false, errorCode: "directoryNotFound" };
   }
 
   const modelName = await detectModelEntryFile(directoryPath);
   if (!modelName) {
-    return { valid: false, error: "No Cubism 4 model entry (.model3.json) found in directory" };
+    return { valid: false, errorCode: "noModelEntry" };
   }
 
-  const entryPath = join(directoryPath, modelName);
-  try {
-    await readTextFile(entryPath);
-  } catch {
-    return { valid: false, error: "Model entry file is not readable" };
-  }
-
-  return { valid: true, modelName };
+  return validateLinkedModel(directoryPath, modelName);
 }
 
 export function getDirectoryName(directoryPath: string): string {

@@ -3,6 +3,7 @@ import { CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-app
 import { useI18n } from "@/hooks/use-i18n";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
+import { validateLinkedModel } from "@/utils/model-link";
 import { toast } from "sonner";
 
 /**
@@ -31,7 +32,72 @@ export function _useMenuBuilder() {
     selectorsVisible,
     setSelectorsVisible
   } = useCatStore();
-  const { models, currentModel, setCurrentModel, linkModelFromDialog, unlinkModel } = useModelStore();
+  const {
+    models,
+    currentModel,
+    setCurrentModel,
+    linkModelFromDialog,
+    unlinkModel,
+    markLinkedModelInvalid,
+    markLinkedModelValid
+  } = useModelStore();
+
+  const getModelMenuLabel = useCallback(
+    (model: (typeof models)[string]) => {
+      if (model.isPreset) {
+        return t(`names.${model.id}`, { ns: "models" });
+      }
+
+      if (model.pathInvalid) {
+        return `${model.name} ${t("pathInvalidTag", { ns: "models" })}`;
+      }
+
+      return model.name;
+    },
+    [t]
+  );
+
+  const handleSelectModel = useCallback(
+    async (id: string) => {
+      if (!(id in models)) {
+        return;
+      }
+
+      const model = models[id];
+      if (model.pathInvalid) {
+        toast.error(t("pathNotFound", { ns: "models" }));
+        return;
+      }
+
+      if (model.linked) {
+        const validation = await validateLinkedModel(model.path, model.modelName);
+        if (!validation.valid) {
+          markLinkedModelInvalid(id);
+          toast.error(t("pathNotFound", { ns: "models" }));
+          return;
+        }
+
+        markLinkedModelValid(id);
+      }
+
+      setCurrentModel(id);
+    },
+    [models, markLinkedModelInvalid, markLinkedModelValid, setCurrentModel, t]
+  );
+
+  const resolveLinkErrorMessage = useCallback(
+    (result: { error?: string; errorCode?: string }) => {
+      if (result.errorCode) {
+        return t(`errors.${result.errorCode}`, {
+          ns: "models",
+          defaultValue: t("linkFailed", { ns: "models" })
+        });
+      }
+
+      return result.error ?? t("linkFailed", { ns: "models" });
+    },
+    [t]
+  );
 
   const handleLinkModel = useCallback(async () => {
     const result = await linkModelFromDialog();
@@ -40,12 +106,12 @@ export function _useMenuBuilder() {
     }
 
     if (!result.success) {
-      toast.error(result.error ?? t("linkFailed", { ns: "models" }));
+      toast.error(resolveLinkErrorMessage(result));
       return;
     }
 
     toast.success(t("linkSuccess", { ns: "models" }));
-  }, [linkModelFromDialog, t]);
+  }, [linkModelFromDialog, resolveLinkErrorMessage, t]);
 
   const handleUnlinkModel = useCallback(
     async (id: string) => {
@@ -132,10 +198,11 @@ export function _useMenuBuilder() {
       ...(await Promise.all(
         Object.values(models).map(async (model) => {
           return await CheckMenuItem.new({
-            text: model.isPreset ? t(`names.${model.id}`, { ns: "models" }) : model.name,
+            text: getModelMenuLabel(model),
             checked: currentModel?.id === model.id,
+            enabled: !model.pathInvalid,
             action: () => {
-              setCurrentModel(model.id);
+              void handleSelectModel(model.id);
             }
           });
         })
@@ -160,7 +227,7 @@ export function _useMenuBuilder() {
     }
 
     return items;
-  }, [models, currentModel, setCurrentModel, handleLinkModel, handleUnlinkModel, t]);
+  }, [models, currentModel, getModelMenuLabel, handleLinkModel, handleSelectModel, handleUnlinkModel, t]);
 
   // 🎯 创建模型模式子菜单
   const createModeSubmenu = useCallback(async () => {

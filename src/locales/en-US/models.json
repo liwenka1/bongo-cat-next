@@ -6,6 +6,20 @@
   "linkFailed": "Failed to link model",
   "unlinkSuccess": "Model link removed",
   "unlinkFailed": "Failed to remove model link",
+  "pathNotFound": "Model path not found. Please link the folder again.",
+  "pathInvalidTag": "(invalid path)",
+  "loadFailed": "Failed to load model",
+  "errors": {
+    "emptyPath": "Model directory path is empty",
+    "directoryNotFound": "Model directory does not exist",
+    "noModelEntry": "No Cubism 4 model entry (.model3.json) found in directory",
+    "entryNotFound": "Model entry file does not exist",
+    "entryUnreadable": "Model entry file is not readable",
+    "alreadyLinked": "This model directory is already linked",
+    "desktopOnly": "Linked models are only supported in the desktop app",
+    "manifestSaveFailed": "Failed to save model manifest",
+    "unknown": "An unknown error occurred while linking the model"
+  },
   "names": {
     "standard": "Mouse Mode",
     "keyboard": "Keyboard Mode"

@@ -6,6 +6,20 @@
   "linkFailed": "模型链接失败",
   "unlinkSuccess": "已移除模型链接",
   "unlinkFailed": "移除模型链接失败",
+  "pathNotFound": "模型路径不存在，请重新链接",
+  "pathInvalidTag": "(路径无效)",
+  "loadFailed": "模型加载失败",
+  "errors": {
+    "emptyPath": "模型目录路径为空",
+    "directoryNotFound": "模型目录不存在",
+    "noModelEntry": "目录中未找到 Cubism 4 模型入口文件（.model3.json）",
+    "entryNotFound": "模型入口文件不存在",
+    "entryUnreadable": "模型入口文件无法读取",
+    "alreadyLinked": "该模型目录已链接",
+    "desktopOnly": "仅桌面版支持链接本地模型",
+    "manifestSaveFailed": "保存模型清单失败",
+    "unknown": "链接模型时发生未知错误"
+  },
   "names": {
     "standard": "鼠标模式",
     "keyboard": "键盘模式"

@@ -7,7 +7,9 @@ import {
   pickModelDirectory,
   saveModelsManifest,
   toLinkedModelConfig,
+  validateLinkedModel,
   validateModelDirectory,
+  type LinkModelErrorCode,
   type ModelsManifest
 } from "@/utils/model-link";
 import { isTauriRuntime } from "@/utils/tauri";
@@ -26,6 +28,7 @@ export interface Model {
   isPreset: boolean;
   modelName: string;
   linked?: boolean;
+  pathInvalid?: boolean;
 }
 
 export interface Motion {
@@ -64,6 +67,7 @@ export interface LinkModelInput {
 export interface LinkModelResult {
   success: boolean;
   error?: string;
+  errorCode?: LinkModelErrorCode;
   modelId?: string;
   cancelled?: boolean;
 }
@@ -81,6 +85,8 @@ export interface ModelStoreState {
   linkModelFromDialog: () => Promise<LinkModelResult>;
   unlinkModel: (id: string) => Promise<UnlinkModelResult>;
   setCurrentModel: (id: string) => void;
+  markLinkedModelInvalid: (id: string) => void;
+  markLinkedModelValid: (id: string) => void;
 }
 
 const PRESET_MODELS: Omit<Model, "path">[] = [
@@ -158,10 +164,51 @@ function linkedConfigToModel(config: ReturnType<typeof toLinkedModelConfig>): Mo
 
 function resolveCurrentModel(models: Record<string, Model>, currentModelId?: string): Model {
   if (currentModelId && currentModelId in models) {
-    return models[currentModelId];
+    const selected = models[currentModelId];
+    if (!selected.pathInvalid) {
+      return selected;
+    }
   }
 
   return models.standard;
+}
+
+async function applyLinkedModelValidity(models: Record<string, Model>): Promise<Record<string, Model>> {
+  const entries = await Promise.all(
+    Object.values(models).map(async (model) => {
+      if (model.isPreset || !model.linked) {
+        return [model.id, model] as const;
+      }
+
+      const validation = await validateLinkedModel(model.path, model.modelName);
+      return [model.id, { ...model, pathInvalid: !validation.valid }] as const;
+    })
+  );
+
+  return Object.fromEntries(entries) as Record<string, Model>;
+}
+
+function updateLinkedModelValidity(
+  models: Record<string, Model>,
+  id: string,
+  pathInvalid: boolean
+): Record<string, Model> {
+  if (!(id in models)) {
+    return models;
+  }
+
+  const model = models[id];
+  if (model.isPreset) {
+    return models;
+  }
+
+  return {
+    ...models,
+    [id]: {
+      ...model,
+      pathInvalid
+    }
+  };
 }
 
 export const useModelStore = create<ModelStoreState>()((set, get) => ({
@@ -181,26 +228,29 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       return acc;
     }, {});
 
-    const models = {
+    const models = await applyLinkedModelValidity({
       ...presetModels,
       ...linkedModels
-    };
-
-    set({
-      models,
-      currentModel: resolveCurrentModel(models, manifest.currentModelId)
     });
+
+    const currentModel = resolveCurrentModel(models, manifest.currentModelId);
+
+    set({ models, currentModel });
+
+    if (manifest.currentModelId && manifest.currentModelId !== currentModel.id) {
+      void persistModels(models, currentModel);
+    }
   },
 
   linkModel: async (input) => {
     if (!isTauriRuntime()) {
-      return { success: false, error: "Linked models are only supported in the desktop app" };
+      return { success: false, errorCode: "desktopOnly" };
     }
 
     const normalizedPath = input.path.trim();
     const validation = await validateModelDirectory(normalizedPath);
     if (!validation.valid) {
-      return { success: false, error: validation.error };
+      return { success: false, errorCode: validation.errorCode ?? "noModelEntry" };
     }
 
     const { models } = get();
@@ -208,7 +258,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       (model) => !model.isPreset && model.path.toLowerCase() === normalizedPath.toLowerCase()
     );
     if (duplicate) {
-      return { success: false, error: "This model directory is already linked" };
+      return { success: false, errorCode: "alreadyLinked" };
     }
 
     const name = input.name?.trim() ?? getDirectoryName(normalizedPath);
@@ -223,7 +273,8 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       mode,
       isPreset: false,
       modelName,
-      linked: true
+      linked: true,
+      pathInvalid: false
     };
 
     const nextModels = {
@@ -246,7 +297,8 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
       set(previousState);
       return {
         success: false,
-        error: persistResult.error ?? "Failed to save model manifest"
+        errorCode: "manifestSaveFailed",
+        error: persistResult.error
       };
     }
 
@@ -255,7 +307,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
 
   linkModelFromDialog: async () => {
     if (!isTauriRuntime()) {
-      return { success: false, error: "Linked models are only supported in the desktop app" };
+      return { success: false, errorCode: "desktopOnly" };
     }
 
     try {
@@ -266,7 +318,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
 
       return await get().linkModel({ path });
     } catch (error) {
-      return { success: false, error: String(error) };
+      return { success: false, errorCode: "unknown", error: String(error) };
     }
   },
 
@@ -311,18 +363,44 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
   },
 
   setCurrentModel: (id) => {
-    const { models, currentModel } = get();
+    const { models, currentModel: previousModel } = get();
     if (!(id in models)) {
       return;
     }
 
     const model = models[id];
+    if (model.pathInvalid) {
+      return;
+    }
+
     set({ currentModel: model });
 
     void persistModels(models, model).then((persistResult) => {
       if (!persistResult.success) {
-        set({ currentModel });
+        set({ currentModel: previousModel });
       }
+    });
+  },
+
+  markLinkedModelInvalid: (id) => {
+    const { models: previousModels, currentModel: previousCurrentModel } = get();
+    const models = updateLinkedModelValidity(previousModels, id, true);
+    const shouldFallback = previousCurrentModel?.id === id;
+    const currentModel = shouldFallback ? resolveCurrentModel(models, "standard") : previousCurrentModel;
+
+    set({ models, currentModel });
+
+    if (shouldFallback) {
+      void persistModels(models, currentModel);
+    }
+  },
+
+  markLinkedModelValid: (id) => {
+    set((state) => {
+      const models = updateLinkedModelValidity(state.models, id, false);
+      const currentModel = state.currentModel?.id === id ? models[id] : state.currentModel;
+
+      return { models, currentModel };
     });
   }
 }));
