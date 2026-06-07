@@ -4,6 +4,7 @@ import {
   createLinkedModelId,
   getDirectoryName,
   loadModelsManifest,
+  pickModelDirectory,
   saveModelsManifest,
   toLinkedModelConfig,
   validateModelDirectory,
@@ -64,6 +65,7 @@ export interface LinkModelResult {
   success: boolean;
   error?: string;
   modelId?: string;
+  cancelled?: boolean;
 }
 
 export interface UnlinkModelResult {
@@ -76,6 +78,7 @@ export interface ModelStoreState {
   currentModel: Model | null;
   initializeModels: () => Promise<void>;
   linkModel: (input: LinkModelInput) => Promise<LinkModelResult>;
+  linkModelFromDialog: () => Promise<LinkModelResult>;
   unlinkModel: (id: string) => Promise<UnlinkModelResult>;
   setCurrentModel: (id: string) => void;
 }
@@ -248,6 +251,23 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
     }
 
     return { success: true, modelId: id };
+  },
+
+  linkModelFromDialog: async () => {
+    if (!isTauriRuntime()) {
+      return { success: false, error: "Linked models are only supported in the desktop app" };
+    }
+
+    try {
+      const path = await pickModelDirectory();
+      if (!path) {
+        return { success: false, cancelled: true };
+      }
+
+      return await get().linkModel({ path });
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
   },
 
   unlinkModel: async (id) => {

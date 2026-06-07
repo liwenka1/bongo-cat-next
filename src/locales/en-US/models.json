@@ -1,5 +1,11 @@
 {
   "title": "Model Selection",
+  "linkModel": "Link Model Folder…",
+  "unlinkModel": "Remove \"{{name}}\"",
+  "linkSuccess": "Model linked successfully",
+  "linkFailed": "Failed to link model",
+  "unlinkSuccess": "Model link removed",
+  "unlinkFailed": "Failed to remove model link",
   "names": {
     "standard": "Mouse Mode",
     "keyboard": "Keyboard Mode"

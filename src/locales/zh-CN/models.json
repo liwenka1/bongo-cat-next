@@ -1,5 +1,11 @@
 {
   "title": "模型选择",
+  "linkModel": "链接模型文件夹…",
+  "unlinkModel": "移除「{{name}}」",
+  "linkSuccess": "模型链接成功",
+  "linkFailed": "模型链接失败",
+  "unlinkSuccess": "已移除模型链接",
+  "unlinkFailed": "移除模型链接失败",
   "names": {
     "standard": "鼠标模式",
     "keyboard": "键盘模式"

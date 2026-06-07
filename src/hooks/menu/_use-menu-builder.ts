@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { CheckMenuItem, Submenu } from "@tauri-apps/api/menu";
+import { CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCatStore } from "@/stores/cat-store";
 import { useModelStore } from "@/stores/model-store";
+import { toast } from "sonner";
 
 /**
  * 🎯 共享菜单构建器 Hook
@@ -30,7 +31,34 @@ export function _useMenuBuilder() {
     selectorsVisible,
     setSelectorsVisible
   } = useCatStore();
-  const { models, currentModel, setCurrentModel } = useModelStore();
+  const { models, currentModel, setCurrentModel, linkModelFromDialog, unlinkModel } = useModelStore();
+
+  const handleLinkModel = useCallback(async () => {
+    const result = await linkModelFromDialog();
+    if (result.cancelled) {
+      return;
+    }
+
+    if (!result.success) {
+      toast.error(result.error ?? t("linkFailed", { ns: "models" }));
+      return;
+    }
+
+    toast.success(t("linkSuccess", { ns: "models" }));
+  }, [linkModelFromDialog, t]);
+
+  const handleUnlinkModel = useCallback(
+    async (id: string) => {
+      const result = await unlinkModel(id);
+      if (!result.success) {
+        toast.error(result.error ?? t("unlinkFailed", { ns: "models" }));
+        return;
+      }
+
+      toast.success(t("unlinkSuccess", { ns: "models" }));
+    },
+    [unlinkModel, t]
+  );
 
   // 🎯 创建缩放选项子菜单
   const getScaleMenuItems = useCallback(async () => {
@@ -93,18 +121,46 @@ export function _useMenuBuilder() {
 
   // 🎯 创建模型模式选项子菜单
   const getModeMenuItems = useCallback(async () => {
-    return await Promise.all(
-      Object.values(models).map(async (model) => {
-        return await CheckMenuItem.new({
-          text: model.isPreset ? t(`names.${model.id}`, { ns: "models" }) : model.name,
-          checked: currentModel?.id === model.id,
-          action: () => {
-            setCurrentModel(model.id);
-          }
-        });
-      })
-    );
-  }, [models, currentModel, setCurrentModel, t]);
+    const items = [
+      await MenuItem.new({
+        text: t("linkModel", { ns: "models" }),
+        action: () => {
+          void handleLinkModel();
+        }
+      }),
+      await PredefinedMenuItem.new({ item: "Separator" }),
+      ...(await Promise.all(
+        Object.values(models).map(async (model) => {
+          return await CheckMenuItem.new({
+            text: model.isPreset ? t(`names.${model.id}`, { ns: "models" }) : model.name,
+            checked: currentModel?.id === model.id,
+            action: () => {
+              setCurrentModel(model.id);
+            }
+          });
+        })
+      ))
+    ];
+
+    const linkedModels = Object.values(models).filter((model) => !model.isPreset);
+    if (linkedModels.length > 0) {
+      items.push(await PredefinedMenuItem.new({ item: "Separator" }));
+      items.push(
+        ...(await Promise.all(
+          linkedModels.map(async (model) => {
+            return await MenuItem.new({
+              text: t("unlinkModel", { ns: "models", name: model.name }),
+              action: () => {
+                void handleUnlinkModel(model.id);
+              }
+            });
+          })
+        ))
+      );
+    }
+
+    return items;
+  }, [models, currentModel, setCurrentModel, handleLinkModel, handleUnlinkModel, t]);
 
   // 🎯 创建模型模式子菜单
   const createModeSubmenu = useCallback(async () => {
@@ -223,6 +279,7 @@ export function _useMenuBuilder() {
       alwaysOnTop,
       mirrorMode,
       selectorsVisible,
+      models,
       currentModel
     }
   };

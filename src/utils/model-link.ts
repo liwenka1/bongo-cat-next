@@ -1,4 +1,5 @@
 import { appDataDir, BaseDirectory, join as pathJoin } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-dialog";
 import { exists, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import { isTauriRuntime } from "@/utils/tauri";
@@ -112,6 +113,19 @@ export async function saveModelsManifest(manifest: ModelsManifest): Promise<void
   } catch (error) {
     throw new Error(`Failed to save models manifest: ${String(error)}`);
   }
+}
+
+export async function pickModelDirectory(): Promise<string | null> {
+  if (!isTauriRuntime()) {
+    return null;
+  }
+
+  const selected = await open({
+    directory: true,
+    multiple: false
+  });
+
+  return typeof selected === "string" ? selected : null;
 }
 
 export async function detectModelEntryFiles(directoryPath: string): Promise<string[]> {
