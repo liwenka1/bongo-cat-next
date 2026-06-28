@@ -20,7 +20,7 @@ export function _useModelLoader(
 
   const loadModelAndAssets = useCallback(
     async (modelPath: string, modelFileName: string, canvas: HTMLCanvasElement): Promise<boolean> => {
-      if (isLoading()) return false;
+      if (isLoading()) return true; // 已在加载中，跳过而非报错
 
       setLoading(true);
       try {
