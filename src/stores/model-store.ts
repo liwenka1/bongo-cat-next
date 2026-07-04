@@ -375,6 +375,13 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
 
     set({ currentModel: model });
 
+    // 🎯 预设模型（standard/keyboard/handle）切换无需持久化 manifest，
+    //    因为 buildManifest 会过滤掉 isPreset 模型，manifest 里只存 linked 模型。
+    //    对 preset 模型做 persist 是多余的，且一旦失败会导致 currentModel 回滚。
+    if (model.isPreset) {
+      return;
+    }
+
     void persistModels(models, model).then((persistResult) => {
       if (!persistResult.success) {
         set({ currentModel: previousModel });
