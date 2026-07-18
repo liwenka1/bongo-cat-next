@@ -26,7 +26,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
   useKeyboard();
 
   // Store 状态
-  const { currentModel, initializeModels, markLinkedModelInvalid, markLinkedModelValid } = useModelStore();
+  const { currentModel, initializeModels, setCurrentModel, markLinkedModelInvalid } = useModelStore();
   const { pressedLeftKeys, pressedRightKeys, selectedMotion, selectedExpression } = useCatStore();
 
   // 🔧 Live2D 核心管理
@@ -63,6 +63,8 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
       if (currentModel.linked && isTauriRuntime()) {
         if (currentModel.pathInvalid) {
           toast.error(t("pathNotFound", { ns: "models" }));
+          // 🛡️ 无效 linked 模型 → 回退到 standard 预设模型
+          setCurrentModel("standard");
           return;
         }
 
@@ -70,16 +72,25 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
         if (!validation.valid) {
           markLinkedModelInvalid(currentModel.id);
           toast.error(t("pathNotFound", { ns: "models" }));
+          // 🛡️ 路径失效 → markLinkedModelInvalid 已自动回退到 standard
           return;
         }
-
-        markLinkedModelValid(currentModel.id);
       }
 
       const loaded = await loadModelAndAssets(currentModel.path, currentModel.modelName, canvas);
       if (!loaded) {
         toast.error(t("loadFailed", { ns: "models" }));
+        // 🛡️ 模型加载失败 → linked 模型标记无效并回退
+        if (currentModel.linked) {
+          markLinkedModelInvalid(currentModel.id);
+        } else {
+          setCurrentModel("standard");
+        }
+        return;
       }
+
+      // 🎯 linked 模型默认即为有效（pathInvalid: undefined），无需额外标记
+      //    调用 markLinkedModelValid 会改变 currentModel 引用导致 effect 无限循环
     };
 
     void loadCurrentModel();
@@ -88,7 +99,7 @@ export function useLive2DSystem(canvasRef: React.RefObject<HTMLCanvasElement | n
     canvasRef,
     loadModelAndAssets,
     markLinkedModelInvalid,
-    markLinkedModelValid,
+    setCurrentModel,
     t
   ]);
 

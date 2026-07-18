@@ -48,13 +48,45 @@ class Live2d {
     const modelPath = join(path, modelName);
     const modelJSON = JSON.parse(await readTextFile(modelPath)) as CubismSpec.ModelJSON;
 
-    const modelSettings = new Cubism4ModelSettings({
+    // 🎯 手动将所有文件引用路径转换为绝对 URL，避免 Cubism4ModelSettings 内部路径解析冲突
+    const resolvedJSON: CubismSpec.ModelJSON = {
       ...modelJSON,
-      url: convertFileSrc(modelPath)
-    });
+      FileReferences: {
+        Moc: convertFileSrc(join(path, modelJSON.FileReferences.Moc)),
+        Textures: modelJSON.FileReferences.Textures.map((t: string) =>
+          convertFileSrc(join(path, t))
+        ),
+        Physics: modelJSON.FileReferences.Physics
+          ? convertFileSrc(join(path, modelJSON.FileReferences.Physics))
+          : undefined,
+        DisplayInfo: modelJSON.FileReferences.DisplayInfo
+          ? convertFileSrc(join(path, modelJSON.FileReferences.DisplayInfo))
+          : undefined,
+        Motions: modelJSON.FileReferences.Motions
+          ? Object.fromEntries(
+              Object.entries(modelJSON.FileReferences.Motions).map(
+                ([group, motions]) => [
+                  group,
+                  (motions as Array<{ File: string }>).map((m) => ({
+                    ...m,
+                    File: convertFileSrc(join(path, m.File))
+                  }))
+                ]
+              )
+            )
+          : undefined,
+        Expressions: modelJSON.FileReferences.Expressions
+          ? modelJSON.FileReferences.Expressions.map((e) => ({
+              Name: e.Name ?? "",
+              File: convertFileSrc(join(path, e.File))
+            }))
+          : undefined
+      }
+    };
 
-    modelSettings.replaceFiles((file: string) => {
-      return convertFileSrc(join(path, file));
+    const modelSettings = new Cubism4ModelSettings({
+      ...resolvedJSON,
+      url: convertFileSrc(modelPath)
     });
 
     this.model = await Live2DModel.from(modelSettings);

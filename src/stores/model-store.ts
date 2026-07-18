@@ -132,6 +132,7 @@ async function persistModels(
     await saveModelsManifest(buildManifest(models, currentModel));
     return { success: true };
   } catch (error) {
+    console.error("[persistModels] Failed to save manifest:", error);
     return { success: false, error: String(error) };
   }
 }

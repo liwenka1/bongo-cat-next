@@ -26,6 +26,7 @@
     "fs:default",
     "fs:read-all",
     "fs:allow-write-text-file",
+    "fs:allow-mkdir",
     "dialog:default",
     {
       "identifier": "fs:scope",

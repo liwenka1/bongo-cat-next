@@ -1,6 +1,6 @@
 import { appDataDir, BaseDirectory, join as pathJoin } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
-import { exists, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { join } from "@/utils/path";
 import { isTauriRuntime } from "@/utils/tauri";
 import type { ModelMode } from "@/stores/model-store";
@@ -121,10 +121,14 @@ export async function saveModelsManifest(manifest: ModelsManifest): Promise<void
   };
 
   try {
-    await writeTextFile(MANIFEST_FILE_NAME, `${JSON.stringify(payload, null, 2)}\n`, {
+    // 🎯 确保 AppData 目录存在（Tauri 不会自动创建，首次写入前需要手动 mkdir）
+    await mkdir("", { baseDir: BaseDirectory.AppData, recursive: true });
+    const content = `${JSON.stringify(payload, null, 2)}\n`;
+    await writeTextFile(MANIFEST_FILE_NAME, content, {
       baseDir: BaseDirectory.AppData
     });
   } catch (error) {
+    console.error("[saveModelsManifest] writeTextFile failed:", error);
     throw new Error(`Failed to save models manifest: ${String(error)}`);
   }
 }
