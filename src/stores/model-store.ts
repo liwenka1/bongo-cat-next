@@ -263,7 +263,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
     }
 
     const name = input.name?.trim() ?? getDirectoryName(normalizedPath);
-    const mode = input.mode ?? "handle";
+    const mode = input.mode ?? "standard";
     const modelName = input.modelName ?? validation.modelName!;
     const id = createLinkedModelId(name, new Set(Object.keys(models)));
 
