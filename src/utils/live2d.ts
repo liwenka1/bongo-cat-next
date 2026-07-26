@@ -77,7 +77,7 @@ class Live2d {
           : undefined,
         Expressions: modelJSON.FileReferences.Expressions
           ? modelJSON.FileReferences.Expressions.map((e) => ({
-              Name: e.Name ?? "",
+              Name: e.Name,
               File: convertFileSrc(join(path, e.File))
             }))
           : undefined

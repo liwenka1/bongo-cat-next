@@ -41,39 +41,40 @@ export function useDragDrop() {
     const setup = async () => {
       try {
         const unlisten = await getCurrentWebviewWindow().onDragDropEvent(
-          async (event) => {
-            const { type } = event.payload;
+          (event) => {
+            void (async () => {
+              const { type } = event.payload;
 
-            switch (type) {
-              case "over": {
-                // 拖入 → 显示视觉反馈
-                setIsDragging(true);
-                break;
-              }
-
-              case "leave": {
-                setIsDragging(false);
-                break;
-              }
-
-              case "drop": {
-                setIsDragging(false);
-
-                const paths = event.payload.paths;
-                if (!paths || paths.length === 0) return;
-
-                const droppedPath = paths[0];
-                const result = await linkModel({ path: droppedPath });
-
-                if (result.cancelled) return;
-                if (result.success) {
-                  toast.success(t("linkSuccess", { ns: "models" }));
-                } else {
-                  toast.error(resolveErrorMessage(result));
+              switch (type) {
+                case "over": {
+                  setIsDragging(true);
+                  break;
                 }
-                break;
+
+                case "leave": {
+                  setIsDragging(false);
+                  break;
+                }
+
+                case "drop": {
+                  setIsDragging(false);
+
+                  const paths = event.payload.paths;
+                  if (paths.length === 0) return;
+
+                  const droppedPath = paths[0];
+                  const result = await linkModel({ path: droppedPath });
+
+                  if (result.cancelled) return;
+                  if (result.success) {
+                    toast.success(t("linkSuccess", { ns: "models" }));
+                  } else {
+                    toast.error(resolveErrorMessage(result));
+                  }
+                  break;
+                }
               }
-            }
+            })();
           }
         );
 
