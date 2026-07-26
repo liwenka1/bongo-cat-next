@@ -9,7 +9,7 @@
 **一个现代化的桌面宠物应用，让可爱的猫咪陪伴你的编程时光**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.3-green.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.8-green.svg)](package.json)
 [![Tauri](https://img.shields.io/badge/Tauri-2.0-orange.svg)](https://tauri.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 
@@ -35,6 +35,12 @@ _猫咪会根据你的键盘操作做出可爱的反应！_
 
 ![键盘模式带动作](public/img/keyboard-motions.gif)
 
+### 拖放模型
+
+![拖放模型](public/img/drag-drop.gif)
+
+_直接从文件管理器拖拽模型文件夹到窗口，松手即完成链接！_
+
 </div>
 
 ## ✨ 功能特性
@@ -47,6 +53,7 @@ _猫咪会根据你的键盘操作做出可爱的反应！_
 - 🎭 **动作系统** - 交互式动作选择器，多种动画效果
 - 😃 **表情系统** - 动态面部表情控制
 - 🎨 **Live2D模型** - 支持自定义Live2D模型文件
+- 📂 **拖放导入** - 直接从文件管理器拖拽模型文件夹到窗口，即可链接和切换
 - 🖼️ **透明窗口** - 完全透明的窗口背景，无缝融入桌面
 
 ### ⚙️ 个性化设置
@@ -139,6 +146,39 @@ pnpm tauri build
 4. **系统托盘** - 点击托盘图标快速访问功能
 5. **动作控制** - 使用动作选择器播放各种动画
 6. **表情控制** - 使用表情选择器切换面部表情
+7. **拖放模型** - 从文件管理器拖拽Live2D模型文件夹到窗口，即可快速链接和切换
+
+### 本地模型支持
+
+你可以导入自己的 Live2D 模型，直接拖拽文件夹即可加载。
+
+**兼容要求：**
+- 任意 **Cubism 3 / Cubism 4** 标准（`.model3.json` 格式）的 Live2D 模型
+- 只要文件夹中包含 `.model3.json` 文件即可识别
+- 如果模型包含 `resources/left-keys/` 等键盘按键图目录，会自动启用键盘映射
+
+**文件夹结构示例：**
+```
+我的模型/
+├── model.model3.json          # 模型配置文件（必需）
+├── model.moc3                 # 模型数据
+├── model.2048/
+│   └── texture_00.png         # 贴图文件
+├── model.physics3.json        # 物理效果（可选）
+├── model.cdi3.json            # 显示信息（可选）
+└── resources/
+    ├── background.png         # 背景图（可选）
+    └── left-keys/
+        ├── KeyA.png           # 键盘按键图（可选）
+        └── KeyB.png
+```
+
+**链接方式：**
+- **拖放：** 直接从文件管理器把模型文件夹拖到猫咪窗口上
+- **菜单：** 右键 → 模型模式 → 链接模型 → 选择文件夹
+- 链接成功后，可以在菜单中随时切换回该模型
+
+**注意：** 模型兼容性取决于框架中集成的 Cubism 运行时版本。部分模型的特定特性可能不被当前运行时支持。
 
 ### 快捷键
 

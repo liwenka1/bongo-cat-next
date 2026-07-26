@@ -9,7 +9,7 @@
 **A modern desktop pet application featuring cute Live2D cats to accompany your coding journey**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.3-green.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.8-green.svg)](package.json)
 [![Tauri](https://img.shields.io/badge/Tauri-2.0-orange.svg)](https://tauri.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 
@@ -35,6 +35,12 @@ _The cat responds to your keyboard input with adorable animations!_
 
 ![Keyboard Mode with Motions](public/img/keyboard-motions.gif)
 
+### Drag & Drop Model
+
+![Drag & Drop Model](public/img/drag-drop.gif)
+
+_Drag a model folder directly from your file explorer to instantly link it!_
+
 </div>
 
 ## ✨ Features
@@ -47,6 +53,7 @@ _The cat responds to your keyboard input with adorable animations!_
 - 🎭 **Motion System** - Interactive motion selector with various animations
 - 😃 **Expression System** - Dynamic facial expressions control
 - 🎨 **Live2D Models** - Support for custom Live2D model files
+- 📂 **Drag & Drop** - Drag model folders directly from file explorer to link and switch
 - 🖼️ **Transparent Window** - Seamless desktop integration with full transparency
 
 ### ⚙️ Customization
@@ -149,6 +156,39 @@ pnpm tauri build
 4. **System Tray** - Click tray icon for quick access
 5. **Motion Control** - Use the motion selector to play animations
 6. **Expression Control** - Use the expression selector to change facial expressions
+7. **Drag & Drop Model** - Drag any Live2D model folder from your file explorer onto the app window to instantly link and switch to it
+
+### Local Model Support
+
+You can load your own Live2D models with just a folder drag.
+
+**Compatible Models:**
+- Any Live2D **Cubism 3 / Cubism 4** model with a `.model3.json` specification file
+- Models with `resources/left-keys/` and/or `resources/right-keys/` image folders will automatically enable keyboard response
+- Models with `resources/background.png` will use it as the background
+
+**Folder structure example:**
+```
+MyModel/
+├── mymodel.model3.json      # Model specification (required)
+├── mymodel.moc3              # Model data
+├── mymodel.2048/
+│   └── texture_00.png        # Textures
+├── mymodel.physics3.json     # Physics (optional)
+├── mymodel.cdi3.json         # Display info (optional)
+└── resources/
+    ├── background.png        # Background (optional)
+    └── left-keys/
+        ├── KeyA.png          # Keyboard key images (optional)
+        └── KeyB.png
+```
+
+**How to link:**
+- **Drag & Drop:** Drag the model folder from your file explorer onto the app window
+- **Right-click Menu:** Right-click → Model Mode → Link Model → Select folder
+- Once linked, the model is saved and can be switched to anytime from the menu
+
+**Note:** Model compatibility depends on the Cubism runtime bundled in the framework. Some models may use features not supported by the current runtime version.
 
 ### Keyboard Shortcuts
 
