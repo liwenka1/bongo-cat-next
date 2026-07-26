@@ -1,0 +1,4 @@
+chore: 修复 CI Node 版本，同步 README 版本号到 0.2.9
+
+- release.yml: Node 20 → 22，解决 pnpm 版本不兼容问题
+- README.md / README_zh.md: 版本徽章更新到 0.2.9
