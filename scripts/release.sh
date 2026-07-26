@@ -62,7 +62,7 @@ node "$REPO_ROOT/scripts/bump-version.mjs" \
 echo ""
 echo "Done: $CURRENT_VERSION -> $NEW_VERSION"
 
-git add "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML"
+git add "$PACKAGE_JSON" "$TAURI_CONF" "$CARGO_TOML" "$REPO_ROOT/README.md" "$REPO_ROOT/README_zh.md"
 if git ls-files --error-unmatch "$CARGO_LOCK" >/dev/null 2>&1; then
   git add "$CARGO_LOCK"
 fi
