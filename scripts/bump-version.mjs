@@ -20,21 +20,34 @@ tauri.version = newVersion;
 writeFileSync(tauriPath, JSON.stringify(tauri, null, 2) + "\n");
 
 let cargo = readFileSync(cargoPath, "utf8");
-cargo = cargo.replace(/^(\[package\][\s\S]*?^version\s*=\s*\")([^\"]+)(\")/m, "$1" + newVersion + "$3");
+cargo = cargo.replace(/^(\[package\][\s\S]*?^version\s*=\s*\")([^"]+)(")/m, "$1" + newVersion + "$3");
 writeFileSync(cargoPath, cargo);
 
 if (cargoLockPath && existsSync(cargoLockPath)) {
   let cargoLock = readFileSync(cargoLockPath, "utf8");
-  const packageNameMatch = cargo.match(/^\[package\][\s\S]*?^name\s*=\s*\"([^\"]+)\"/m);
+  const packageNameMatch = cargo.match(/^\[package\][\s\S]*?^name\s*=\s*\"([^"]+)\"/m);
 
   if (packageNameMatch) {
     const packageName = packageNameMatch[1];
     const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const packagePattern = new RegExp(
-      '(\\[\\[package\\]\\]\\nname\\s*=\\s*\"' + escapedPackageName + '\"[\\s\\S]*?^version\\s*=\\s*\")([^\"]+)(\")',
+      '(\\[\\[package\\]\\]\\nname\\s*=\\s*"' + escapedPackageName + '"[\\s\\S]*?^version\\s*=\\s*")([^"]+)(")',
       "m"
     );
     cargoLock = cargoLock.replace(packagePattern, "$1" + newVersion + "$3");
     writeFileSync(cargoLockPath, cargoLock);
   }
+}
+
+// 同步更新 README 版本号徽章
+const readmePaths = ["README.md", "README_zh.md"];
+for (const readmePath of readmePaths) {
+  if (!existsSync(readmePath)) continue;
+  let readme = readFileSync(readmePath, "utf8");
+  readme = readme.replace(
+    /(version-)(\d+\.\d+\.\d+)(-green\.svg\]\(package\.json\))/,
+    "$1" + newVersion + "$3"
+  );
+  writeFileSync(readmePath, readme);
+  console.log("  - Updated version badge in " + readmePath);
 }
