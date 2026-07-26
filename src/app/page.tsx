@@ -7,6 +7,7 @@ import { useTray } from "@/hooks/use-tray";
 import { useWindowEffects } from "@/hooks/use-window-effects";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import { useDragDrop } from "@/hooks/use-drag-drop";
 import { ExpressionSelector } from "@/components/expression-selector";
 import { MotionSelector } from "@/components/motion-selector";
 
@@ -24,6 +25,9 @@ export default function Home() {
 
   // 🎯 启用窗口效果管理
   useWindowEffects();
+
+  // 🎯 启用拖放模型链接
+  const { isDragging } = useDragDrop();
 
   // 托盘初始化
   useEffect(() => {
@@ -73,6 +77,19 @@ export default function Home() {
       {selectorsVisible && (
         <div className="absolute top-0 right-0 z-50">
           <MotionSelector availableMotions={availableMotions} />
+        </div>
+      )}
+
+      {/* 📂 拖放覆盖层 - 拖入文件夹时显示视觉反馈 */}
+      {isDragging && (
+        <div className="pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center rounded-xl border-4 border-dashed border-blue-400/80 bg-blue-500/10 backdrop-blur-[2px] transition-all">
+          <div className="mb-3 text-5xl">📂</div>
+          <p className="text-lg font-medium text-blue-300/90">
+            拖放文件夹到此
+          </p>
+          <p className="mt-1 text-sm text-blue-300/60">
+            松手即可链接模型
+          </p>
         </div>
       )}
     </>
