@@ -1,0 +1,276 @@
+name: Deep Code Bot
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+# 同一 issue 串行,避免两条 /deepcode 并发起两套 server / 双开 PR。
+# cancel-in-progress: false —— 不打断正在跑的一轮。
+concurrency:
+  group: deepcode-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  deepcode:
+    # 只有仓库 Owner 自己才能触发
+    if: |
+      contains(github.event.comment.body, '/deepcode') &&
+      github.event.comment.user.login == github.event.repository.owner.login
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 取全量历史,便于 checkout / 基于既有的 per-issue 分支续写。
+          fetch-depth: 0
+
+      # 选定本轮工作分支,让多轮改动在同一分支/PR 上累积:
+      #  - 评论发在 PR 上(打法 B:审草稿 PR 后评论迭代)→ 直接续写该 PR 的 head 分支;
+      #  - 评论发在 issue 上 → 复用固定分支 deepcode/issue-<N>,存在则续写、否则从默认分支新建。
+      # 已知残留:不自动 rebase base——base 前进时续写的 PR 基于旧 base 累积 diff。
+      - name: Prepare working branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          IS_PR: ${{ github.event.issue.pull_request && 'true' || '' }}
+        run: |
+          if [ -n "$IS_PR" ]; then
+            BRANCH=$(gh pr view "$ISSUE_NUMBER" --json headRefName -q .headRefName)
+            echo "在 PR #$ISSUE_NUMBER 的分支 $BRANCH 上续写"
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+          else
+            BRANCH="deepcode/issue-${ISSUE_NUMBER}"
+            if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+              echo "续写已有分支 $BRANCH"
+              git fetch origin "$BRANCH"
+              git checkout -B "$BRANCH" "origin/$BRANCH"
+            else
+              echo "新建分支 $BRANCH"
+              git checkout -B "$BRANCH"
+            fi
+          fi
+          echo "DC_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+
+      # corepack 提供 pnpm(按 package.json 的 packageManager 版本),供 agent 验证改动用
+      - name: Install deep-code
+        run: |
+          npm i -g @liwenkai/deepcode
+          corepack enable
+
+      # 拉取 Issue 全部评论,拼接成对话上下文。
+      # 关键:保留 bot 自己的历史评论(多轮追问/计划要靠重读它),但只取
+      # <!--dc:body--> 标记内的正文,剥掉思考折叠块与状态尾巴。
+      - name: Build conversation context
+        id: prompt
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+
+            // 从 bot 评论里抽取正文:优先 <!--dc:body--> 标记;老评论无标记则
+            // fallback 到"整条减 chrome"(去思考折叠块 / 标题 / 状态尾巴)。
+            const extractBotBody = (body) => {
+              const marked = body.match(/<!--dc:body-->([\s\S]*?)<!--\/dc:body-->/);
+              if (marked) return marked[1].trim();
+              return body
+                .replace(/<details>[\s\S]*?<\/details>/g, '')
+                .replace(/^##\s*🤖\s*Deep Code\s*$/m, '')
+                .replace(/^(✅|⏳|⚠️|❌).*$/gm, '')
+                .trim();
+            };
+
+            let history = '## 对话历史\n\n';
+            history += '### Issue 标题\n' + issue.data.title + '\n\n';
+            if (issue.data.body) {
+              history += '### 第一条(Issue 正文)\n' + issue.data.body + '\n\n';
+            }
+
+            for (const comment of comments.data) {
+              const isBot = comment.user.type === 'Bot';
+              const content = isBot ? extractBotBody(comment.body) : comment.body;
+              if (!content) continue; // 跳过纯状态/空的 bot 评论
+              const who = isBot ? 'deep-code(你上一轮)' : comment.user.login;
+              history += '### ' + who + '\n' + content + '\n\n';
+            }
+
+            const currentPrompt = context.payload.comment.body
+              .replace(/^\/deepcode\s*/, '')
+              .trim() || '请分析一下这个项目';
+
+            // result 用 return(给 deep-code),user_prompt 用 setOutput(给 PR 标题)
+            core.setOutput('user_prompt', currentPrompt);
+            return '【重要】你只需修改文件内容,不要执行任何 git 命令(git add/commit/push/branch 等)。git 操作由外部自动化处理。\n\n'
+              + '【项目背景】本仓库是 bongo-cat-next——Next.js 15 + Tauri 2 桌宠应用,前端在 src/,Rust 壳在 src-tauri/;'
+              + '包管理用 pnpm(corepack 已启用,装依赖跑 pnpm install),验证前端改动用 pnpm lint。\n\n'
+              + '【工作方式】能合理假设就直接改代码 / 出草稿 PR,并把关键假设写进回答;'
+              + '只有在不可逆、高风险、或确实无从推断时,才先给出方案计划、本轮不改代码、结束回答等我确认后再继续。\n\n'
+              + '以下是本 Issue 的对话历史,根据上下文回答问题。\n\n' + history + '\n---\n当前指令:' + currentPrompt;
+
+      # 启动 deep-code HTTP 服务(不需要 TTY)
+      - name: Start deep-code server
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          # 预放行常用工具,绕过交互式审批
+          DEEP_CODE_APPROVAL_AUTO_ALLOW: "read_,list_,grep_,write_,apply_,shell,job,fetch_,web_"
+          # agent 的 shell 子进程会继承此环境:corepack 首次下载 pnpm 时不要交互确认
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+        run: |
+          # --approval-mode autonomous:漏到 server 的审批直接拒绝并继续,绝不挂起
+          deepcode serve --http --port 7878 --auth-token bot-token --approval-mode autonomous &
+          echo "等待服务就绪..."
+          for i in $(seq 1 15); do
+            if curl -s http://127.0.0.1:7878/health > /dev/null 2>&1; then
+              echo "服务已就绪"
+              break
+            fi
+            sleep 1
+          done
+
+      # 发送指令给 deep-code,等待完成,保存返回的 SSE 事件
+      - name: Run deep-code
+        timeout-minutes: 15
+        env:
+          # 通过 env 传入 prompt,避免把 Issue 内容直接拼进 shell(含单引号会截断命令,也是注入面)
+          DEEPCODE_PROMPT: ${{ steps.prompt.outputs.result }}
+        run: |
+          # 用 jq 安全构造 JSON,避免换行符破坏请求
+          printf '%s' "$DEEPCODE_PROMPT" > /tmp/deepcode-prompt.txt
+          jq -n --rawfile prompt /tmp/deepcode-prompt.txt '{prompt: $prompt}' > /tmp/deepcode-request.json
+
+          # 调用 /v1/prompt API,返回 SSE 流
+          curl -s -N -X POST http://127.0.0.1:7878/v1/prompt \
+            -H "Authorization: Bearer bot-token" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/deepcode-request.json \
+            > /tmp/deepcode-events.txt 2>&1
+
+          # assistant.delta=正式回答、reasoning.delta=思考,payload 是内联 tag 的
+          # RuntimeEvent(.text 字段)。用单遍 jq 按 kind 分桶:-R 逐行读、fromjson?
+          # 容错解析、-j 拼接不加分隔、-r 原始输出。关键是 jq 会原样保留 delta 里的
+          # 换行——旧的 $(...) 捕获会吃掉每个 delta 结尾的换行,导致段落/代码块/标题粘连。
+          grep '^data: ' /tmp/deepcode-events.txt | sed 's/^data: //' > /tmp/deepcode-data.txt
+          jq -Rrj 'fromjson? | select(.item.kind=="assistant.delta") | .item.payload.text' \
+            /tmp/deepcode-data.txt > /tmp/deepcode-answer.txt
+          jq -Rrj 'fromjson? | select(.item.kind=="reasoning.delta") | .item.payload.text' \
+            /tmp/deepcode-data.txt > /tmp/deepcode-reasoning.txt
+
+          # 回答为空则 dump 原始 JSON 方便排查;否则补一个结尾换行。
+          if [ ! -s /tmp/deepcode-answer.txt ]; then
+            echo "(debug:以下为原始 SSE 事件 JSON)" > /tmp/deepcode-answer.txt
+            head -5 /tmp/deepcode-data.txt >> /tmp/deepcode-answer.txt
+          else
+            printf '\n' >> /tmp/deepcode-answer.txt
+          fi
+
+      # 检查是否有文件被修改
+      - name: Check diff
+        id: diff
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            git status --short >> /tmp/deepcode-summary.txt
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      # 有文件改动则提交到本 issue 的固定分支;没有开着的 PR 就创建,有则 push 自动更新
+      - name: Commit & ensure PR
+        if: steps.diff.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 同样用 env 传入,避免用户输入拼进 git/gh 命令造成截断或注入
+          USER_PROMPT: ${{ steps.prompt.outputs.user_prompt }}
+          TRIGGER_USER: ${{ github.event.comment.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          TITLE="🤖 deep-code: $USER_PROMPT"
+          git config user.name "deep-code-bot"
+          git config user.email "bot@deep-code.dev"
+          git add -A
+          git commit -m "$TITLE"
+          git push origin "$DC_BRANCH"
+          # 该分支已有开着的 PR 则不重复创建(push 已自动更新它)
+          EXISTING=$(gh pr list --head "$DC_BRANCH" --state open --json number -q '.[0].number')
+          if [ -z "$EXISTING" ]; then
+            gh label create "🤖 deep-code" --color "1a9945" 2>/dev/null || true
+            gh pr create \
+              --title "$TITLE" \
+              --body "由 @$TRIGGER_USER 在 Issue #$ISSUE_NUMBER 中触发" \
+              --head "$DC_BRANCH" \
+              --label "🤖 deep-code"
+          else
+            echo "PR #$EXISTING 已存在,push 已更新它"
+          fi
+
+      # 把 deep-code 的回答贴回 Issue 评论区
+      - name: Post reply
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const readOr = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } };
+            // 模型流式输出可能缺失段落间隔,在 ## / ### 标题前补双换行
+            const fixHeadings = (s) => s.replace(/([^\n])(#{1,3}\s)/g, '$1\n\n$2').trim();
+
+            // 评论上限约 65536 字符:回答优先,思考为次,各自留额。
+            const answer = fixHeadings(readOr('/tmp/deepcode-answer.txt').slice(0, 55000));
+            let reasoning = readOr('/tmp/deepcode-reasoning.txt').trim();
+            const reasoningCut = reasoning.length > 20000;
+            reasoning = reasoning.slice(0, 20000);
+            const hasChanges = '${{ steps.diff.outputs.has_changes }}' === 'true';
+
+            let body = '## 🤖 Deep Code\n\n';
+            // 思考过程:折叠 + 引用,默认收起。放在 dc:body 标记之外,重读上下文时被剥掉。
+            if (reasoning) {
+              const quoted = reasoning.split('\n').map((l) => '> ' + l).join('\n');
+              body += '<details>\n<summary>🤔 思考过程(点击展开)</summary>\n\n'
+                + quoted + (reasoningCut ? '\n>\n> …(思考已截断)' : '')
+                + '\n\n</details>\n\n';
+            }
+            // 正文包进 dc:body 标记,供下一轮重读时精确提取(排除思考块与状态尾巴)
+            body += '<!--dc:body-->\n' + answer + '\n<!--/dc:body-->\n\n';
+            body += hasChanges
+              ? '✅ **已提交到 PR,请查看本 Issue 对应的 PR。**'
+              : '✅ 分析完毕,当前代码无需修改。';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      # 任何步骤失败(含 15 分钟超时)都回帖,避免 issue 里静默干等
+      - name: Report failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ 本轮 deep-code 运行失败(可能超时或出错)。可查看 Actions 日志,或重新评论 `/deepcode` 重试。'
+            });
