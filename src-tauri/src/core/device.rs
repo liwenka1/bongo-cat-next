@@ -4,6 +4,9 @@ use serde_json::{Value, json};
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Emitter};
 
+#[cfg(target_os = "linux")]
+mod linux_evdev;
+
 static IS_RUNNING: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Clone, Serialize)]
@@ -27,6 +30,20 @@ pub fn start_listening(app_handle: AppHandle) {
     }
 
     IS_RUNNING.store(true, Ordering::SeqCst);
+
+    #[cfg(target_os = "linux")]
+    {
+        let wayland = linux_evdev::is_wayland();
+        if wayland {
+            println!(
+                "[device] Wayland detected – using evdev for global input."
+            );
+            linux_evdev::start_evdev_listener(app_handle);
+            return;
+        }
+        // X11: fall through to rdev listener below.
+        println!("[device] X11 detected – using rdev for global input.");
+    }
 
     let callback = move |event: Event| {
         let device = match event.event_type {
