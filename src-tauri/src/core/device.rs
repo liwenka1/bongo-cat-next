@@ -87,3 +87,14 @@ pub fn start_listening(app_handle: AppHandle) {
         }
     });
 }
+
+/// Stop the global input listener.
+///
+/// On Linux/Wayland this signals evdev threads to exit.
+/// The rdev‑based listeners (X11, macOS) do not have a reliable stop
+/// mechanism and will keep running until the process exits.
+pub fn stop_listening() {
+    IS_RUNNING.store(false, Ordering::SeqCst);
+    #[cfg(target_os = "linux")]
+    linux_evdev::stop_evdev_listener();
+}
