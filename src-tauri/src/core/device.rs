@@ -1,4 +1,6 @@
 use rdev::{Event, EventType, listen};
+#[cfg(target_os = "macos")]
+use rdev::Key;
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -30,7 +32,13 @@ pub struct DeviceEvent {
 ///
 /// Shared by every platform so the event format stays identical regardless of
 /// which rdev backend (Windows hooks / X11 / macOS CGEventTap) produced it.
-fn rdev_event_to_device_event(event: Event) -> Option<DeviceEvent> {
+fn rdev_event_to_device_events(event: Event) -> Vec<DeviceEvent> {
+    // macOS reports Caps Lock through `FlagsChanged`: turning it on becomes a
+    // KeyPress, but there is no physical KeyUp event for the frontend to clear.
+    // Treat it as a tap so the cat's paw always returns to its resting state.
+    #[cfg(target_os = "macos")]
+    let is_caps_lock_press = matches!(&event.event_type, EventType::KeyPress(Key::CapsLock));
+
     let device = match event.event_type {
         EventType::ButtonPress(button) => DeviceEvent {
             kind: DeviceKind::MousePress,
@@ -52,9 +60,20 @@ fn rdev_event_to_device_event(event: Event) -> Option<DeviceEvent> {
             kind: DeviceKind::KeyboardRelease,
             value: json!(format!("{:?}", key)),
         },
-        _ => return None,
+        _ => return vec![],
     };
-    Some(device)
+
+    let mut devices = vec![device];
+
+    #[cfg(target_os = "macos")]
+    if is_caps_lock_press {
+        devices.push(DeviceEvent {
+            kind: DeviceKind::KeyboardRelease,
+            value: json!("CapsLock"),
+        });
+    }
+
+    devices
 }
 
 pub fn start_listening(app_handle: AppHandle) {
@@ -105,7 +124,7 @@ pub fn start_listening(app_handle: AppHandle) {
         // Listener thread: owns the CGEventTap / CFRunLoop.
         std::thread::spawn(move || {
             let callback = move |event: Event| {
-                if let Some(device) = rdev_event_to_device_event(event) {
+                for device in rdev_event_to_device_events(event) {
                     // Bounded channel + try_send: the tap callback must NEVER
                     // block (macOS disables taps whose run loop stalls). If the
                     // emitter thread falls behind (e.g. frontend rendering is
@@ -129,7 +148,7 @@ pub fn start_listening(app_handle: AppHandle) {
     #[cfg(not(target_os = "macos"))]
     std::thread::spawn(move || {
         let callback = move |event: Event| {
-            if let Some(device) = rdev_event_to_device_event(event) {
+            for device in rdev_event_to_device_events(event) {
                 if let Err(e) = app_handle.emit("device-changed", device) {
                     eprintln!("Failed to emit event: {:?}", e);
                 }
@@ -139,6 +158,38 @@ pub fn start_listening(app_handle: AppHandle) {
             eprintln!("Device listening error: {:?}", e);
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[cfg(target_os = "macos")]
+    use std::time::SystemTime;
+
+    #[cfg(target_os = "macos")]
+    fn keyboard_event(event_type: EventType) -> Event {
+        Event {
+            time: SystemTime::now(),
+            unicode: None,
+            event_type,
+            platform_code: 0,
+            position_code: 0,
+            usb_hid: 0,
+            extra_data: 0,
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn caps_lock_press_is_followed_by_release() {
+        let events = rdev_event_to_device_events(keyboard_event(EventType::KeyPress(Key::CapsLock)));
+
+        assert_eq!(events.len(), 2);
+        assert!(matches!(events[0].kind, DeviceKind::KeyboardPress));
+        assert!(matches!(events[1].kind, DeviceKind::KeyboardRelease));
+        assert_eq!(events[0].value, json!("CapsLock"));
+        assert_eq!(events[1].value, json!("CapsLock"));
+    }
 }
 
 /// Stop the global input listener.
