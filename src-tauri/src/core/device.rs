@@ -91,7 +91,7 @@ pub fn start_listening(app_handle: AppHandle) {
     // emitter thread. The tap callback only does a cheap channel send.
     #[cfg(target_os = "macos")]
     {
-        let (tx, rx) = mpsc::channel::<DeviceEvent>();
+        let (tx, rx) = mpsc::sync_channel::<DeviceEvent>(256);
 
         // Emitter thread: receives events and does the (potentially slow) IPC.
         std::thread::spawn(move || {
@@ -106,9 +106,13 @@ pub fn start_listening(app_handle: AppHandle) {
         std::thread::spawn(move || {
             let callback = move |event: Event| {
                 if let Some(device) = rdev_event_to_device_event(event) {
-                    // Send is non-blocking unless the channel is full; a
-                    // bounded channel here keeps memory growth in check.
-                    let _ = tx.send(device);
+                    // Bounded channel + try_send: the tap callback must NEVER
+                    // block (macOS disables taps whose run loop stalls). If the
+                    // emitter thread falls behind (e.g. frontend rendering is
+                    // slow), the newest event is dropped instead — never blocks.
+                    // Keyboard events are low-frequency and never hit the bound,
+                    // so no keystrokes are lost in practice.
+                    let _ = tx.try_send(device);
                 }
             };
             if let Err(e) = listen(callback) {
