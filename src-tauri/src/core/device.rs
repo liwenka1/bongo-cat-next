@@ -26,35 +26,55 @@ pub struct DeviceEvent {
     value: Value,
 }
 
-/// Convert an rdev `Event` into our app-level `DeviceEvent`.
+/// Convert an rdev `Event` into zero or more app-level `DeviceEvent`s.
 ///
 /// Shared by every platform so the event format stays identical regardless of
 /// which rdev backend (Windows hooks / X11 / macOS CGEventTap) produced it.
-fn rdev_event_to_device_event(event: Event) -> Option<DeviceEvent> {
-    let device = match event.event_type {
-        EventType::ButtonPress(button) => DeviceEvent {
+///
+/// On macOS, Caps Lock is delivered via `FlagsChanged` rather than a normal
+/// physical `KeyUp`.  The rdev backend maps the first toggle to `KeyPress`
+/// but never produces a matching `KeyRelease`.  So on macOS we emit a
+/// synthetic `KeyboardRelease` immediately after the `KeyboardPress` for
+/// Caps Lock, making the key behave like a tap instead of getting "stuck".
+fn rdev_event_to_device_event(event: Event) -> Vec<DeviceEvent> {
+    let mut events = Vec::new();
+    match event.event_type {
+        EventType::ButtonPress(button) => events.push(DeviceEvent {
             kind: DeviceKind::MousePress,
             value: json!(format!("{:?}", button)),
-        },
-        EventType::ButtonRelease(button) => DeviceEvent {
+        }),
+        EventType::ButtonRelease(button) => events.push(DeviceEvent {
             kind: DeviceKind::MouseRelease,
             value: json!(format!("{:?}", button)),
-        },
-        EventType::MouseMove { x, y } => DeviceEvent {
+        }),
+        EventType::MouseMove { x, y } => events.push(DeviceEvent {
             kind: DeviceKind::MouseMove,
             value: json!({ "x": x, "y": y }),
-        },
-        EventType::KeyPress(key) => DeviceEvent {
-            kind: DeviceKind::KeyboardPress,
-            value: json!(format!("{:?}", key)),
-        },
-        EventType::KeyRelease(key) => DeviceEvent {
+        }),
+        EventType::KeyPress(key) => {
+            let value = json!(format!("{:?}", key));
+            events.push(DeviceEvent {
+                kind: DeviceKind::KeyboardPress,
+                value: value.clone(),
+            });
+            // On macOS Caps Lock is a toggle delivered via FlagsChanged;
+            // there is never a KeyRelease for it.  Synthesise one so the
+            // frontend doesn't keep the paw pressed forever.
+            #[cfg(target_os = "macos")]
+            if matches!(key, rdev::Key::CapsLock) {
+                events.push(DeviceEvent {
+                    kind: DeviceKind::KeyboardRelease,
+                    value,
+                });
+            }
+        }
+        EventType::KeyRelease(key) => events.push(DeviceEvent {
             kind: DeviceKind::KeyboardRelease,
             value: json!(format!("{:?}", key)),
-        },
-        _ => return None,
+        }),
+        _ => {}
     };
-    Some(device)
+    events
 }
 
 pub fn start_listening(app_handle: AppHandle) {
@@ -105,7 +125,7 @@ pub fn start_listening(app_handle: AppHandle) {
         // Listener thread: owns the CGEventTap / CFRunLoop.
         std::thread::spawn(move || {
             let callback = move |event: Event| {
-                if let Some(device) = rdev_event_to_device_event(event) {
+                for device in rdev_event_to_device_event(event) {
                     // Bounded channel + try_send: the tap callback must NEVER
                     // block (macOS disables taps whose run loop stalls). If the
                     // emitter thread falls behind (e.g. frontend rendering is
@@ -129,7 +149,7 @@ pub fn start_listening(app_handle: AppHandle) {
     #[cfg(not(target_os = "macos"))]
     std::thread::spawn(move || {
         let callback = move |event: Event| {
-            if let Some(device) = rdev_event_to_device_event(event) {
+            for device in rdev_event_to_device_event(event) {
                 if let Err(e) = app_handle.emit("device-changed", device) {
                     eprintln!("Failed to emit event: {:?}", e);
                 }
