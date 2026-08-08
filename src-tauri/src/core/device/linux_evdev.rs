@@ -29,7 +29,6 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::Emitter;
-use tauri::Manager;
 
 use super::{DeviceEvent, DeviceKind};
 
@@ -75,13 +74,13 @@ fn find_input_device_paths() -> Vec<PathBuf> {
         // Quick-open to query capabilities and identity.
         match Device::open(&path) {
             Ok(dev) => {
-                let has_keys = dev.supported_keys().map_or(false, |k| !k.is_empty());
+                let has_keys = dev.supported_keys().map_or(false, |k| k.iter().next().is_some());
                 let has_rel = dev
                     .supported_relative_axes()
-                    .map_or(false, |a| !a.is_empty());
+                    .map_or(false, |a| a.iter().next().is_some());
                 let has_abs = dev
                     .supported_absolute_axes()
-                    .map_or(false, |a| !a.is_empty());
+                    .map_or(false, |a| a.iter().next().is_some());
 
                 if !has_keys && !has_rel && !has_abs {
                     continue;
@@ -411,6 +410,7 @@ pub fn start_evdev_listener(app_handle: tauri::AppHandle) {
     let (screen_w, screen_h) = app_handle
         .primary_monitor()
         .ok()
+        .flatten()
         .map(|m| {
             let size = m.size();
             (size.width as i32, size.height as i32)
