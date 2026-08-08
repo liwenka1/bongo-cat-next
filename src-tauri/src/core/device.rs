@@ -77,6 +77,50 @@ fn rdev_event_to_device_event(event: Event) -> Vec<DeviceEvent> {
     events
 }
 
+// The Caps Lock synthetic-release behaviour is macOS-only (FlagsChanged),
+// so the tests only compile/run on macOS.
+#[cfg(all(test, target_os = "macos"))]
+mod tests {
+    use super::*;
+    use std::time::SystemTime;
+
+    fn keyboard_event(event_type: EventType) -> Event {
+        Event {
+            time: SystemTime::now(),
+            unicode: None,
+            event_type,
+            platform_code: 0,
+            position_code: 0,
+            usb_hid: 0,
+            extra_data: 0,
+        }
+    }
+
+    #[test]
+    fn caps_lock_press_is_followed_by_release() {
+        let events = rdev_event_to_device_event(keyboard_event(EventType::KeyPress(
+            rdev::Key::CapsLock,
+        )));
+
+        assert_eq!(events.len(), 2);
+        assert!(matches!(events[0].kind, DeviceKind::KeyboardPress));
+        assert!(matches!(events[1].kind, DeviceKind::KeyboardRelease));
+        assert_eq!(events[0].value, json!("CapsLock"));
+        assert_eq!(events[1].value, json!("CapsLock"));
+    }
+
+    #[test]
+    fn other_key_press_is_not_affected() {
+        let events = rdev_event_to_device_event(keyboard_event(EventType::KeyPress(
+            rdev::Key::KeyA,
+        )));
+
+        assert_eq!(events.len(), 1);
+        assert!(matches!(events[0].kind, DeviceKind::KeyboardPress));
+        assert_eq!(events[0].value, json!("KeyA"));
+    }
+}
+
 pub fn start_listening(app_handle: AppHandle) {
     if IS_RUNNING.load(Ordering::SeqCst) {
         return;
