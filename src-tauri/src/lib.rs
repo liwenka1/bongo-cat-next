@@ -63,6 +63,10 @@ pub fn run() {
         tauri::RunEvent::Reopen { .. } => {
             show_settings_window(_app_handle);
         }
+        tauri::RunEvent::Exit => {
+            // 退出时停止全局输入监听（Linux/Wayland 下会真实停掉 evdev 线程）
+            device::stop_listening();
+        }
         _ => {}
     });
 }
