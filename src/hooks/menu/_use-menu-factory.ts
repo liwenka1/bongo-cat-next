@@ -205,10 +205,7 @@ export function _useMenuFactory() {
     createMenu,
     showMenu,
 
-    // 状态对象
-    menuStates: {
-      visible,
-      ...menuStates
-    }
+    // 状态对象（visible 已包含在 builder 返回的 menuStates 中）
+    menuStates
   };
 }

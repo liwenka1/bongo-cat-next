@@ -30,7 +30,8 @@ export function _useMenuBuilder() {
     mirrorMode,
     setMirrorMode,
     selectorsVisible,
-    setSelectorsVisible
+    setSelectorsVisible,
+    visible
   } = useCatStore();
   const {
     models,
@@ -340,6 +341,7 @@ export function _useMenuBuilder() {
 
     // 状态对象（用于依赖监听）
     menuStates: {
+      visible,
       scale,
       opacity,
       penetrable,
