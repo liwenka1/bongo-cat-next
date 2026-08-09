@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 interface CatState {
   // 显示状态
@@ -60,105 +61,121 @@ interface CatState {
   setAvailableExpressions: (expressions: { name: string; originalName: string }[]) => void; // 设置可用表情
 }
 
-export const useCatStore = create<CatState>((set, get) => ({
-  // 初始状态
-  visible: true,
-  opacity: 100,
-  alwaysOnTop: true,
-  penetrable: false,
-  mirrorMode: false,
-  singleMode: false,
-  mouseMirror: false,
-  selectorsVisible: false,
+export const useCatStore = create<CatState>()(
+  persist(
+    (set, get) => ({
+      // 初始状态
+      visible: true,
+      opacity: 100,
+      alwaysOnTop: true,
+      penetrable: false,
+      mirrorMode: false,
+      singleMode: false,
+      mouseMirror: false,
+      selectorsVisible: false,
 
-  x: 0,
-  y: 0,
-  scale: 100,
+      x: 0,
+      y: 0,
+      scale: 100,
 
-  // 键盘分组状态
-  pressedLeftKeys: [],
-  pressedRightKeys: [],
-  supportedLeftKeys: [],
-  supportedRightKeys: [],
+      // 键盘分组状态
+      pressedLeftKeys: [],
+      pressedRightKeys: [],
+      supportedLeftKeys: [],
+      supportedRightKeys: [],
 
-  mousePressed: [],
-  mousePosition: { x: 0, y: 0 },
+      mousePressed: [],
+      mousePosition: { x: 0, y: 0 },
 
-  currentModelPath: "standard",
-  backgroundImage: "",
-  selectedMotion: null,
-  availableMotions: [], // 可用动作列表
-  selectedExpression: null,
-  availableExpressions: [], // 可用表情列表
+      currentModelPath: "standard",
+      backgroundImage: "",
+      selectedMotion: null,
+      availableMotions: [], // 可用动作列表
+      selectedExpression: null,
+      availableExpressions: [], // 可用表情列表
 
-  // Actions
-  setVisible: (visible) => {
-    set({ visible });
-  },
-  setOpacity: (opacity) => {
-    set({ opacity });
-  },
-  setAlwaysOnTop: (alwaysOnTop) => {
-    set({ alwaysOnTop });
-  },
-  setPenetrable: (penetrable) => {
-    set({ penetrable });
-  },
-  setMirrorMode: (mirrorMode) => {
-    set({ mirrorMode });
-  },
-  setSingleMode: (singleMode) => {
-    set({ singleMode });
-  },
-  setMouseMirror: (mouseMirror) => {
-    set({ mouseMirror });
-  },
-  setSelectorsVisible: (visible) => {
-    set({ selectorsVisible: visible });
-  },
-  setPosition: (x, y) => {
-    set({ x, y });
-  },
-  setScale: (scale) => {
-    set({ scale });
-  },
+      // Actions
+      setVisible: (visible) => {
+        set({ visible });
+      },
+      setOpacity: (opacity) => {
+        set({ opacity });
+      },
+      setAlwaysOnTop: (alwaysOnTop) => {
+        set({ alwaysOnTop });
+      },
+      setPenetrable: (penetrable) => {
+        set({ penetrable });
+      },
+      setMirrorMode: (mirrorMode) => {
+        set({ mirrorMode });
+      },
+      setSingleMode: (singleMode) => {
+        set({ singleMode });
+      },
+      setMouseMirror: (mouseMirror) => {
+        set({ mouseMirror });
+      },
+      setSelectorsVisible: (visible) => {
+        set({ selectorsVisible: visible });
+      },
+      setPosition: (x, y) => {
+        set({ x, y });
+      },
+      setScale: (scale) => {
+        set({ scale });
+      },
 
-  // 键盘管理方法
-  setPressedLeftKeys: (pressedLeftKeys) => {
-    set({ pressedLeftKeys });
-  },
-  setPressedRightKeys: (pressedRightKeys) => {
-    set({ pressedRightKeys });
-  },
-  setSupportedLeftKeys: (supportedLeftKeys) => {
-    set({ supportedLeftKeys });
-  },
-  setSupportedRightKeys: (supportedRightKeys) => {
-    set({ supportedRightKeys });
-  },
+      // 键盘管理方法
+      setPressedLeftKeys: (pressedLeftKeys) => {
+        set({ pressedLeftKeys });
+      },
+      setPressedRightKeys: (pressedRightKeys) => {
+        set({ pressedRightKeys });
+      },
+      setSupportedLeftKeys: (supportedLeftKeys) => {
+        set({ supportedLeftKeys });
+      },
+      setSupportedRightKeys: (supportedRightKeys) => {
+        set({ supportedRightKeys });
+      },
 
-  setMousePressed: (mousePressed) => {
-    set({ mousePressed });
-  },
-  setMousePosition: (x, y) => {
-    set({ mousePosition: { x, y } });
-  },
-  setCurrentModelPath: (currentModelPath) => {
-    set({ currentModelPath });
-  },
-  setBackgroundImage: (backgroundImage) => {
-    set({ backgroundImage });
-  },
-  setSelectedMotion: (selectedMotion) => {
-    set({ selectedMotion });
-  },
-  setAvailableMotions: (motions) => {
-    set({ availableMotions: motions });
-  },
-  setSelectedExpression: (selectedExpression) => {
-    set({ selectedExpression });
-  },
-  setAvailableExpressions: (expressions) => {
-    set({ availableExpressions: expressions });
-  }
-}));
+      setMousePressed: (mousePressed) => {
+        set({ mousePressed });
+      },
+      setMousePosition: (x, y) => {
+        set({ mousePosition: { x, y } });
+      },
+      setCurrentModelPath: (currentModelPath) => {
+        set({ currentModelPath });
+      },
+      setBackgroundImage: (backgroundImage) => {
+        set({ backgroundImage });
+      },
+      setSelectedMotion: (selectedMotion) => {
+        set({ selectedMotion });
+      },
+      setAvailableMotions: (motions) => {
+        set({ availableMotions: motions });
+      },
+      setSelectedExpression: (selectedExpression) => {
+        set({ selectedExpression });
+      },
+      setAvailableExpressions: (expressions) => {
+        set({ availableExpressions: expressions });
+      }
+    }),
+    {
+      name: "bongo-cat-settings",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        opacity: state.opacity,
+        scale: state.scale,
+        alwaysOnTop: state.alwaysOnTop,
+        mirrorMode: state.mirrorMode,
+        penetrable: state.penetrable,
+        selectorsVisible: state.selectorsVisible
+      })
+    }
+  )
+);

@@ -120,10 +120,7 @@ function buildManifest(models: Record<string, Model>, currentModel: Model | null
   };
 }
 
-async function persistModels(
-  models: Record<string, Model>,
-  currentModel: Model | null
-): Promise<PersistModelsResult> {
+async function persistModels(models: Record<string, Model>, currentModel: Model | null): Promise<PersistModelsResult> {
   if (!isTauriRuntime()) {
     return { success: true };
   }
@@ -338,8 +335,7 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
 
     const { [id]: _removed, ...nextModels } = models;
 
-    const nextCurrentModel =
-      currentModel?.id === id ? resolveCurrentModel(nextModels, "standard") : currentModel;
+    const nextCurrentModel = currentModel?.id === id ? resolveCurrentModel(nextModels, "standard") : currentModel;
 
     const previousState = {
       models: get().models,
@@ -376,13 +372,9 @@ export const useModelStore = create<ModelStoreState>()((set, get) => ({
 
     set({ currentModel: model });
 
-    // 🎯 预设模型（standard/keyboard/handle）切换无需持久化 manifest，
-    //    因为 buildManifest 会过滤掉 isPreset 模型，manifest 里只存 linked 模型。
-    //    对 preset 模型做 persist 是多余的，且一旦失败会导致 currentModel 回滚。
-    if (model.isPreset) {
-      return;
-    }
-
+    // 🎯 预设模型（standard/keyboard）切换同样要持久化 currentModelId：
+    //    buildManifest 会过滤掉 isPreset 模型（不写入 models 列表），但
+    //    currentModelId 会原样保存，重启后仍能正确还原（issue #5/#7）。
     void persistModels(models, model).then((persistResult) => {
       if (!persistResult.success) {
         set({ currentModel: previousModel });
