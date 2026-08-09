@@ -28,7 +28,10 @@ export function useTray() {
       const appName = await getName();
       const appVersion = await getVersion();
       const menu = await createMenu({ type: "tray" });
-      const icon = await resolveResource("assets/tray.png");
+      // 🎯 托盘图标：256x256 直接缩放效果差（issue #6）。
+      // Windows 托盘建议 16~32px；macOS 建议 64px（Retina 2x）。
+      const isMac = navigator.userAgent.includes("Macintosh");
+      const icon = await resolveResource(isMac ? "assets/tray-64.png" : "assets/tray-32.png");
 
       const options: TrayIconOptions = {
         menu,

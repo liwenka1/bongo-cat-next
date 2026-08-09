@@ -51,6 +51,8 @@
     ],
     "resources": [
       "assets/tray.png",
+      "assets/tray-32.png",
+      "assets/tray-64.png",
       "assets/logo.png",
       "assets/models"
     ]
