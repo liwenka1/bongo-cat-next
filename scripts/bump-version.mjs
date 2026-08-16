@@ -45,7 +45,7 @@ for (const readmePath of readmePaths) {
   if (!existsSync(readmePath)) continue;
   let readme = readFileSync(readmePath, "utf8");
   readme = readme.replace(
-    /(version-)(\d+\.\d+\.\d+)(-green\.svg\]\(package\.json\))/,
+    /(version-)(\d+\.\d+\.\d+)(-green\.svg\)\]\(package\.json\))/,
     "$1" + newVersion + "$3"
   );
   writeFileSync(readmePath, readme);
